@@ -1,36 +1,40 @@
-/* Style the video: 100% width and height to cover the entire window */
 body{
-	background:black;
-}
-#myVideo {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 60%;
+	width: 100%;
+	height: 100%;
+	background-color: #000;
+	background-image: radial-gradient(circle at top right, rgba(121, 68, 154, 0.13), transparent),
+	radial-gradient(circle at 20% 80%, rgba(41, 196, 255, 0.13), transparent)
 }
 
-/* Add some content at the bottom of the video/page */
 .content {
-  position: fixed;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  color: #f1f1f1;
-  width: 100%;
-  padding: 20px;
+	position: fixed;
+	bottom: 50px;
+	background: rgba(0, 0, 0, 0.5);
+	color: #f1f1f1;
+	width: 50%;
+	padding: 30px;
 }
 
-/* Style the button used to pause/play the video */
 #myBtn {
-  width: 200px;
-  font-size: 18px;
-  padding: 10px;
-  border: none;
-  background: #000;
-  color: #fff;
-  cursor: pointer;
+	font-size: 18px;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 50px;
+	padding-right: 50px;
+	border: none;
+	background: #000;
+	color: #fff;
+	cursor: pointer;
+	text-decoration: none;
 }
 
 #myBtn:hover {
-  background: #ddd;
-  color: black;
+	background: #ddd;
+	color: black;
+}
+
+canvas {
+	position: fixed;
+	width: 100%;
+	height: 100%;
 }
