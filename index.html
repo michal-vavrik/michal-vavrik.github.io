@@ -7,6 +7,15 @@
 	
 	<body>
 		<canvas></canvas>
+				<!-- Menu elements-->
+		<div class="menu">
+			<p>Home</p>
+			<p>Personal</p>
+			<p>CV</p>
+			<p>Games</p>
+			<p>Contant</p>
+		</div>
+		<div class="menu__toggler"><span></span></div>
 		<div class="content">
 			<h1>Nothing so far</h1>
 			<p>This site is now under construction.</p>
@@ -14,8 +23,17 @@
 		</div>
 
 		<script>
+			const toggler = document.querySelector('.menu__toggler');
+			const menu    = document.querySelector('.menu');
+
+			/* Toggles on and off the 'active' class on the menu and the toggler button. */
+			toggler.addEventListener('click', () => {
+			  toggler.classList.toggle('active');
+			  menu.classList.toggle('active');
+			})
+
 			const STAR_COUNT = ( window.innerWidth + window.innerHeight ) / 8,
-			  STAR_SIZE = 1,
+			  STAR_SIZE = 1.5,
 			  STAR_MIN_SCALE = 1.5,
 			  OVERFLOW_THRESHOLD = 1;
 
