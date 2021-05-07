@@ -3,6 +3,7 @@
 	<head>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" type="text/css" href="css/main.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	</head>
 	
 	<body>
@@ -16,6 +17,25 @@
 			<p>Contant</p>
 		</div>
 		<div class="menu__toggler"><span></span></div>
+		
+		<button class="LoginBtn" onclick="document.getElementById('id01').style.display='block'" style="width:auto;"><i class="fa fa-user"></i></button>
+		<div id="id01" class="modal">
+		  
+		  <form class="modal-content animate" action="/action_page.php" method="post">
+			<div class="imgcontainer">
+			  <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
+			  <i class="fa fa-user-circle" aria-hidden="true" style="font-size: 12vw"></i>
+			  <!-- <img src="img_avatar2.png" alt="Avatar" class="avatar"> -->
+			</div>
+
+			<div class="container">
+			  <label for="psw"><b>Password</b></label>
+			  <input type="password" placeholder="Enter Password" name="psw" required>
+				
+			  <button type="submit">Login</button>
+			</div>
+		  </form>
+		</div>
 		<div class="content">
 			<h1>Nothing so far</h1>
 			<p>This site is now under construction.</p>
@@ -23,6 +43,16 @@
 		</div>
 
 		<script>
+			// Get the modal
+			var modal = document.getElementById('id01');
+
+			// When the user clicks anywhere outside of the modal, close it
+			window.onclick = function(event) {
+				if (event.target == modal) {
+					modal.style.display = "none";
+				}
+			}
+
 			const toggler = document.querySelector('.menu__toggler');
 			const menu    = document.querySelector('.menu');
 
