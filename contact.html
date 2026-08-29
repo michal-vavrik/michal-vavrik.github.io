@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Contact</title>
+		<link rel="stylesheet" type="text/css" href="css/main.css">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+	</head>
+	
+	<body class="subpage">
+				<!-- Menu elements-->
+		<nav class="menu">
+			<a class="menu__link" href="index.html">Home</a>
+			<a class="menu__link" href="personal.html">Personal</a>
+			<a class="menu__link" href="cv.html">CV</a>
+			<a class="menu__link" href="games.html">Games</a>
+			<a class="menu__link active" href="contact.html">Contact</a>
+			<a class="menu__link" href="nv194.html">NV194</a>
+		</nav>
+		<div class="menu__toggler"><span></span></div>
+		
+		<button class="LoginBtn" onclick="document.getElementById('id01').style.display='block'" style="width:auto;"><i class="fa fa-user"></i></button>
+		<div id="id01" class="modal">
+		  
+		  <form class="modal-content animate" action="/action_page.php" method="post">
+			<div class="imgcontainer">
+			  <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
+			  <i class="fa fa-user-circle" aria-hidden="true" style="font-size: 12vw"></i>
+			  <!-- <img src="img_avatar2.png" alt="Avatar" class="avatar"> -->
+			</div>
+
+			<div class="container">
+			  <label for="psw"><b>Password</b></label>
+			  <input type="password" placeholder="Enter Password" name="psw" required>
+				
+			  <button type="submit">Login</button>
+			</div>
+		  </form>
+		</div>
+
+		<script src="js/login-modal.js"></script>
+		<script src="js/menu.js"></script>
+
+	</body>
+</html>
