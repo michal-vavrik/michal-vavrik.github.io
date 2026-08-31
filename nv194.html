@@ -51,26 +51,44 @@
 
 			<div class="quiz__layout" id="quiz-layout" hidden>
 				<aside class="quiz__sidebar" id="quiz-sidebar">
-					<button type="button" class="quiz__nav-toggle" id="quiz-nav-toggle" aria-expanded="false">Přehled otázek</button>
+					<button type="button" class="quiz__nav-toggle" id="quiz-nav-toggle" aria-expanded="true" aria-controls="quiz-nav-host">
+						<span class="quiz__nav-toggle-icon" aria-hidden="true">☰</span>
+						<span class="quiz__nav-toggle-text">Přehled otázek</span>
+					</button>
+
+					<div class="quiz__nav-tools" id="quiz-nav-tools">
+						<button type="button" class="quiz__nav-tool" id="quiz-nav-expand">Rozbalit vše</button>
+						<button type="button" class="quiz__nav-tool" id="quiz-nav-collapse">Sbalit vše</button>
+					</div>
+
 					<div class="quiz__nav-host" id="quiz-nav-host"></div>
 				</aside>
 
 				<div class="quiz__main">
 					<section class="quiz__panel" id="quiz-start" hidden>
-						<p class="quiz__lead">Zvolte režim testu:</p>
+						<h2 class="quiz__panel-title">Zvolte režim testu</h2>
 						<div class="quiz__modes">
-							<button type="button" class="quiz__mode-btn" data-mode="random40">40 náhodných otázek</button>
-							<button type="button" class="quiz__mode-btn" data-mode="all">Všechny otázky postupně</button>
+							<button type="button" class="quiz__mode-btn" data-mode="random40">
+								<span class="quiz__mode-name">40 náhodných otázek</span>
+								<span class="quiz__mode-hint">Náhodný výběr napříč všemi kapitolami</span>
+							</button>
+							<button type="button" class="quiz__mode-btn" data-mode="all">
+								<span class="quiz__mode-name">Všechny otázky postupně</span>
+								<span class="quiz__mode-hint">Celá sada v pořadí podle kapitol</span>
+							</button>
 							<!-- DOČASNÉ: zkušební režim pro ověření celého průchodu, později bude odstraněn. -->
-							<button type="button" class="quiz__mode-btn quiz__mode-btn--temporary" data-mode="demo3">Zkušební test (3 otázky)</button>
+							<button type="button" class="quiz__mode-btn quiz__mode-btn--temporary" data-mode="demo3">
+								<span class="quiz__mode-name">Zkušební test (3 otázky)</span>
+								<span class="quiz__mode-hint">Rychlé vyzkoušení celého průběhu</span>
+							</button>
 						</div>
 						<p class="quiz__lead">Nebo si otevřete libovolnou otázku z přehledu vlevo.</p>
 					</section>
 
 					<section class="quiz__panel" id="quiz-run" hidden>
 						<header class="quiz__progress">
-							<span id="quiz-position"></span>
-							<span id="quiz-score"></span>
+							<span class="quiz__position" id="quiz-position"></span>
+							<span class="quiz__score" id="quiz-score"></span>
 						</header>
 
 						<p class="quiz__context-note" id="quiz-context-note" hidden></p>
@@ -78,17 +96,17 @@
 						<div id="quiz-question-host"></div>
 
 						<div class="quiz__actions">
-							<button type="button" id="quiz-confirm">Potvrdit</button>
-							<button type="button" id="quiz-next">Další</button>
-							<button type="button" id="quiz-back-to-test" hidden>Zpět na otázku testu</button>
-							<button type="button" id="quiz-modes" hidden>Výběr režimu</button>
+							<button type="button" class="quiz__btn quiz__btn--primary" id="quiz-confirm">Potvrdit odpověď</button>
+							<button type="button" class="quiz__btn quiz__btn--secondary" id="quiz-next">Další</button>
+							<button type="button" class="quiz__btn quiz__btn--secondary" id="quiz-back-to-test" hidden>Zpět na otázku testu</button>
+							<button type="button" class="quiz__btn quiz__btn--secondary" id="quiz-modes" hidden>Výběr režimu</button>
 						</div>
 					</section>
 
 					<section class="quiz__panel" id="quiz-done" hidden>
 						<div id="quiz-result-host"></div>
 						<div class="quiz__actions">
-							<button type="button" id="quiz-new-test">Zahájit nový test</button>
+							<button type="button" class="quiz__btn quiz__btn--primary" id="quiz-new-test">Zahájit nový test</button>
 						</div>
 					</section>
 				</div>

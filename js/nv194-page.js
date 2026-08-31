@@ -19,9 +19,10 @@
 
 	var statusEl = document.getElementById('quiz-status');
 	var layoutEl = document.getElementById('quiz-layout');
-	var sidebarEl = document.getElementById('quiz-sidebar');
 	var navHost = document.getElementById('quiz-nav-host');
 	var navToggle = document.getElementById('quiz-nav-toggle');
+	var navExpandBtn = document.getElementById('quiz-nav-expand');
+	var navCollapseBtn = document.getElementById('quiz-nav-collapse');
 
 	var startPanel = document.getElementById('quiz-start');
 	var runPanel = document.getElementById('quiz-run');
@@ -259,10 +260,21 @@
 		refreshNav();
 	}
 
+	var NARROW_SCREEN = '(max-width: 900px)';
+
+	function isNarrowScreen() {
+		return window.matchMedia(NARROW_SCREEN).matches;
+	}
+
+	/** Přepne postranní panel. Na úzké obrazovce se panel překrývá s obsahem. */
+	function setNavOpen(open) {
+		layoutEl.classList.toggle('is-nav-open', open);
+		navToggle.setAttribute('aria-expanded', String(open));
+	}
+
 	function closeSidebarOnNarrowScreen() {
-		if (window.matchMedia('(max-width: 900px)').matches) {
-			sidebarEl.classList.remove('is-open');
-			navToggle.setAttribute('aria-expanded', 'false');
+		if (isNarrowScreen()) {
+			setNavOpen(false);
 		}
 	}
 
@@ -319,8 +331,15 @@
 	});
 
 	navToggle.addEventListener('click', function () {
-		var open = sidebarEl.classList.toggle('is-open');
-		navToggle.setAttribute('aria-expanded', String(open));
+		setNavOpen(!layoutEl.classList.contains('is-nav-open'));
+	});
+
+	navExpandBtn.addEventListener('click', function () {
+		navView.setAllChaptersOpen(true);
+	});
+
+	navCollapseBtn.addEventListener('click', function () {
+		navView.setAllChaptersOpen(false);
 	});
 
 	/* --- Načtení dat --- */
@@ -346,6 +365,7 @@
 
 			navView.render(window.NV194NavTree.build(questions, result.chapters));
 			layoutEl.hidden = false;
+			setNavOpen(!isNarrowScreen());
 
 			if (result.errors.length > 0) {
 				// Data se načtou i s chybami, uživatel je ale musí vidět.

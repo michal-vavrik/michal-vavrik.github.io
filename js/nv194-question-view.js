@@ -94,27 +94,30 @@ window.NV194QuestionView = (function () {
 			});
 
 			var letter = element('span', 'quiz-answer__letter');
-			letter.textContent = (LETTER_LABELS[answer.letter] || answer.letter) + ')';
+			letter.textContent = LETTER_LABELS[answer.letter] || answer.letter;
 
+			var body = element('span', 'quiz-answer__body');
 			var content = element('span', 'quiz-answer__content');
 			renderContent(answer.content, content, imageBase, 'Obrázek odpovědi ' +
 				(LETTER_LABELS[answer.letter] || answer.letter));
+			body.appendChild(content);
 
 			label.appendChild(checkbox);
 			label.appendChild(letter);
-			label.appendChild(content);
+			label.appendChild(body);
 			item.appendChild(label);
 
-			applyEvaluation(item, answer.letter, state);
+			applyEvaluation(item, body, answer.letter, state);
 
 			return item;
 		}
 
 		/**
-		 * Po potvrzení se obarví každá odpověď podle vyhodnocení:
+		 * Po potvrzení se každá odpověď obarví podle vyhodnocení:
 		 * správná zeleně (ať už byla zvolena, nebo ne), špatně zvolená červeně.
+		 * Slovní označení doplňuje barvu, aby výsledek nezáležel jen na barvě.
 		 */
-		function applyEvaluation(item, letter, state) {
+		function applyEvaluation(item, body, letter, state) {
 			if (!state.confirmed || !state.evaluation) {
 				return;
 			}
@@ -126,11 +129,21 @@ window.NV194QuestionView = (function () {
 				return;
 			}
 
+			var badge = element('span', 'quiz-answer__badge');
+
 			if (result.isCorrect) {
 				item.classList.add('is-correct');
+				badge.textContent = result.isSelected
+					? '✓ Správně'
+					: '✓ Správně (nezvoleno)';
 			} else if (result.isSelected) {
 				item.classList.add('is-wrong');
+				badge.textContent = '✗ Chybná volba';
+			} else {
+				return;
 			}
+
+			body.appendChild(badge);
 		}
 
 		function errorsLabel(count) {
@@ -149,17 +162,25 @@ window.NV194QuestionView = (function () {
 			var evaluation = state.evaluation;
 			result.hidden = false;
 
+			var icon = element('span', 'quiz-question__result-icon');
+			var message = element('span', 'quiz-question__result-text');
+
 			if (evaluation.isCorrect) {
 				result.classList.add('is-correct');
-				result.textContent = 'Správně, bez chyby.';
-				return;
+				icon.textContent = '✓';
+				message.textContent = 'Správně, bez chyby.';
+			} else {
+				result.classList.add('is-wrong');
+				icon.textContent = '✗';
+				message.textContent = 'Špatně – ' + errorsLabel(evaluation.errors) + '. Správně: ' +
+					question.correctAnswers.map(function (letter) {
+						return LETTER_LABELS[letter] || letter;
+					}).join(', ') + '.';
 			}
 
-			result.classList.add('is-wrong');
-			result.textContent = 'Špatně – ' + errorsLabel(evaluation.errors) + '. Správně: ' +
-				question.correctAnswers.map(function (letter) {
-					return LETTER_LABELS[letter] || letter;
-				}).join(', ') + '.';
+			result.textContent = '';
+			result.appendChild(icon);
+			result.appendChild(message);
 		}
 
 		return {

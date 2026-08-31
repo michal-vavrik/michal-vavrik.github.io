@@ -136,6 +136,14 @@ window.NV194NavView = (function () {
 				if (button) {
 					button.scrollIntoView({ block: 'nearest' });
 				}
+			},
+
+			/** Hromadně rozbalí nebo sbalí všechny kapitoly. */
+			setAllChaptersOpen: function (open) {
+				var chapters = root.querySelectorAll('.quiz-nav__chapter');
+				Array.prototype.forEach.call(chapters, function (details) {
+					details.open = open;
+				});
 			}
 		};
 	}
