@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>NV194</title>
 		<link rel="stylesheet" type="text/css" href="css/main.css">
+		<link rel="stylesheet" type="text/css" href="css/nv194.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 	</head>
 	
@@ -40,6 +42,69 @@
 
 		<script src="js/login-modal.js"></script>
 		<script src="js/menu.js"></script>
+
+		<main class="quiz">
+			<h1 class="quiz__title">NV 194/2022 – Testové otázky</h1>
+			<p class="quiz__subtitle">Procvičování otázek k odborné způsobilosti v elektrotechnice.</p>
+
+			<p class="quiz__status" id="quiz-status">Načítám otázky…</p>
+
+			<div class="quiz__layout" id="quiz-layout" hidden>
+				<aside class="quiz__sidebar" id="quiz-sidebar">
+					<button type="button" class="quiz__nav-toggle" id="quiz-nav-toggle" aria-expanded="false">Přehled otázek</button>
+					<div class="quiz__nav-host" id="quiz-nav-host"></div>
+				</aside>
+
+				<div class="quiz__main">
+					<section class="quiz__panel" id="quiz-start" hidden>
+						<p class="quiz__lead">Zvolte režim testu:</p>
+						<div class="quiz__modes">
+							<button type="button" class="quiz__mode-btn" data-mode="random40">40 náhodných otázek</button>
+							<button type="button" class="quiz__mode-btn" data-mode="all">Všechny otázky postupně</button>
+							<!-- DOČASNÉ: zkušební režim pro ověření celého průchodu, později bude odstraněn. -->
+							<button type="button" class="quiz__mode-btn quiz__mode-btn--temporary" data-mode="demo3">Zkušební test (3 otázky)</button>
+						</div>
+						<p class="quiz__lead">Nebo si otevřete libovolnou otázku z přehledu vlevo.</p>
+					</section>
+
+					<section class="quiz__panel" id="quiz-run" hidden>
+						<header class="quiz__progress">
+							<span id="quiz-position"></span>
+							<span id="quiz-score"></span>
+						</header>
+
+						<p class="quiz__context-note" id="quiz-context-note" hidden></p>
+
+						<div id="quiz-question-host"></div>
+
+						<div class="quiz__actions">
+							<button type="button" id="quiz-confirm">Potvrdit</button>
+							<button type="button" id="quiz-next">Další</button>
+							<button type="button" id="quiz-back-to-test" hidden>Zpět na otázku testu</button>
+							<button type="button" id="quiz-modes" hidden>Výběr režimu</button>
+						</div>
+					</section>
+
+					<section class="quiz__panel" id="quiz-done" hidden>
+						<div id="quiz-result-host"></div>
+						<div class="quiz__actions">
+							<button type="button" id="quiz-new-test">Zahájit nový test</button>
+						</div>
+					</section>
+				</div>
+			</div>
+		</main>
+
+		<script src="js/nv194-parser.js"></script>
+		<script src="js/nv194-evaluation.js"></script>
+		<script src="js/nv194-answer-state.js"></script>
+		<script src="js/nv194-quiz.js"></script>
+		<script src="js/nv194-images.js"></script>
+		<script src="js/nv194-nav-tree.js"></script>
+		<script src="js/nv194-nav-view.js"></script>
+		<script src="js/nv194-question-view.js"></script>
+		<script src="js/nv194-result-view.js"></script>
+		<script src="js/nv194-page.js"></script>
 
 	</body>
 </html>

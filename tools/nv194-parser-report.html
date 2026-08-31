@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>NV194 - kontrola parseru</title>
+	<style>
+		body { font-family: Consolas, "Courier New", monospace; margin: 2rem; background: #101418; color: #d7dee6; }
+		h1 { font-size: 1.2rem; }
+		pre { white-space: pre-wrap; line-height: 1.45; }
+		.ok { color: #6ddf6d; }
+		.fail { color: #ff6b6b; }
+	</style>
+</head>
+<body>
+	<h1>NV194 - kontrolní report parseru</h1>
+	<p>Stránku je nutné otevřít přes HTTP server (kvůli <code>fetch</code>), např. <code>python -m http.server</code> ze složky projektu.</p>
+	<pre id="report">Načítám…</pre>
+
+	<script src="../js/nv194-parser.js"></script>
+	<script src="../js/nv194-images.js"></script>
+	<script>
+		var SOURCE_URL = '../data/otazky.txt';
+		var IMAGE_BASE = '../data/obrazky/';
+
+		function pad(value, width) {
+			var text = String(value);
+			while (text.length < width) {
+				text = ' ' + text;
+			}
+			return text;
+		}
+
+		/* Ověří dostupnost obrázku načtením - spolehlivější než HEAD dotaz. */
+		function imageLoads(name) {
+			return new Promise(function (resolve) {
+				var source = window.NV194Images.resolve(name, IMAGE_BASE);
+				if (source === null) {
+					resolve(false);
+					return;
+				}
+				var probe = new Image();
+				probe.onload = function () { resolve(true); };
+				probe.onerror = function () { resolve(false); };
+				probe.src = source;
+			});
+		}
+
+		function checkImages(names) {
+			return Promise.all(names.map(imageLoads)).then(function (loaded) {
+				return {
+					unsafe: names.filter(function (name) { return !window.NV194Images.isSafeName(name); }),
+					unloadable: names.filter(function (name, index) { return !loaded[index]; })
+				};
+			});
+		}
+
+		function buildReport(result, imageCheck) {
+			var stats = result.stats;
+			var out = [];
+
+			out.push('=== PARSER NV194 - REPORT ===');
+			out.push('Zdroj: ' + SOURCE_URL);
+			out.push('');
+			out.push('Počet načtených otázek:            ' + stats.questionCount);
+			out.push('Počet kapitol:                     ' + stats.chapterCount);
+			out.push('Otázky s 1 správnou odpovědí:      ' + (stats.byCorrectCount[1] || 0));
+			out.push('Otázky se 2 správnými odpověďmi:   ' + (stats.byCorrectCount[2] || 0));
+			out.push('Otázky se 3 správnými odpověďmi:   ' + (stats.byCorrectCount[3] || 0));
+			out.push('Počet použitých obrázků:           ' + stats.uniqueImageCount);
+			out.push('  z toho odkazů v textu:           ' + stats.imageRefCount);
+			out.push('  otázek obsahujících obrázek:     ' + stats.questionsWithImages);
+			out.push('Počet chyb při parsování:          ' + stats.errorCount);
+			out.push('');
+
+			var otherCounts = Object.keys(stats.byCorrectCount).filter(function (key) {
+				return ['1', '2', '3'].indexOf(key) === -1 && stats.byCorrectCount[key] > 0;
+			});
+			if (otherCounts.length > 0) {
+				out.push('Otázky s jiným počtem správných odpovědí:');
+				otherCounts.forEach(function (key) {
+					out.push('  ' + key + ': ' + stats.byCorrectCount[key]);
+				});
+				out.push('');
+			}
+
+			out.push('Rozsah čísel otázek: ' + stats.minId + ' - ' + stats.maxId);
+			out.push('Chybějící čísla otázek: ' + (stats.missingIds.length ? stats.missingIds.join(', ') : 'žádné'));
+			out.push('Názvy obrázků s nebezpečnou cestou: ' +
+				(imageCheck.unsafe.length ? imageCheck.unsafe.join(', ') : 'žádné'));
+			out.push('Obrázky, které se nepodařilo načíst: ' +
+				(imageCheck.unloadable.length ? imageCheck.unloadable.join(', ') : 'žádné'));
+			out.push('');
+
+			out.push('=== SEZNAM CHYB ===');
+			if (result.errors.length === 0) {
+				out.push('Žádné chyby.');
+			} else {
+				result.errors.forEach(function (error) {
+					out.push('[' + error.code + '] otázka ' +
+						(error.questionId === null ? '-' : error.questionId) +
+						', řádek ' + error.line + ': ' + error.message);
+				});
+			}
+			out.push('');
+
+			out.push('=== POČTY OTÁZEK V KAPITOLÁCH ===');
+			result.chapters.forEach(function (chapter) {
+				out.push(pad(chapter.questionCount, 4) + '  ' + chapter.title);
+			});
+			out.push('');
+
+			out.push('=== UKÁZKA DATOVÉHO MODELU (otázka s obrázkem v textu) ===');
+			out.push(JSON.stringify(findQuestion(result, 267), null, 2));
+			out.push('');
+			out.push('=== UKÁZKA DATOVÉHO MODELU (obrázky jako obsah odpovědí) ===');
+			out.push(JSON.stringify(findQuestion(result, 498), null, 2));
+
+			return out.join('\n');
+		}
+
+		function findQuestion(result, id) {
+			return result.questions.filter(function (question) { return question.id === id; })[0] || null;
+		}
+
+		var target = document.getElementById('report');
+
+		fetch(SOURCE_URL)
+			.then(function (response) {
+				if (!response.ok) {
+					throw new Error('Nepodařilo se načíst ' + SOURCE_URL + ' (HTTP ' + response.status + ')');
+				}
+				return response.text();
+			})
+			.then(function (text) {
+				var result = window.NV194Parser.parseNV194(text);
+				return checkImages(result.stats.uniqueImages).then(function (imageCheck) {
+					target.textContent = buildReport(result, imageCheck);
+					target.className = (result.errors.length === 0 &&
+						imageCheck.unsafe.length === 0 &&
+						imageCheck.unloadable.length === 0) ? 'ok' : 'fail';
+				});
+			})
+			.catch(function (error) {
+				target.textContent = 'CHYBA: ' + error.message;
+				target.className = 'fail';
+			});
+	</script>
+</body>
+</html>

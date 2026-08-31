@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>NV194 - automatické testy</title>
+	<style>
+		body { font-family: Consolas, "Courier New", monospace; margin: 2rem; background: #101418; color: #d7dee6; }
+		h1 { font-size: 1.2rem; margin-bottom: 1rem; }
+		h2 { font-size: 1rem; margin: 1.5rem 0 0.5rem; }
+		#summary { font-size: 1.05rem; margin-bottom: 1rem; font-weight: bold; }
+		.ok { color: #6ddf6d; }
+		.fail { color: #ff6b6b; }
+		pre { white-space: pre-wrap; line-height: 1.45; margin: 0; }
+	</style>
+</head>
+<body>
+	<h1>NV194 – automatické testy</h1>
+	<p id="summary">Spouštím…</p>
+	<div id="suites"></div>
+
+	<script src="../js/nv194-parser.js"></script>
+	<script src="../js/nv194-evaluation.js"></script>
+	<script src="../js/nv194-answer-state.js"></script>
+	<script src="../js/nv194-quiz.js"></script>
+	<script src="../js/nv194-images.js"></script>
+	<script src="nv194-test-runner.js"></script>
+	<script src="nv194-evaluation.tests.js"></script>
+	<script src="nv194-images.tests.js"></script>
+	<script src="nv194-result.tests.js"></script>
+	<script>
+		var summary = document.getElementById('summary');
+		var suitesEl = document.getElementById('suites');
+
+		var suites = [
+			{ name: 'Vyhodnocení odpovědí', suite: window.NV194EvaluationTests },
+			{ name: 'Obrázky a struktura obsahu', suite: window.NV194ImagesTests },
+			{ name: 'Shrnutí dokončeného testu', suite: window.NV194ResultTests }
+		];
+
+		try {
+			var totals = { total: 0, failed: 0 };
+
+			suites.forEach(function (entry) {
+				var report = entry.suite.run();
+				totals.total += report.total;
+				totals.failed += report.failed;
+
+				var heading = document.createElement('h2');
+				heading.textContent = entry.name + ' – ' +
+					(report.failed === 0 ? 'OK (' + report.passed + '/' + report.total + ')'
+						: 'CHYBA (' + report.failed + ' z ' + report.total + ' neprošlo)');
+				heading.className = report.failed === 0 ? 'ok' : 'fail';
+
+				var detail = document.createElement('pre');
+				detail.className = report.failed === 0 ? 'ok' : 'fail';
+				detail.textContent = report.failed === 0
+					? report.results.map(function (item) { return 'OK   ' + item.name; }).join('\n')
+					: report.failures.map(function (item) {
+						return 'FAIL ' + item.name + '\n     ' + item.detail;
+					}).join('\n');
+
+				suitesEl.appendChild(heading);
+				suitesEl.appendChild(detail);
+			});
+
+			summary.textContent = totals.failed === 0
+				? 'OK – prošlo všech ' + totals.total + ' kontrol.'
+				: 'CHYBA – neprošlo ' + totals.failed + ' z ' + totals.total + ' kontrol.';
+			summary.className = totals.failed === 0 ? 'ok' : 'fail';
+		} catch (error) {
+			summary.textContent = 'CHYBA při spuštění testů: ' + error.message;
+			summary.className = 'fail';
+		}
+	</script>
+</body>
+</html>
