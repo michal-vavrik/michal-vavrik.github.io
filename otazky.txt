@@ -1,0 +1,3359 @@
+# Nařízení vlády č. 194/2022 Sb.
+
+1. Nařízení vlády č. 194/2022 Sb. stanovuje požadavky na odbornou způsobilost 
+a) fyzických osob, které vykonávají obsluhu elektrických zařízení 
+b) fyzických osob, které vykonávají práci na elektrických zařízeních 
+c) pracovníků, kteří se zabývají prodejem elektrických zařízení 
+správně: [a, b]
+
+2. Nařízení vlády č. 194/2022 Sb. stanovuje požadavky na odbornou způsobilost 
+a) osob, které se zabývají projektováním vyhrazených elektrických zařízení 
+b) pracovníků, kteří pracují v oboru normalizace 
+c) osob, které se zabývají řízením činností na vyhrazených elektrických zařízeních 
+správně: [a, c]
+
+3. Nařízení vlády č. 194/2022 Sb. stanovuje požadavky na odbornou způsobilost a dále stanoví 
+a) platové třídy pracovníků v návaznosti na získanou kvalifikaci 
+b) postup při provádění zkoušky odborné způsobilosti a způsob jejího vyhodnocení 
+c) povinnosti předsedy zkušební komise 
+správně: [b, c]
+
+4. Odborná způsobilost není vyžadována pro 
+a) obsluhu elektrického zařízení malého napětí 
+b) opravy elektrického zařízení nízkého napětí 
+c) obsluhu elektrického zařízení nízkého napětí 
+správně: [a, c]
+
+5. Osoby školené (seznámené) jsou podle § 19 zákona č. 250/2021 Sb. 
+a) osoby znalé 
+b) osoby, které nejsou znalé ani poučené, ale byly pro činnost zaškoleny 
+c) osoby poučené 
+správně: [b]
+
+6. Školení osob školených (seznámených) podle § 19 zákona č. 250/2021 Sb. 
+a) může provádět pouze revizní technik 
+b) není nikde předepsáno 
+c) se provádí v souladu se zákoníkem práce 
+správně: [c]
+
+7. § 4 nařízení vlády č. 194/2022 Sb. stanovuje požadavky pro získání kvalifikace 
+a) osob školených
+b) osob poučených 
+c) osob znalých 
+správně: [b]
+
+8. Osoby poučené musí být organizací v rozsahu své činnosti také 
+a) školeny o právních a ostatních předpisech k zajištění bezpečnosti a ochrany zdraví při práci 
+b) vybaveny platnými českými technickými normami 
+c) seznámeny s postupy poskytnutí první pomoci při úrazech el. proudem 
+správně: [a, c]
+
+9. Osoby poučené musí být organizací v rozsahu své činnosti také 
+a) školeny v oblasti příčin rizik na elektrických zařízeních 
+b) upozorněny na možné ohrožení elektrickými zařízeními 
+c) vždy vybaveny izolačními rukavicemi 
+správně: [a, b]
+
+10. Pro účely proškolení osob poučených (§ 4 nařízení vlády č. 194/2022 Sb.) se stanoví obsah a časový rozsah poučení 
+a) podle tabulky uvedené v zákoníku práce 
+b) s ohledem na charakter a rozsah činnosti, kterou mají osoby poučené vykonávat 
+c) s ohledem na počet školených pracovníků 
+správně: [b]
+
+11. Organizace je povinna zajistit ověřování znalostí osob poučených 
+a) vždy za čtyři roky 
+b) pouze jedenkrát, opakované ověřování znalostí není nutné 
+c) ve lhůtách, které určí osoba, která provedla ověření znalostí, ne delších než 3 roky
+správně: [c]
+
+12. Zápis o poučení a ověření znalostí osob poučených 
+a) vyhotoví osoba znalá, která poučení a ověření provedla 
+b) podepisuje pouze osoba, která poučení provedla 
+c) musí podepsat osoba poučená i osoba, která poučení a ověření znalostí provedla 
+správně: [a, c]
+
+13. Poučení a ověření znalostí osob poučených pro práce na elektrických zařízeních provádí pověřená osoba, a to 
+a) osoba znalá 
+b) osoba poučená 
+c) osoba školená (seznámená) 
+správně: [a]
+
+14. Kvalifikaci podle § 6 „elektrotechnik" může získat po úspěšném složení předepsané zkoušky 
+a) osoba, která dokončila alespoň půl roku z vysokoškolského studia oboru elektro 
+b) osoba, která má odbornou kvalifikaci (dokončené vzdělání) v oboru elektro 
+c) osoba, která má praxi stanovenou místním provozním bezpečnostním předpisem 
+správně: [b, c]
+
+15. Zaškolení a zkoušky osob s kvalifikací „elektrotechnik" 
+a) si musí zajišťovat každý zaměstnanec sám 
+b) je povinna zajistit organizace, pro kterou „elektrotechnik" vykonává činnosti 
+c) je povinen zajistit hlavní energetik organizace 
+správně: [b]
+
+16. Obsah a délku zaškolení pro osoby s kvalifikací „elektrotechnik" stanoví organizace s ohledem na charakter a rozsah činnosti, kterou mají osoby vykonávat. Dále je organizace povinna 
+a) zajistit nejméně jednou za pět let přezkoušení 
+b) zajistit každý rok přezkoušení 
+c) zajistit nejméně jednou za tři roky přezkoušení 
+správně: [c]
+
+17. Přezkoušení osob s kvalifikací „elektrotechnik" provede 
+a) tříčlenná zkušební komise, jejímž předsedou musí být revizní technik 
+b) externí právnická nebo podnikající fyzická osoba, která má v předmětu podnikání zajišťování školení a zkoušení nebo ověřování znalostí 
+c) revizní technik samostatně, komise není nutná 
+správně: [a, b]
+
+18. Předseda zkušební komise 
+a) nesmí pořídit o průběhu a obsahu zkoušky protokol 
+b) pořizuje o průběhu a obsahu zkoušky protokol 
+c) nemusí pořizovat žádný protokol o zkoušce 
+správně: [b]
+
+19. Osoby znalé jsou osoby, které splňují kvalifikaci podle těchto paragrafů nařízení vlády č. 194/2022 Sb. 
+a) § 6 (,,elektrotechnik"), § 7 (,,vedoucí elektrotechnik"), § 8 (,,revizní technik") 
+b) § 4 (osoba poučená) 
+c) § 3 
+správně: [a]
+
+20. ,,Vedoucí elektrotechnik" (§ 7) musí před získáním této kvalifikace dokončit praxi na elektrických zařízeních 
+a) bez ohledu na napětí minimálně 6 měsíců 
+b) do 1 000 V, bez nebezpečí výbuchu min. 2 roky, s výbuchem min. 3 roky 
+c) nad 1 000 V, v objektech s nebezpečím výbuchu minimálně v délce 4 roky 
+správně: [b, c]
+
+21. Přezkoušení osob s kvalifikací „vedoucí elektrotechnik" provede 
+a) nejméně čtyřčlenná zkušební komise 
+b) dvoučlenná zkušební komise, jejímž předsedou musí být revizní technik 
+c) tříčlenná zkušební komise, jejímž předsedou musí být revizní technik
+správně: [c]
+
+22. O úspěšném složení zkoušky obdrží přezkoušená osoba s kvalifikací ,,elektrotechnik" nebo „vedoucí elektrotechnik" 
+a) doklad o úspěšném složení zkoušky 
+b) osvědčení o úspěšném složení zkoušky 
+c) certifikát o úspěšném složení zkoušky 
+správně: [a]
+
+23. Doklad o úspěšném složení zkoušky osob s kvalifikací „elektrotechnik" nebo „vedoucí elektrotechnik" má platnost 
+a) 1 rok ode dne vydání 
+b) 3 roky ode dne vydání 
+c) 5 roků ode dne vydání 
+správně: [b]
+
+24. Pokud doklad o úspěšném složení zkoušky osoby s kvalifikací „elektrotechnik" nebo „vedoucí elektrotechnik" pozbude platnost, považuje se osoba za 
+a) osobu znalou 
+b) osobu poučenou 
+c) osobu školenou (seznámenou) 
+správně: [b]
+
+25. Předseda zkušební komise zajistí uchování protokolu o zkoušce 
+a) po dobu nejméně 6 let, nejdéle však 7 let 
+b) pouze do příštího přezkoušení 
+c) po dobu nejméně 10 roků 
+správně: [a]
+
+26. Kvalifikací „elektrotechnik" je označována 
+a) osoba znalá pro řízení činnosti dodavatelským způsobem 
+b) osoba znalá pro samostatnou činnost 
+c) osoba znalá pro řízení činnosti 
+správně: [b]
+
+27. Kvalifikací „vedoucí elektrotechnik" je označována 
+a) osoba poučená 
+b) osoba znalá pro samostatnou činnost 
+c) osoba znalá pro řízení činnosti 
+správně: [c]
+
+28. Osoba s kvalifikací „vedoucí elektrotechnik" může provádět 
+a) řízení činností a řízení provozu vyhrazených elektrických zařízení 
+b) projektování vyhrazených elektrických zařízení, které není předmětem autorizace 
+c) revize vyhrazených elektrických zařízení 
+správně: [a, b]
+
+29. Aby mohl být výsledek písemné části zkoušky vyhodnocen stupněm „vyhověl", musí mít zkoušený 
+a) minimálně 70% správných odpovědí 
+b) minimálně 80% správných odpovědí 
+c) všechny odpovědi správně 
+správně: [b]
+
+30. Aby mohl být výsledek ústní části zkoušky vyhodnocen stupněm „vyhověl", musí mít zkoušený 
+a) minimálně 50% správných odpovědí 
+b) minimálně 70% správných odpovědí 
+c) minimálně 80% správných odpovědí 
+správně: [c]
+
+31. Zkoušky a přezkoušení revizních techniků provádí 
+a) oblastní inspektorát práce 
+b) tříčlenná zkušební komise 
+c) pověřená organizace (Technická inspekce České republiky = TIČR)
+správně: [b, c]
+
+32. Projektování vyhrazených elektrických zařízení, které není předmětem autorizace, může provádět 
+a) vedoucí elektrotechnik 
+b) elektrotechnik 
+c) osoba poučená 
+správně: [a]
+
+33. Učitelé, kteří používají při výuce na školách elektrická zařízení pod napětím, jsou v používání zařízení zaškoleni a jejich znalost je nejméně jednou za tři roky ověřována, se považují pro tuto činnost za 
+a) osoby poučené 
+b) osoby s kvalifikací „elektrotechnik" 
+c) osoby s kvalifikací „vedoucí elektrotechnik" 
+správně: [b]
+
+34. Pracovníci výzkumných a vývojových ústavů, kteří mají vysokoškolské vzdělání, v rámci výuky složili zkoušky z elektrotechniky, elektroniky nebo fyziky, složili zkoušku v předepsaném rozsahu a vykonávají experimentální práci na vymezených vědeckých nebo vývojových pracovištích se považují v rámci těchto pracovišť za 
+a) osoby s kvalifikací „elektrotechnik" 
+b) osoby s kvalifikací „vedoucí elektrotechnik" 
+c) osoby s kvalifikací „revizní technik" 
+správně: [a]
+
+35. Absolventi přírodovědecké fakulty vysoké školy v oboru fyziky, kteří pracují jako asistenti laboratoří škol všech stupňů a jejichž znalost je nejméně jednou za tři roky ověřována, se považují na svých pracovištích 
+a) osoby s kvalifikací „elektrotechnik" 
+b) osoby s kvalifikací „vedoucí elektrotechnik" 
+c) osoby s kvalifikací „revizní technik" 
+správně: [b]
+
+36. Ověřování znalostí bezpečnostních předpisů souvisejících s činností učitelů, kteří používají při výuce na školách elektrická zařízení pod napětím provede 
+a) dvoučlenná zkušební komise 
+b) tříčlenná zkušební komise, jejímž předsedou musí být revizní technik 
+c) revizní technik samostatně, komise není nutná 
+správně: [b]
+
+37. Osoba poučená může (pokud je to v souladu s místními provozními bezpečnostními předpisy) provádět 
+a) práci podle pokynů na elektrických zařízení do 1 kV pod napětím 
+b) práci s dohledem na elektrických zařízení do 1 kV pod napětím 
+c) samostatnou obsluhu elektrických zařízení bez omezení napětí 
+správně: [c]
+
+38. Osoba poučená může (pokud je to v souladu s místními provozními bezpečnostními předpisy) provádět 
+a) práci podle pokynů na elektrických zařízení vysokého napětí bez napětí 
+b) práci s dohledem na elektrických zařízení vysokého napětí bez napětí 
+c) práci s dohledem na elektrických zařízení vysokého napětí pod napětím 
+správně: [b]
+
+39. Ověření znalostí zkouškou pro práce na elektrickém zařízení provozovatele přenosové a distribuční soustavy může provést 
+a) revizní technik samostatně (komise není nutná) 
+b) tříčlenná zkušební komise, jejímž předsedou musí být vždy revizní technik 
+c) tříčlenná zkušební komise, jejímž předsedou může být odpovědná osoba příslušného provozovatele, s kvalifikací minimálně „vedoucí elektrotechnik" 
+správně: [c]
+
+40. Osoby samostatně výdělečně činné 
+a) potřebují doklad o odborné způsobilosti pouze při žádosti o živnost, pak už ne 
+b) si musí zajistit zkoušky odborné způsobilosti samy pro sebe 
+c) pro sebe nepotřebují zkoušky odborné způsobilosti 
+správně: [b]
+
+41. Doklad o úspěšném složení zkoušky odborné způsobilosti 
+a) se již nevystavuje 
+b) vystavuje vždy dodatečně až zaměstnavatel, po předložení protokolu o zkoušce 
+c) vystavuje předseda zkušební komise
+správně: [c]
+
+42. Rozsah odborné způsobilosti se stanovuje podle 
+a) věku uchazeče 
+b) rozsahu napětí - buď do 1 kV AC a 1,5 kV DC, nebo bez omezení napětí 
+c) druhu - buď v objektech bez nebezpečí výbuchu, nebo s nebezpečím výbuchu 
+správně: [b, c]
+
+43. Minimální praxi pro osobu s kvalifikací „elektrotechnik" stanoví 
+a) odpovědná osoba v souladu s místním provozním bezpečnostním předpisem 
+b) tabulka v příloze nařízení vlády č. 194/2022 Sb. 
+c) vždy pouze předseda zkušební komise 
+správně: [a]
+
+44. Pokud osoba s kvalifikací „elektrotechnik" nemá žádnou praxi 
+a) nemůže tuto kvalifikaci získat 
+b) musí po dobu nejméně 1 roku pracovat s dohledem osoby znalé, která má praxi minimálně 2 roky 
+c) nesmí provádět práce pod napětím 
+správně: [b]
+
+45. Podle nařízení vlády č. 194/2022 Sb. jsou za osoby znalé považovány tyto osoby 
+a) ,,elektrotechnik" = osoba znalá pro samostatnou činnost 
+b) ,,vedoucí elektrotechnik" = osoba znalá pro řízení činnosti 
+c) revizní technik 
+správně: [a, b, c]
+
+46. Ústní pohovor při zkoušce z odborné způsobilosti k výkonu činností v elektrotechnice má být zaměřen 
+a) na znalosti základů elektrotechniky v rozsahu středoškolského vzdělání 
+b) na výsledky testu a případně na chyby učiněné v testu 
+c) na odbornou problematiku podle rozsahu a zaměření zkoušené osoby 
+správně: [b, c]
+
+47. Osoba s kvalifikací „vedoucí elektrotechnik" může vykonávat 
+a) veškeré činnosti, které může vykonávat „elektrotechnik" 
+b) řízení činností, řízení provozu a projektování vyhrazených elektrických zařízení, které není předmětem autorizace 
+c) revize elektrických zařízení 
+správně: [a, b]
+
+48. Výsledek zkoušky z odborné způsobilosti k výkonu činností v elektrotechnice se hodnotí stupněm 
+a) uspěl nebo neuspěl 
+b) vyhověl nebo nevyhověl 
+c) splnil nebo nesplnil 
+správně: [b]
+
+49. Při nevyhovujícím výsledku zkoušky z odborné způsobilosti k výkonu činností v elektrotechnice může být zkouška opakována 
+a) nejdříve za 12 měsíců od neúspěšného vykonání zkoušky 
+b) nejdříve za 6 měsíců od neúspěšného vykonání zkoušky 
+c) nejdříve za 15 dní od neúspěšného vykonání zkoušky 
+správně: [c]
+
+50. Před zahájením zkoušky musí žadatel předložit předsedovi komise 
+a) doklad o odborné nebo profesní kvalifikaci a doklad prokazující délku praxe 
+b) kopii dokladu o vzdělání, která nemusí být úředně ověřena 
+c) čestné prohlášení, že má odborné vzdělání odpovídající požadované kvalifikaci
+správně: [a]
+
+51. Před zahájením zkoušky musí žadatel předložit předsedovi komise 
+a) doklad o zdravotní způsobilosti 
+b) potvrzení zaměstnavatele o délce praxe, nebo čestné prohlášení o praxi 
+c) výpis z trestního rejstříku
+správně: [b]
+
+# ČSN EN 50110-1 ed. 3 - Obsluha a práce na el. zařízeních 
+
+52. Všechny osoby vykonávající práci na elektrickém zařízení 
+a) musí být poučeny o bezpečnostních předpisech 
+b) musí být poučeny o místních provozních a pracovních předpisech 
+c) musí být každý den přezkoušeny z místních bezpečnostních předpisů 
+správně: [a, b]
+
+53. Osoby vykonávající práci na elektrickém zařízení musejí 
+a) používat izolační rukavice po celou dobu práce, a to i při práci bez napětí 
+b) nosit výhradně pracovní oděv modré barvy 
+c) nosit oděv vhodný pro místo a podmínky, kde pracují 
+správně: [c]
+
+54. Ke každému elektrickému zařízení musí být k dispozici 
+a) aktuálnídokumentace 
+b) záznamy o stavu zařízení 
+c) záruční list, a to i po ukončení záruční doby 
+správně: [a, b]
+
+55. Osoby seznámené smějí u svítidel s ochranou před dotykem minimálně IP 2X nebo IP XXB v rozvodu nn provádět ve vypnutém stavu tyto činnosti: 
+a) vyměňovat světelné zdroje (žárovky, zářivky) 
+b) vyměňovat celá svítidla 
+c) vyměňovat startéry zářivek Poznámka PŠIS: Osoby seznámené se podle zákona č. 250/2021 Sb. nazývají také osoby školené. 
+správně: [a, c]
+
+56. Při zkoušení zařízení za použití vnějšího zdroje musí být zajištěno, že 
+a) k zařízení nemají přístup pracovníci poučení ani pracovníci znalí 
+b) zařízení je odpojeno od všech možných zdrojů napájení 
+c) místa odpojení mají dostatečnou izolaci 
+správně: [b, c]
+
+57. Při práci na elektrických soustavách s rizikem indukce z jiných soustav 
+a) se musí zřídit uzemnění v takových vzdálenostech, aby dostatečně omezilo potenciál mezi vodiči a zemí 
+b) se nesmí pracovat vůbec 
+c) se musí zřídit ekvipotenciální spojení pracoviště, aby bylo zabráněno ohrožení osob indukcí 
+správně: [a, c]
+
+58. Při práci na neizolovaných vodičích el. sítě, u kterých je nebezpečí zásahu bleskem, se musí práce ukončit 
+a) pokud se blýská 
+b) pokud je slyšet hřmění 
+c) pokud teplota vzduchu překročí 25° C 
+správně: [a, b]
+
+59. Osoba s odpovídajícím vzděláním, znalostmi a zkušenostmi, které jí umožňují vyhodnotit rizika a vyvarovat se nebezpečí, která může elektřina způsobit, je 
+a) osoba seznámená 
+b) osoba poučená 
+c) osoba znalá 
+správně: [c]
+
+60. Odpojení pro práci bez napětí mohou vykonat 
+a) osoby znalé 
+b) osoby poučené 
+c) osoby seznámené 
+správně: [a, b]
+
+61. Osoba přiměřeně poučená osobami znalými, což jí umožňuje vyhnout se nebezpečí, které elektřina může způsobit, je 
+a) osoba znalá 
+b) osoba seznámená 
+c) osoba poučená
+správně: [c]
+
+62. Opětovné připojení po práci bez napětí mohou vykonat 
+a) osoby znalé 
+b) osoby poučené 
+c) osoby seznámené 
+správně: [a, b]
+
+63. Nová elektrická zařízení musí být revidována 
+a) nejpozději do 1 roku od uvedení do provozu 
+b) nejpozději do 5 dnů od uvedení do provozu 
+c) před jejich uvedením do provozu 
+správně: [c]
+
+64. Elektrická zařízení musejí být znovu revidována vždy 
+a) po provedení opravy 
+b) po provedení úpravy 
+c) po rozšíření stávajícího zařízení 
+správně: [b, c]
+
+65. Aby bylo po opravě zaručeno, že jsou opravené části zařízení vhodné pro opětovné zapojení, 
+a) musí být provedena opakovaná revize elektrického zařízení 
+b) musí být provedena odpovídající měření, seřízení zařízení a ověřovací zkoušky 
+c) musí být zařízení označeno nápisem "Pozor, toto zařízení je po opravě!" 
+správně: [b]
+
+66. Stav elektrického zařízení po údržbě musí být stanoveným způsobem sdělen 
+a) osobě pověřené kontrolou elektrického zařízení během pracovní činnosti 
+b) vedení organizace 
+c) bezpečnostnímu technikovi 
+správně: [a]
+
+67. Před zahájením práce 
+a) musí být vždy zařízení vypnuto 
+b) musí být provedeno vyhodnocení rizik a stanoven pracovní postup 
+c) musí být na pracovišti přítomna osoba odpovědná za elektrické zařízení 
+správně: [b]
+
+68. U zařízení nízkého napětí, pokud je pojistka uložena v přístroji, který chrání osobu před přímým dotykem a možností účinku zkratu, může její výměnu vykonat 
+a) osoba seznámená bez ověření napětí 
+b) osoba poučená, ale až po ověření vypnutého stavu 
+c) pouze osoba znalá 
+správně: [a]
+
+69. Kryt je část elektrického zařízení, která zajišťuje 
+a) ochranu zařízení před určitými vnějšími vlivy 
+b) ochranu před přímým dotykem živých částí ze všech směrů 
+c) ochranu před přímým dotykem neživých částí 
+správně: [a, b]
+
+70. Zábrana se používá k zamezení přiblížení se k elektrickému zařízení nebo k jeho částem, které představují ohrožení. 
+a) Zábrana musí mít izolaci. 
+b) Zábrana může mít izolaci. 
+c) Zábrana nemusí mít izolaci. 
+správně: [b, c]
+
+71. Nízké napětí normálně není vyšší než 
+a) AC 230 V nebo DC 400 V 
+b) DC 1 000 V nebo AC 1500 V 
+c) AC 1 000 V nebo DC 1 500 V 
+správně: [c]
+
+72. Kdo zodpovídá za každou prováděnou činnost? 
+a) Vedoucí práce. 
+b) Osoba odpovědná za elektrické zařízení. 
+c) Pokud je činnost rozdělena, mohou být určeni další vedoucí práce, kteří jsou odpovědní za bezpečnost jednotlivých pracovních čet, a to pod vedením jedné koordinující osoby.
+správně: [a, c]
+
+73. Z osob určených pro práci na elektrickém zařízení, s ním nebo v jeho blízkosti, musí být dostatečný počet osob vyškolen tak, aby byly schopné poskytnout první pomoc 
+a) při poleptání kyselinou nebo louhem 
+b) při zranění způsobených elektrickým proudem 
+c) při popáleninách 
+správně: [b, c]
+
+74. Doporučuje se, aby pokyny pro poskytování první pomoci byly 
+a) vyvěšeny přímo na pracovišti (na plakátech nebo schématech) 
+b) předány osobám v rámci školení bezpečnosti práce 
+c) dostupné v elektronické podobě
+správně: [a, b]
+
+75. Vedoucí práce, osoba pověřená kontrolou elektrického zařízení během pracovní cmnostJ a osoba odpovědná za elektrické zařízení 
+a) musí být tatáž osoba 
+b) nesmí být tatáž osoba 
+c) může být tatáž osoba 
+správně: [c]
+
+76. Příprava na provedení složité pracovní činnosti 
+a) nemusí být provedena písemně 
+b) má být provedena písemně 
+c) musí být provedena písemně 
+správně: [c]
+
+77. Osoba znalá může stanovit postup, jak musí být práce prováděna bezpečně: 
+a) u jednoduchých zařízení pro provádění jednoduchých prací 
+b) i bez vědomí osoby odpovědné za elektrické zařízení 
+c) při údržbě, která je prováděna podle schválených postupů 
+správně: [a, c]
+
+78. Osoba odpovědná za elektrické zařízení musí být určena 
+a) pro každé elektrické zařízení 
+b) pouze pro elektrická zařízení vyrobená a zprovozněná před rokem 1997 
+c) pouze pro elektrická zařízení vn 
+správně: [a]
+
+79. Jestliže jsou na pracovišti osoby hovořící různými jazyky 
+a) vedoucí práce musí vždy hovořit česky 
+b) musí být na pracovišti tlumočník, který je současně vedoucím práce 
+c) musí být předem stanoven jazyk, kterému příslušné osoby rozumějí 
+správně: [c]
+
+80. Ústní předávání informací (osobně, telefonem, radiostanicí) 
+a) je dovoleno, ale příjemce musí informaci opakovat zpět vysílajícímu, který musí potvrdit, že byla správně přijata a pochopena 
+b) je povoleno pouze v situaci krajní nouze 
+c) je zakázáno 
+správně: [a]
+
+81. Opětovné zapnutí elektrického zařízení po ukončení práce 
+a) může být povoleno signály 
+b) nesmí být povoleno signály nebo dohodnutým dorozumíváním po odsouhlasených časových intervalech 
+c) může být provedeno až po písemném souhlasu majitele zařízení 
+správně: [b]
+
+82. Hořlavé materiály, které jsou v blízkosti elektrického zařízení, 
+a) musí být zabezpečeny tak, aby nemohlo dojít k jejich vznícení 
+b) se musí vždy zcela odstranit 
+c) musí být umístěny ve vzdálenosti minimálně 5 m od elektrického zařízení 
+správně: [a]
+
+83. Nářadí a výstroj se musí používat v souladu s instrukcemi nebo s návodem, který poskytl výrobce nebo dodavatel. Tyto instrukce nebo návod 
+a) nemusí být v jazyku země, kde se používají 
+b) musí být v jazyku země, kde se používají 
+c) vždy musí být v angličtině 
+správně: [b]
+
+84. Veškeré nářadí a ochranné prostředky pro práci na elektrickém zařízení musí být 
+a) uloženy v uzamčené skříňce 
+b) uloženy u vedoucího práce 
+c) udržované ve stavu vhodném pro toto použití
+správně: [c]
+
+85. Nouzový provoz elektrických rozvodných sítí musí být řízen 
+a) osobami seznámenými nebo poučenými 
+b) pouze osobami znalými 
+c) osobami znalými nebo poučenými 
+správně: [c]
+
+86. Měření fyzikálních veličin v elektrickém zařízení mohou provádět 
+a) pouze osoby znalé 
+b) osoby znalé nebo osoby poučené 
+c) osoby seznámené nebo osoby poučené 
+správně: [b]
+
+87. Osoby seznámené mohou provádět měření na elektrických zařízeních 
+a) pouze podle pokynů osoby znalé 
+b) pouze s dohledem osoby znalé 
+c) pouze pod dozorem osoby znalé Poznámka PŠIS: Osoby seznámené se podle zákona č. 250/2021 Sb. nazývají také osoby školené. 
+správně: [c]
+
+88. Práce podle pokynů je práce, 
+a) pro kterou jsou dány jen nejnutnější pokyny 
+b) pro kterou musejí být vydány podrobné pokyny 
+c) pro kterou je vždy nutno zadat pokyny písemnou formou 
+správně: [a]
+
+89. Při práci podle pokynů odpovídá za dodržování bezpečnostních předpisů 
+a) ten, kdo práci zadal 
+b) pracující osoba 
+c) organizace 
+správně: [b]
+
+90. U vchodu, na přístupových cestách a v prostoru obsluhy zařízení nesmí být umístěny 
+a) předměty zabraňující v přístupu 
+b) hořlavé materiály 
+c) svítidla nouzového osvětlení 
+správně: [a, b]
+
+91. Při práci s dohledem odpovídá za dodržování bezpečnostních předpisů 
+a) ten, kdo práci zadal 
+b) pracující osoba 
+c) organizace 
+správně: [b]
+
+92. Práce pod dozorem je práce, která se provádí 
+a) za občasné kontroly osoby, která je pověřena dozorem 
+b) výhradně v přítomnosti pracovníků ITI 
+c) za trvalé přítomnosti osoby, která je pověřena dozorem 
+správně: [c]
+
+93. Při práci pod dozorem odpovídá za dodržování bezpečnostních předpisů 
+a) osoba pověřená dozorem 
+b) pracující osoba 
+c) osoba, kterou určí dozor 
+správně: [a]
+
+94. Školení, instruktáž a zácvik prováděné prokazatelně musí být doloženy záznamem, ze kterého je patrno, co bylo předmětem poučení, a který 
+a) stačí podepsat pouze osobou, která školení prováděla 
+b) stačí podepsat pouze osobou, která byla školena 
+c) musí být podepsán školícím i školeným 
+správně: [c]
+
+95. Pokud jsou na elektrickém zařízení vykonávány údržbové práce 
+a) musí být vždy celé zařízení odpojeno od napájení 
+b) musí být přesně stanovena část zařízení, na které se činnost provádí 
+c) musí být jmenována osoba odpovědná za tyto práce 
+správně: [b, c]
+
+96. Při práci pod napětím 
+a) musí být zajištěno stabilní postavení, které pracující osobě umožňuje mít obě ruce volné 
+b) musí být vždy osobně přítomen vedoucí práce 
+c) musí mít pracující osoba vhodné osobní ochranné prostředky a nemá mít na sobě žádné kovové předměty
+správně: [a, c]
+
+97. Práce, při které se pracující osoba dotýká živých částí nebo zasahuje částmi těla nebo nářadím do ochranného prostoru, se nazývá 
+a) práce pod napětím 
+b) práce v blízkosti 
+c) práce zakázaná (Nápověda: Ochranný prostor je prostor, který obklopuje živé části až do vzdálenosti DL od povrchu živé části) 
+správně: [a]
+
+98. Práce v blízkosti živých částí je taková práce, při které pracující osoba sice nezasahuje do ochranného prostoru, ale 
+a) pracující osoba je v zóně přiblížení 
+b) dotýká se živých částí nářadím 
+c) pracující osoba částí těla nebo nářadím zasahuje do zóny přiblížení 
+správně: [a, c]
+
+99. Zóna přiblížení je oblast, která obklopuje 
+a) živou část 
+b) ochranný prostor až do vzdálenosti Dv od živé části 
+c) pracující osobu 
+správně: [b]
+
+100. Práce na elektrickém zařízení má být zastavena 
+a) při husté mlze 
+b) za silného větru 
+c) v noci 
+správně: [a, b]
+
+101. Mlha se považuje za hustou zejména tehdy, pokud 
+a) není vidět dále než 25 m 
+b) není vidět předměty, které jsou ve vzdálenosti větší než 20 m 
+c) vedoucí práce nevidí osoby a živé části, na kterých, nebo v blízkosti kterých se má pracovat 
+správně: [c]
+
+102. Pokud některá pracující osoba uvidí blesk a uslyší hřmění, musí se zastavit práce 
+a) na vodičích venkovního vedení 
+b) na napájecích stanicích spojených s vodiči venkovního vedení 
+c) na všech elektrických zařízeních, včetně všech zařízení uvnitř budov 
+správně: [a, b]
+
+103. Pro zvyšování a udržování odbornosti osob provádějících práce pod napětím musí být vytvořen speciální výukový program. Náplní musí být nejen teoretické znalosti ale i praktická cvičení. Stupeň způsobilosti má být potvrzen oprávněním pro práci pod napětím. To se týká 
+a) osob znalých a poučených pro práci pod napětím 
+b) pouze osob znalých pro práci pod napětím 
+c) pouze vedoucího práce 
+správně: [a]
+
+104. Je-li na základě předpisu požadováno pověření k práci pod napětím, je vhodné tato oprávnění ověřovat 
+a) před každým započetím práce 
+b) po uplynutí 12 měsíců 
+c) po uplynutí 3 roků 
+správně: [b]
+
+105. Napětí se považuje za vysoké (vn), pokud je vyšší než 
+a) DC 1000 V 
+b) AC 1000 V 
+c) DC 1500 V 
+správně: [b, c]
+
+106. U zařízení vysokého napětí může výměnu pojistek v souladu s odpovídajícími pracovními postupy vykonat 
+a) osoba znalá 
+b) osoba poučená 
+c) osoba seznámená
+správně: [a, b]
+
+107. Jestliže je pracoviště při práci na zařízení vn tak rozsáhlé, že nedovoluje vedoucímu práce zajistit všude dozor nad pracovní činností 
+a) musí práci ukončit 
+b) musí prováděním dozoru pověřit další osobu 
+c) musí práci každou hodinu na 10 minut přerušit 
+správně: [b]
+
+108. Při práci na zařízeních vn se musí uzemnit a zkratovat 
+a) všechny části 
+b) pouze živé části 
+c) pouze neživé části 
+správně: [a]
+
+109. Uzemňovací a zkratovací zařízení musí být spojeno 
+a) nejprve s vodiči vypnutého zařízení a pak s uzemňovací soustavou 
+b) nejprve s uzemňovací soustavou a pak se všemi vodiči vypnutého zařízení 
+c) současně s uzemňovací soustavou i se všemi vodiči vypnutého zařízení 
+správně: [b]
+
+110. Uzemnění a zkratování vypnutých částí zařízení vn musí být provedeno 
+a) co nejdále od pracoviště 
+b) na pracovišti (pokud to není na pracovišti možné, tak na dohled z pracoviště) 
+c) maximálně 1,5 m od pracoviště 
+správně: [b]
+
+111. Uzemňovací a zkratovací zařízení se musí dimenzovat tak, aby odolalo 
+a) dvojnásobku zkratového proudu v tom místě, ve kterém je instalováno 
+b) jmenovitému proudu v tom místě, ve kterém je instalováno 
+c) zkratovému proudu v tom místě, ve kterém je instalováno 
+správně: [c]
+
+112. Odstranit zkratovací zařízení po dobu provádění prací na zařízení vn je 
+a) povoleno kdykoliv 
+b) povoleno z důvodu měření nebo zkoušení, musí však být přijata taková opatření, aby bylo zabráněno nebezpečí zranění 
+c) zakázáno 
+správně: [b]
+
+113. Pokud jsou k uzemnění a zkratování elektrického zařízení použity dálkově ovládané uzemňovače 
+a) musí být poloha uzemňovače spolehlivě signalizována 
+b) považuje se zařízení za nezajištěné 
+c) musí být použit dvojnásobný počet zkratovacích zařízení než obvykle 
+správně: [a]
+
+114. Nebezpečí v blízkosti živých částí pod napětím se odstraňuje použitím zábran, přepážek, krytů nebo izolačním zakrytím. Jestliže tato opatření nemohou být provedena, musí být ochrana zajištěna dodržením bezpečné vzdálenosti od živých částí větší než DL . Při jmenovitém napětí 6 kV je tato vzdálenost 
+a) 3 cm 
+b) 9 cm 
+c) 25 cm 
+správně: [b]
+
+115. Nebezpečí v blízkosti živých částí pod napětím se odstraňuje použitím zábran, přepážek, krytů nebo izolačním zakrytím. Jestliže tato opatření nemohou být provedena, musí být ochrana zajištěna dodržením bezpečné vzdálenosti od živých částí větší než DL . Při jmenovitém napětí 22 kV je tato vzdálenost 
+a) 10 cm 
+b) 16 cm 
+c) 26 cm 
+správně: [c]
+
+116. Nebezpečí v blízkosti živých částí pod napětím se odstraňuje použitím zábran, přepážek, krytů nebo izolačním zakrytím. Jestliže tato opatření nemohou být provedena, musí být ochrana zajištěna dodržením bezpečné vzdálenosti od živých částí větší než DL . Při jmenovitém napětí 35 kV je tato vzdálenost 
+a) 20 cm 
+b) 37 cm 
+c) 85 cm
+správně: [b]
+
+117. Nebezpečí v blízkosti živých částí pod napětím se odstraňuje použitím zábran, přepážek, krytů nebo izolačním zakrytím. Jestliže tato opatření nemohou být provedena, musí být ochrana zajištěna dodržením bezpečné vzdálenosti od živých částí větší než DL . Při jmenovitém napětí 400 kV je tato vzdálenost 
+a) 120 cm 
+b) 260 cm 
+c) 350 cm 
+správně: [b]
+
+118. K zábranám se může pracující přiblížit při práci nebo obsluze 
+a) na vzdálenost 20 cm 
+b) až na dotyk, avšak pouze u zařízení do 400 V 
+c) až na dotyk 
+správně: [c]
+
+119. Zóna přiblížení je oblast obklopující ochranný prostor. Vnější hranice zóny přiblížení je ve vzdálenosti Dv od živé části. Při jmenovitém napětí soustavy 6 kV je tato vzdálenost 
+a) 100 cm 
+b) 112 cm 
+c) 126 cm 
+správně: [b]
+
+120. Zóna přiblížení je oblast obklopující ochranný prostor. Vnější hranice zóny přiblížení je ve vzdálenosti Dv od živé části. Při jmenovitém napětí soustavy 22 kV je tato vzdálenost 
+a) 100 cm 
+b) 112 cm 
+c) 126 cm 
+správně: [c]
+
+121. Zóna přiblížení je oblast obklopující ochranný prostor. Vnější hranice zóny přiblížení je ve vzdálenosti Dv od živé části. Při jmenovitém napětí soustavy 35 kV je tato vzdálenost 
+a) 137 cm 
+b) 250 cm 
+c) 460 cm 
+správně: [a]
+
+122. Zóna přiblížení je oblast obklopující ochranný prostor. Vnější hranice zóny přiblížení je ve vzdálenosti Dv od živé části. Při jmenovitém napětí soustavy 400 kV je tato vzdálenost 
+a) 460 cm 
+b) 520 cm 
+c) 650 cm 
+správně: [a]
+
+123. Elektrická zařízení provedená podle norem platných v době jejich vzniku, která však nevyhovují dnes platným elektrotechnickým normám, je dále dovoleno provozovat 
+a) po dobu maximálně 30 dnů 
+b) pokud bezprostředně neohrožují bezpečnost osob a věcí 
+c) pokud budou obsluhována pouze pracovníky znalými s vyšší kvalifikací 
+správně: [b]
+
+124. Při zajišťování pracoviště pomocí zkratovací soupravy se předem připravená zkratovací zařízení po odzkoušení beznapěťového stavu nejdříve spojí se zemí a potom se připojí na všechny vodiče vypnutého zařízení. Toto musí být provedeno 
+a) nejpozději do 45 minut po odzkoušení beznapěťového stavu 
+b) až po nahlášení výsledku odzkoušení beznapěťového stavu provozovateli zařízení 
+c) ihned po odzkoušení beznapěťového stavu 
+správně: [c]
+
+125. Při přerušení práce prováděné pod dozorem opustí celá pracovní skupina své pracoviště společně. V přestávce, v době nepřítomnosti pracovníka pověřeného dozorem 
+a) může na pracoviště vstoupit bez vědomí dozoru pouze osoba znalá 
+b) nesmí nikdo z pracujících vstoupit na pracoviště 
+c) nesmí nikdo z pracujících opustit pracoviště
+správně: [b]
+
+# ČSN 33 2000-4-41 ed. 3 Ochrana před úrazem elektrickým proudem (podle normy vydané v lednu 2018) 
+
+126. Základním pravidlem ochrany před úrazem elektrickým proudem je to, že: 
+a) nebezpečné živé části nesmějí být za normálních podmínek přístupné 
+b) přístupné vodivé části nesmějí být nebezpečné ani za podmínek jedné poruchy 
+c) veškerá zařízení musí být napájena pouze ze zdroje bezpečného napětí 
+správně: [a, b]
+
+127. Ochranné opatření „automatické odpojení od zdroje" 
+a) je dovoleno pouze pro osoby znalé 
+b) je dovoleno obecně 
+c) je dovoleno pouze pro osoby znalé s vyšší kvalifikací 
+správně: [b]
+
+128. Klasifikace vnějších vlivů a způsob volby a provedení elektrické instalace s ohledem na vnější vlivy se provádí podle 
+a) ČSN 33 1500 
+b) ČSN 33 2000-3 
+c) ČSN 33 2000-5-51 ed. 3 
+správně: [c]
+
+129. Úraz elektrickým proudem může být způsoben 
+a) proudem protékajícím postiženým tělem 
+b) v důsledku jiných nežádoucích účinků elektrického proudu (např. popálením) 
+c) působením elektrického či elektromagnetického pole 
+správně: [a, b, c]
+
+130. Proud protéká lidským tělem například při 
+a) dotyku nebezpečných živých částí, které mají potenciál proti zemi 
+b) současném dotyku nebezpečných živých částí různé polarity nebo různých potenciálů 
+c) dotyku neživých částí, na kterých se při poruše mohou objevit nebezpečná napětí 
+správně: [a, b, c]
+
+131. Lidé a hospodářská zvířata musí být chráněni před nebezpečím, které může nastat při dotyku nebezpečných živých částí alespoň jedním z těchto způsobů 
+a) zabráněním vzniku možnosti průtoku proudu tělem (např. izolací živých částí) 
+b) upozorněním na hrozící nebezpečí úrazu elektrickým proudem 
+c) omezením proudu, který by mohl téci tělem na úroveň nižší, než je proud způsobující úraz 
+správně: [a, c]
+
+132. Obecně jsou dovolena tato ochranná opatření: 
+a) automatické odpojení od zdroje 
+b) dvojitá nebo zesílená izolace 
+c) elektrické oddělení pro napájení jednoho spotřebiče 
+správně: [a, b, c]
+
+133. Ochrana před přímým dotykem neboli před dotykem živých částí se nazývá 
+a) ochrana živých částí 
+b) základní ochrana 
+c) ochrana neživých částí 
+správně: [b]
+
+134. Ochrana před nebezpečným dotykem neživých částí se nazývá 
+a) ochrana živých částí 
+b) ochrana neživých částí 
+c) ochrana při poruše 
+správně: [c]
+
+135. Neživé části, které jsou současně přístupné dotyku, 
+a) musí být spojeny se stejnou uzemňovací soustavou 
+b) nesmí být spojeny se stejnou uzemňovací soustavou 
+c) nesmí být vzájemně vodivě spojeny 
+správně: [a]
+
+136. Ochrana malým napětím je ochranné opatření, které se používá v obvodech 
+a) SELV 
+b) PELV 
+c) FELV 
+správně: [a, b]
+
+137. Funkční malé napětí (FELV) 
+a) nesmí být vyšší než AC 50 V 
+b) nesmí být vyšší než AC 12 V 
+c) nesmí být vyšší než DC 120 V 
+správně: [a, c]
+
+138. Opatření na ochranu při poruše (ochranu před nepřímým dotykem) mohou být vynechána 
+a) u neživých částí, které mají omezené rozměry (přibližně 50 mm x 50 mm) 
+b) u krytů elektromotorů 
+c) u kovových konzol pro upevnění izolátorů venkovního vedení, které jsou připevněny k budově a jsou chráněny polohou 
+správně: [a, c]
+
+139. Zábrany se mohou použít, pokud jsou instalace přístupné 
+a) osobám seznámeným 
+b) osobám znalým nebo poučeným 
+c) osobám pracujícím pod dozorem nebo dohledem osob znalých 
+správně: [b, c]
+
+140. Ochrana polohou se může použít, pokud jsou instalace přístupné 
+a) osobám znalým nebo poučeným 
+b) osobám seznámeným 
+c) osobám pracujícím pod dozorem nebo dohledem osob znalých 
+správně: [a, c]
+
+141. V každé budově se musí s hlavní uzemňovací svorkou spojit 
+a) vstupující kovová potrubí (voda, plyn, ... ) 
+b) všechny vodivé části do vzdálenosti 50 m 
+c) přístupná konstrukční výztuž betonu 
+správně: [a, c]
+
+142. S hlavní uzemňovací svorkou se nemusí spojovat 
+a) vstupující potrubí která nejsou kovová 
+b) vstupující kovová potrubí, která mají na svém vstupu izolační vložku 
+c) přístupná konstrukční výztuž betonu 
+správně: [a, b]
+
+143. Živé částí obvodů SELV musí splňovat také tyto podmínky 
+a) musí být odděleny ochranným oddělením od živých části jiných obvodů, které nejsou SELV nebo PELV 
+b) neživé části musí být spojeny se zemí 
+c) neživé části nesmějí být spojeny se zemí 
+správně: [a, c]
+
+144. Z označení obvodů zkratkou SELV vyplývá, že se jedná o 
+a) neuzemněné obvody 
+b) uzemněné obvody 
+c) obvody s omezením ustáleného proudu 
+správně: [a]
+
+145. Z označení obvodů zkratkou PELV vyplývá, že se jedná o 
+a) neuzemněné obvody 
+b) obvody, které mohou být uzemněné 
+c) obvody s omezením ustáleného proudu 
+správně: [b]
+
+146. Zdrojem napětí pro obvod SELV může být 
+a) bezpečnostní ochranný transformátor (podle ČSN EN 61558-2-6 ed. 2) 
+b) autotransformátor se vstupem na vyšší napětí než je výstup SELV 
+c) elektrochemický zdroj (např. baterie) 
+správně: [a, c]
+
+147. Vodiče obvodů SELV se mají prostorově oddělovat od vodičů jiných obvodů. Využít žíly ve vícežilovém kabelu pro vedení vodičů SEL V společně s vodiči jiných obvodů s napětím vyšším, než je napětí napěťového pásma I 
+a) nelze 
+b) lze, ale vodiče SELV musejí být izolovány na nejvyšší použité napětí 
+c) lze pouze tehdy, pokud jsou obvody SELV napájeny střídavým napětím o hodnotě menší než 6V 
+správně: [b]
+
+148. Vidlice a zásuvky v sítích SELV musejí být s jinými obvody nezáměnné a 
+a) nesmějí mít kontakt pro ochranný vodič 
+b) musejí mít kontakt pro ochranný vodič 
+c) mohou mít kontakt pro ochranný vodič
+správně: [a]
+
+149. Přesahuje-li napětí obvodu SELV 25 V střídavého nebo 60 V stejnosměrného napětí, musí být základní ochrana zajištěna 
+a) doplňkovou izolací 
+b) přepážkami a kryty 
+c) základní izolací, která vyhovuje požadavkům příslušných norem
+správně: [b, c]
+
+150. Základní ochrana se u obvodů SELV a PELV nevyžaduje, pokud jmenovité napětí sítí SELV a PELV nepřesahuje 
+a) pro střídavé napětí 12 V 
+b) pro stejnosměrné napětí 30 V 
+c) pro stejnosměrné napětí 50 V 
+správně: [a, b]
+
+151. Obvody SELV musí mít mezi živými částmi a zemí 
+a) dvojitou izolaci 
+b) zesílenou izolaci 
+c) základní izolaci 
+správně: [c]
+
+152. Zásuvky a vidlice v sítích SELV a PELV musí splňovat tyto požadavky 
+a) vidlice nesmí být možné zasunout do zásuvek sítí o jiném napětí 
+b) zásuvky musí umožnit použití běžných vidlic pro sítě nízkého napětí (230 V) 
+c) zásuvky musí vylučovat použití vidlice pro jiné napětí 
+správně: [a, c]
+
+153. Ochranné oddělení vedení obvodů SELV a PELV od živých částí jiných obvodů, které mají alespoň základní izolaci, může být dosaženo tím, že 
+a) izolované vodiče obvodů SELV a PELV budou uzavřeny v nekovovém plášti 
+b) obvody SELV a PELV budou napájeny výhradně z autotransformátoru 
+c) bude provedeno prostorové oddělení od vodičů s jiným napětím
+správně: [a, c]
+
+154. Maximální hodnota napětí v sítích SELV nebo PELV je omezena na 
+a) 50 V střídavého napětí 
+b) 120 V stejnosměrného napětí 
+c) 75 V střídavého napětí 
+správně: [a, b]
+
+155. Použití ochrany malým napětím SELV a PELV je považováno za ochranné opatření, které 
+a) zajišťuje pouze základní ochranu 
+b) je účinné za jakýchkoliv okolností 
+c) zajišťuje pouze ochranu při poruše 
+správně: [b]
+
+156. Obvody FELV jsou takové obvody, 
+a) které užívají napětí maximálně AC SOV nebo DC 120V, avšak nesplňují všechny požadavky pro obvody SELV nebo PELV 
+b) jejichž střídavé napětí není nižší než 200 V 
+c) jejichž stejnosměrné napětí překračuje hodnotu 250 V 
+správně: [a]
+
+157. Neživé části zařízení obvodu FELV 
+a) musí být spojeny s ochranným vodičem vstupního (primárního) obvodu zdroje. Předpokládá se, že vstupní obvod je chráněn automatickým odpojením od zdroje. 
+b) nesmí být spojeny s ochranným vodičem 
+c) musí být spojeny s krajním vodičem soustavy 
+správně: [a]
+
+158. Vidlice a zásuvky pro obvody FELV musí vyhovovat těmto požadavkům 
+a) vidlice nelze zasunout do zásuvek sítí o jiných napětích 
+b) zásuvky nesmí mít ochranný kontakt 
+c) zásuvky musí mít ochranný kontakt 
+správně: [a, c]
+
+159. Základní ochranu (živých částí) lze zajistit také 
+a) nulováním 
+b) zábranou 
+c) polohou (umístění mimo dosah) 
+správně: [b, c]
+
+160. Základní ochranu (živých částí) lze zajistit také 
+a) izolací 
+b) kryty nebo přepážkami 
+c) automatickým odpojením od zdroje
+správně: [a, b]
+
+161. Ochrana izolací živých částí musí být provedena tak, že živé části musí být úplně pokryty izolací, 
+a) kterou lze sejmout a opět nasadit pouze s použitím nástrojů 
+b) kterou je možno odstranit pouze jejím zničením 
+c) kterou lze sejmout a opět nasadit bez použití nástrojů 
+správně: [b]
+
+162. Při ochraně izolací živých částí se za přiměřenou izolaci před nebezpečím úrazu elektrickým proudem při normálním provozu nepovažují 
+a) izolace zhotovené z PVC 
+b) nátěry a barvy 
+c) laky a podobné prostředky (smalt) 
+správně: [b, c]
+
+163. Dvojitá izolace se skládá 
+a) ze základní izolace a přídavné izolace 
+b) ze základní izolace a doplňkové izolace 
+c) z přídavné izolace a doplňkové izolace 
+správně: [a]
+
+164. Pokud se tím zajistí ochrana před úrazem elektrickým proudem ve stejné míře, jako zajišťuje dvojitá izolace, lze místo dvojité izolace použít 
+a) pracovní izolace 
+b) zesílené izolace 
+c) základní izolace 
+správně: [b]
+
+165. Elektrická zařízení, která mají dvojitou nebo zesílenou izolaci se z hlediska ochrany nazývají 
+a) zařízení třídy ochrany I 
+b) zařízení třídy ochrany II 
+c) zařízení třídy ochrany III 
+správně: [b]
+
+166. Elektrická zařízení, která mají dvojitou nebo zesílenou izolaci se označují značkou 
+a) [obr. 1.png] 
+b) [obr. 2.png] 
+c) [obr. 3.png] 
+správně: [b]
+
+167. Základní izolace musí být navržena 
+a) pro jmenovité izolační napětí, které je pro obvod stanoveno, s ohledem na možné přepětí 
+b) pro dvojnásobek jmenovitého izolačního napětí 
+c) pro pětinásobek jmenovitého izolačního napětí 
+správně: [a]
+
+168. Přídavná izolace musí být konstruována 
+a) alespoň pro střídavé napětí 65 V 
+b) alespoň pro stejná elektrická namáhání, jaká jsou stanovena pro základní izolaci 
+c) alespoň pro střídavé napětí 200 V 
+správně: [b]
+
+169. Při použití ochrany kryty nebo přepážkami musí být živé části uvnitř krytů nebo za přepážkami, které zajišťují krytí 
+a) alespoň IP XXB nebo IP 2X 
+b) alespoň IP XXC nebo IP 3X 
+c) alespoň IP XXD nebo IP 4X 
+správně: [a]
+
+170. Při použití ochrany kryty nebo přepážkami musí vodorovný horní povrch krytů nebo přepážek, které jsou snadno přístupné, zajišťovat stupeň krytí alespoň 
+a) IP XXB nebo IP 2X 
+b) IP XXC nebo IP 3X 
+c) IP XXD nebo IP 4X
+správně: [c]
+
+171. Zábrany jsou určeny k tomu, aby zabránily 
+a) jakémukoliv dotyku živých částí 
+b) nahodilému dotyku živých částí 
+c) úmyslnému dotyku (záměrným obejitím přepážky) 
+správně: [b]
+
+172. Zábrany musí bránit 
+a) úmyslnému přiblížení osoby k živých částem 
+b) neúmyslnému přiblížení těla k živým částem 
+c) nahodilému dotyku živých částí během činnosti zařízeních pod napětím v běžném provozu 
+správně: [b, c]
+
+173. Ochranu zábranou lze jako základní ochranu použít pouze v instalacích přístupných 
+a) osobám znalým nebo poučeným 
+b) osobám seznámeným pracujícím podle pokynů osob znalých 
+c) osobám pracujícím pod dozorem nebo dohledem osob znalých nebo poučených 
+správně: [a, c]
+
+174. Zábrany musí být zhotoveny 
+a) jako pevné, nebo i tak, že mohou být odstraněny bez použití klíče nebo nástroje 
+b) tak, aby bylo zabráněno jejich neúmyslnému odstranění 
+c) pouze z nevodivého materiálu 
+správně: [a, b]
+
+175. Opatření na ochranu při poruše (ochranu před nepřímým dotykem neboli před dotykem neživých částí) mohou být vynechána u těchto zařízení 
+a) u všech zařízení umístěných pod přístřeškem 
+b) u kovových konzol pro upevnění izolátorů venkovního vedení, které jsou připevněny k budově a jsou chráněny polohou (jsou umístěny mimo dosah) 
+c) u neživých částí které jsou malé (do 50 mm x 50 mm), nebo umístěné tak, že nemohou být uchopeny nebo se dotýkat lidského těla na velké ploše, přičemž spojení těchto částí s ochranným vodičem by bylo obtížné nebo nespolehlivé 
+správně: [b, c]
+
+176. Ochrana polohou je umístění nebezpečných živých částí mimo dosah a je určená 
+a) k zabránění nahodilému i úmyslnému dotyku živých částí 
+b) pouze k zabránění nahodilému dotyku živých částí 
+c) pouze k zabránění úmyslnému dotyku živých částí 
+správně: [b]
+
+177. Při ochraně polohou (umístěním mimo dosah) platí, že 
+a) části současně přístupné dotyku, které mají rozdílný potenciál, nesmí být v dosahu rukou 
+b) na místech, kde se běžně manipuluje s objemnými nebo dlouhými vodivými předměty, se musí vzdálenosti zvětšit s ohledem na velikost těchto předmětů 
+c) živá část nesmí být nikdy umístěna níže než 7,5 m nad stanovištěm obsluhy 
+správně: [a, b]
+
+178. Opatření na ochranu při poruše (ochranu před nepřímým dotykem neboli před dotykem neživých částí) mohou být vynechána u těchto zařízení 
+a) u ručního elektrického nářadí 
+b) u zdravotnických zařízení 
+c) u ocelí vyztužených betonových sloupů pro venkovní vedení, jejichž ocelová výztuž není přístupná 
+správně: [c]
+
+179. Při ochraně polohou (umístěním mimo dosah) platí, že 
+a) tato ochrana je určena k tomu, aby zabránila úmyslnému dotyku 
+b) o dvou částech se předpokládá, že jsou současně přístupné dotyku, jestliže od sebe nejsou dále než 2,5 m 
+c) hodnoty dosahu ruky se vztahují na přímý dotyk holýma rukama bez pomůcek
+správně: [b, c]
+
+180. Zóna dosahu ruky je v normě definována takto: [obr. 4.png] 
+a) a= 2,2 m, b = 1,25 m, c = 0,75 m 
+b) a= 2,5 m, b = 1,25 m, c = 0,75 m 
+c) a= 2,5 m, b = 1,10 m, c = 0,75 m 
+správně: [b]
+
+181. Pokud se použijí proudové chrániče jako doplňková ochrana pro případ selhání základní ochrany nebo selhání ochrany při poruše, jejich jmenovitý vybavovací reziduální proud nesmí překročit hodnotu 
+a) 100 mA 
+b) 30 mA 
+c) 10 mA 
+správně: [b]
+
+182. Pokud je pro ochranu použita doplňková ochrana proudovým chráničem se jmenovitým vybavovacím rozdílovým proudem nepřesahujícím 30 mA 
+a) je nutno použít ještě další ochranné opatření 
+b) není nutno použít žádná další ochranná opatření 
+c) je zakázáno použít ještě další ochranná opatření 
+správně: [a]
+
+183. Základní ochrana je zajištěna
+a) použitím doplňkové izolace 
+b) použitím zařízení s dvojitou izolací 
+c) použitím krytů nebo přepážek 
+správně: [b, c]
+
+184. Stejnosměrné napětí se považuje za napětí bez zvlnění, pokud efektivní hodnota zvlnění nepřesahuje 
+a) 10 % jeho stejnosměrné složky 
+b) 15 % jeho stejnosměrné složky 
+c) 20 % jeho stejnosměrné složky 
+správně: [a]
+
+185. Automatické odpojení od zdroje je ochrana, při které je 
+a) ochrana při poruše zajištěna elektrickým oddělením 
+b) základní ochrana zajištěna izolací živých částí nebo kryty a přepážkami 
+c) ochrana při poruše zajištěna ochranným pospojováním a automatickým odpojením v případě poruchy 
+správně: [b, c]
+
+186. V instalaci, kde je použita ochrana automatickým odpojením od zdroje, 
+a) mohou být také použita zařízení třídy ochrany II 
+b) nesmí být použita žádná zařízení třídy ochrany II 
+c) musí být použita pouze zařízení třídy ochrany II 
+správně: [a]
+
+187. U dvojité nebo zesílené izolace je ochrana zajištěna některým z těchto způsobů 
+a) základní ochrana i ochrana při poruše jsou zajištěny doplňkovou izolací 
+b) základní ochrana je zajištěna základní izolací a ochrana při poruše přídavnou izolací 
+c) základní ochrana i ochrana při poruše jsou zajištěny zesílenou izolací
+správně: [b, c]
+
+188. Pokud je u zařízení použita ochrana dvojitou nebo zesílenou izolací, tak 
+a) izolačním krytem nesmějí procházet vodivé části, které by mohly přenášet napětí 
+b) přístupné vodivé části musí být spojeny s ochranným vodičem 
+c) elektrické zařízení musí být typově zkoušené
+správně: [a, c]
+
+# ČSN 33 2000-4-42 ed. 2 Ochrana před účinky tepla (po Změně Zl, vydané v srpnu 2016) 
+
+189. Obloukové ochrany (AFDD) jsou schopny detekovat a přerušit 
+a) oblouky při sériové poruše (uvolněné spoje) 
+b) nedovolené přetížení elektromotorů 
+c) paralelní oblouky (při poškození izolace mezi fází a nulovým vodičem) 
+správně: [a, c]
+
+190. Obloukové ochrany (AFDD) je doporuče'no instalovat v koncových obvodech 
+a) v objektech s ložnicemi 
+b) v místech se zvýšeným výskytem vody 
+c) v místech s hořlavými stavebními materiály 
+správně: [a, c]
+
+191. Obloukové ochrany (AFDD) je doporučeno instalovat v koncových obvodech 
+a) v místech s nebezpečím požáru skladovaných materiálů (např. stodoly) 
+b) v místech s ohrožením nenahraditelného bohatství 
+c) v bazénech 
+správně: [a, b]
+
+192. Obloukové ochrany (AFDD) se instalují 
+a) na začátku koncového obvodu, který má být chráněn 
+b) ve stejnosměrných sítích 
+c) ve střídavých sítích 
+správně: [a, c]
+
+193. Pokud jsou v obvodu instalovány obloukové ochrany 
+a) není tím nahrazeno používání jiných předepsaných ochranných prvků 
+b) není již nutno použít proudové chrániče 
+c) mohou již mít v sobě integrován i proudový chránič a jistič
+správně: [a, c]
+
+# ČSN EN IEC 61936-1 ed. 2 - Elektrické instalace nad AC 1 kV - ČSN EN 50522 ed. 2 - Uzemňování elektrických instalací nad AC 1 kV 
+
+194. Hodnota dovoleného dotykového napětí UTp v instalacích nad AC 1 kV závisí 
+a) na době trvání průtoku proudu 
+b) na jmenovitém napětí sítě 
+c) na nadmořské výšce 
+správně: [a]
+
+195. V instalacích nad AC 1 kV lze pro dovolené dotykové napětí UTp pro dobu trvání průchodu proudu značně delší než 10 s použít hodnotu 
+a) 80 V 
+b) 125 V 
+c) 250 V 
+správně: [a]
+
+196. Pro účely stanovení krokového napětí se za délku kroku člověka považuje 
+a) 0,8 m 
+b) 1 m 
+c) 1,1 m 
+správně: [b]
+
+197. Zemniče, které jsou v přímém kontaktu s půdou, 
+a) musí být zhotoveny z mědi 
+b) smí být zhotoveny pouze z páskových vodičů 
+c) mají být z materiálu odolného proti korozi 
+správně: [c]
+
+198. Pro zásobování elektrických stanic vodou z vnějšku stanice je zapotřebí 
+a) použít pouze kovové potrubí . , 
+b) zamezit užití kovových potrubí (použijí se místo nich nekovove matenaly) 
+c) použít vždy kovové potrubí o průměru minimálně 100 mm
+správně: [b]
+
+199. Minimální průřez uzemňovacího přívodu v instalacích nad AC 1 kV s ohledem na mechanickou a korozivní odolnost je pro měď (Neplatí pro uzemnění sekundárních obvodů přístrojových transformátorů) 
+a) 16 mm2 
+b) 35 mm2 
+c) 50 mm2 
+správně: [a]
+
+200. Minimální průřez uzemňovacího přívodu v instalacích nad AC 1 kV s ohledem na mechanickou a korozivní odolnost je pro hliník 
+a) 10 mm2 
+b) 16 mm2 
+c) 35 mm2 
+správně: [c]
+
+201. Minimální průřez uzemňovacího přívodu v instalacích nad AC 1 kV s ohledem na mechanickou a korozivní odolnost je pro ocel
+a) 16 mm2 
+b) 35 mm2
+c) 50 mm2 
+správně: [c]
+
+202. Normalizovaná jmenovitá doba trvání zkratu je v instalacích nad AC 1 kV 
+a) 0,4 s 
+b) 1,0 s 
+c) 2,0 s 
+správně: [b]
+
+203. Uzemňovací soustava musí být provedena tak, aby bylo možné kontrolovat stav uzemňovací soustavy. 
+a) Vhodnými prostředky jsou výkopy na vybraných místech a vizuální kontrola 
+b) Provádět kontrolu pomocí výkopů na vybraných místech je nepřípustné. 
+c) Kontrola se nesmí provádět jinak než měřením elektrických veličin. 
+správně: [a]
+
+204. U přístrojových transformátorů proudu musí být provedena taková opatření, 
+a) která usnadní zkratování jejich sekundárních vinutí 
+b) která zabrání jakémukoliv zkratování jejich sekundárních vinutí 
+c) která zajistí odpojení jejich sekundárních vinutí v případě přehřátí transformátoru 
+správně: [a]
+
+205. Uvnitř uzavřených elektrických provozoven jsou povoleny tyto ochrany 
+a) krytem, ochrannou bariérou, ochrannou zábranou a umístěním mimo dosah 
+b) krytem, přepážkou, zábranou a doplňková ochrana proudovým chráničem 
+c) krytem, přepážkou a doplňková ochrana proudovým chráničem 
+správně: [a]
+
+206. Mimo uzavřené elektrické provozovny jsou povoleny pouze tyto ochrany 
+a) krytem, přepážkou, zábranou a polohou 
+b) krytem a umístěním mimo dosah 
+c) krytem, přepážkou a zábranou 
+správně: [b]
+
+207. Všechny přístupové dveře do uzavřených elektrických provozoven a všechny strany obvodového oplocení musí být vybaveny 
+a) trojúhelníkovou výstražnou značkou 
+b) kulatou zákazovou značkou 
+c) kulatou příkazovou značkou 
+správně: [a]
+
+208. Tam, kde je k dispozici dálkové ovládání, musí být zajištěna volba mezi místním a dálkovým ovládáním, která je umístěna 
+a) pouze na vzdáleném řídicím pracovišti 
+b) na místním ovládacím místě (to je u spínače nebo v jeho blízkém okolí) 
+c) minimálně 15 m od místa provozu (od spínače)
+správně: [b]
+
+209. Při zřizování uzemňovacích soustav v instalacích nad AC 1 kV mají být vodorovné zemniče uloženy v hloubce 
+a) 0,5 m až 1 m pod úrovní země 
+b) 0,7 m až 1 m pod úrovní země 
+c) 0,8 m až 1 m pod úrovní země 
+správně: [a]
+
+210. Holé kovové oplocení kolem elektrických stanic 
+a) nesmí být uzemněno 
+b) nemusí být uzemněno 
+c) musí být uzemněno 
+správně: [c]
+
+211. Při zřizování uzemňovacích soustav v instalacích nad AC 1 kV mají být svislé nebo šikmé zemniče rozmístěny 
+a) co nejblíže k sobě 
+b) maximálně 1,0 m od sebe 
+c) alespoň na takovou vzdálenost od sebe, jako je délka tyče 
+správně: [c]
+
+212. Při zřizování uzemňovacích soustav v instalacích nad AC 1 kV musí mít spojky používané pro připojení tyčových zemničů 
+a) podstatně vyšší mechanickou pevnost než zemniče 
+b) vyšší mechanickou pevnost než zemniče 
+c) stejnou mechanickou pevnost jako zemniče 
+správně: [c]
+
+213. Elektrické instalace nad AC 1 kV musí být schopné odolat 
+a) pouze dynamickým namáháním vyplývajícím ze zkratového proudu 
+b) pouze tepelným namáháním vyplývajícím ze zkratového proudu 
+c) tepelnému a dynamickému namáhání způsobenému zkratovým proudem
+správně: [c]
+
+# ČSN 33 2000-4-41 ed. 3 Ochrana před úrazem elektrickým proudem (podle normy vydané v lednu 2018) 
+
+214. Při ochraně automatickým odpojením od zdroje musí ochranný prvek automaticky vypnout přívod vodiče vedení do obvodu nebo zařízení 
+a) v případě poruchy mezi vodičem vedení a neživou částí 
+b) v případě poruchy mezi neživou částí a ochranným vodičem 
+c) v případě poruchy mezi vodičem vedení a ochranným vodičem 
+správně: [a, c]
+
+215. Při ochraně automatickým odpojením od zdroje musejí být neživé části (při splnění podmínek stanovených pro každý způsob uzemnění sítě) 
+a) připojeny k nulovému vodiči v síti TN-S 
+b) připojeny k nulovému vodiči v síti TT 
+c) připojeny k ochrannému vodiči 
+správně: [c]
+
+216. Při ochraně automatickým odpojením od zdroje musejí být neživé části současně přístupné dotyku spojeny se stejnou uzemňovací soustavou 
+a) pouze po skupinách 
+b) jednotlivě, po skupinách nebo společně 
+c) výhradně jednotlivě 
+správně: [b]
+
+217. Označte, které vodivé části musejí být v každé budově navzájem spojeny do tzv. ochranného pospojování (dříve „hlavní pospojování") 
+a) ochranný vodič 
+b) uzemňovací přívod 
+c) kovová potrubí uvnitř budovy (např. plynu, vody), kovové konstrukční části, kovové ústřední topení a klimatizace 
+správně: [a, b, c]
+
+218. Při ochraně automatickým odpojením od zdroje u sítí TN musí být všechny neživé části instalace spojeny s uzemněným bodem sítě prostřednictvím 
+a) ochranných vodičů 
+b) pomocného zemniče 
+c) neuzemněného pospojování
+správně: [a]
+
+219. Při ochraně automatickým odpojením od zdroje u sítí TN musí být pro změřenou impedanci poruchové smyčky vedení (Zs) splněn tento vztah: 
+a) Zs x Ijm <= U0 
+b) Zs x Ia <= U0 (ČSN 33 2000-6 ed. 2 upřesňuje: Zs(m) <= 2/3 x U0/Ia)
+c) Zs x Ijm <= U0 x sqrt(3)
+správně: [b]
+
+220. Při ochraně automatickým odpojením od zdroje pro koncové obvody do 32 A jsou u sítí TN v normě stanoveny tyto maximální doby odpojení 
+a) 0,2 s při jmenovitém střídavém napětí proti zemi 230 V 
+b) 0,4 s při jmenovitém střídavém napětí proti zemi 230 V 
+c) 0,2 s při jmenovitém střídavém napětí proti zemi 400 V 
+správně: [b, c]
+
+221. Ověřte, které z hodnot naměřených impedancí poruchové smyčky Zs(m) vyhovují u jednofázové zásuvky při ochraně automatickým odpojením od zdroje v síti TN. Před zásuvkou je zařazen jistič Ijm = 10 A s charakteristikou C. Napětí U0 = 230 V 
+a) 0,8 Ω 
+b) 1,4 Ω 
+c) 2,2 Ω 
+správně: [a, b]
+
+222. Při ochraně automatickým odpojením od zdroje se u sítí TN pro distribuční obvody a dále pro koncové obvody, které překračují 32 A a napájejí pouze pevně připojené spotřebiče, dovoluje doba odpojení 
+a) nepřesahující 5 s 
+b) nepřesahující 10 s 
+c) nepřesahující 20 s 
+správně: [a]
+
+223. Při ochraně automatickým odpojením od zdroje se u sítí TT pro distribuční obvody a dále pro koncové obvody, které překračují 32 A a napájejí pouze pevně připojené spotřebiče, dovoluje doba odpojení 
+a) nepřesahující 0,1 s 
+b) nepřesahující 1 s 
+c) nepřesahující 20 s 
+správně: [b]
+
+224. Jestliže je v koncovém obvodu jedna nebo více zásuvek, je maximální doba vypnutí do 0,4 s předepsána (při Uo = 230 V) 
+a) pro všechny obvody, jejichž jmenovitý proud nepřekračuje 120 A 
+b) pro obvody, jejichž jmenovitý proud nepřekračuje 63 A 
+c) pro obvody, ve kterých není použit proudový chránič 
+správně: [b]
+
+225. Jestliže není možno dosáhnout automatického odpojení s dodržením předepsané doby odpojení, 
+a) musí být provedeno doplňující ochranné pospojování 
+b) může být zařízení provozováno bez dalších opatření, ale pouze do příští revize 
+c) není nutno provádět žádná další opatření 
+správně: [a]
+
+226. V sítích TN mohou být použity následující ochranné prvky 
+a) nadproudové jisticí prvky (pojistky a jističe) 
+b) proudové chrániče v sítích TN-C 
+c) proudové chrániče v sítích TN-S 
+správně: [a, c]
+
+227. V prostorech určených pro bydlení se u světelných obvodů musí použít 
+a) jistič s vypínací charakteristikou typu B 
+b) proudový chránič 300 mA 
+c) doplňková ochrana pomocí proudového chrániče (max. 30 mA) 
+správně: [c]
+
+228. Při ochraně automatickým odpojením od zdroje v síti TN se hodnota impedance poruchové smyčky skládá z impedance obvodu, který zahrnuje také 
+a) zdroj 
+b) vodič vedení až k místu poruchy 
+c) ochranný vodič mezi místem poruchy a zdrojem
+správně: [a, b, c]
+
+229. Odpor uzemnění nulového bodu (uzlu) zdroje v sítích TN nemá být větší než (Poznámka: nyní uvedeno v Podnikové normě energetiky PNE 33 0000-1) 
+a) 5 Ω, ve ztížených půdních podmínkách 15 Ω 
+b) 15 Ω 
+c) 20 Ω 
+správně: [a]
+
+230. Celkový odpor uzemnění vodičů PEN odcházejících vedení z transformovny včetně uzemněného středu (uzlu) zdroje nesmí být pro sítě o jmenovitém napětí Do= 230 V větší než (Poznámka: nyní uvedeno v PNE 33 0000-1) 
+a) 2 Ω, ve ztížených půdních podmínkách 3 Ω 
+b) 2 Ω 
+c) 5 Ω 
+správně: [b]
+
+231. Vodič PEN v síti TN-C nebo vodič PE v síti TN-S se musí ve venkovním rozvodu kromě uzlu zdroje uzemnit ještě v těchto místech (Poznámka: nyní uvedeno v PNE 33 0000-1) 
+a) u venkovního vedení každých 500 m a na jeho konci 
+b) na konci odboček delších než 30 m 
+c) na konci odboček delších než 200 m 
+správně: [a, c]
+
+232. Doplňková ochrana proudovým chráničem (max. 30 mA) je předepsána pro 
+a) AC zásuvky do 32 A, které mohou používat laici 
+b) AC mobilní zařízení pro venkovní použití do 32 A 
+c) světelné obvody v prostorech pro samostatnou domácnost 
+správně: [a, b, c]
+
+233. Vodiče PEN se 
+a) musí jistit 
+b) nesmějí jistit 
+c) nesmějí jistit, vodiče PE se však jistit mohou 
+správně: [b]
+
+234. Vodiče PE se 
+a) musí jistit 
+b) nesmějí jistit 
+c) mohou jistit 
+správně: [b]
+
+235. Jaký musí být při ochraně automatickým odpojením od zdroje minimální průřez ochranného měděného vodiče, který je sice chráněn před mechanickým poškozením, ale není součástí kabelu, ani není ve společném obložení s fázovými vodiči ? (Poznámka: nyní uvedeno v ČSN 33 2000-5-54 ed. 3) 
+a) 1,5 mm2 Cu 
+b) 2,5 mm2 Cu 
+c) 4 mm2 Cu 
+správně: [b]
+
+236. Jaký musí být při ochraně automatickým odpojením od zdroje minimální průřez ochranného měděného vodiče, který není chráněn před mechanickým poškozením, ani není součástí kabelu a ani není ve společném obložení s fázovými vodiči ? (Poznámka: nyní uvedeno v ČSN 33 2000-5-54 ed. 3) 
+a) 1,5 mm2 Cu 
+b) 2,5 mm2 Cu 
+c) 4 mm2 Cu 
+správně: [c]
+
+237. Jaký musí být při ochraně automatickým odpojením od zdroje minimální průřez ochranného hliníkového vodiče, který je sice chráněn před mechanickým poškozením, ale není součástí kabelu, ani není ve společném obložení s fázovými vodiči ? (Poznámka: nyní uvedeno v ČSN 33 2000-5-54 ed. 3) 
+a) 16 mm2 Al 
+b) 10 mm2 Al 
+c) 6 mm2 Al 
+správně: [a]
+
+238. Jaký musí být při ochraně automatickým odpojením od zdroje minimální průřez ochranného hliníkového vodiče, který není chráněn před mechanickým poškozením, ani není součástí kabelu a ani není ve společném obložení s fázovými vodiči ? (Poznámka: nyní uvedeno v ČSN 33 2000-5-54 ed. 3) 
+a) 35 mm2 Al 
+b) 25 mm2 Al 
+c) 16 mm2 Al 
+správně: [c]
+
+239. Všechny neživé části v sítích TT, které jsou společně chráněné stejným ochranným přístrojem, se musí spojit ochrannými vodiči 
+a) se zemničem, který je pro všechny tyto neživé části společný 
+b) k samostatným zemničům, které nesmí být propojeny 
+c) k samostatným zemničům, které mohou být po dvojicích spojovány
+správně: [a]
+
+240. Při ochraně automatickým odpojením od zdroje u sítí TT musí být uzemněn 
+a) každý fázový vodič 
+b) nulový nebo střední bod. Pokud není k dispozici, musí se uzemnit jeden vodič vedení 
+c) výhradně střední bod (uzel) 
+správně: [b]
+
+241. Pokud je při ochraně automatickým odpojením od zdroje v síti TT použit nadproudový ochranný přístroj (pojistka, jistič), musí být splněna tato podmínka 
+a) Zs x ljm s 50 V 
+b) Zs x I. s U0 
+c) Zs x la s 50 V Zs je impedance poruchové smyčky (zahrnuje i odpory zemniče instalace a zdroje) I. je proud vyvolávající automatickou funkci nadproudového přístroje v daném čase lim je jmenovitý proud nadproudového ochranného přístroje U0 je jmenovité střídavé nebo stejnosměrné napětí vodiče vedení proti zemi 
+správně: [b]
+
+242. Při ochraně automatickým odpojením od zdroje je pro koncové obvody do 32A u sítí TT pro U0 = 230 V st v normě stanovena tato maximální doba odpojení 
+a) 0,1 s 
+b) 0,2 s 
+c) 0,4 s 
+správně: [b]
+
+243. Pokud je v síti TT dosaženo automatického odpojení od zdroje pomocí nadproudového ochranného přístroje a ochranné pospojování je spojeno se všemi cizími vodivými částmi, musí při U0 = 230 V st dojít k odpojení vadné části nejpozději do 
+a) 0,4 s (stejná hodnota jako pro síť TN) 
+b) 1 s 
+c) 5 s 
+správně: [a]
+
+244. V sítích TT se pro ochranu při poruše používají tyto ochranné prvky 
+a) hlídače izolačního stavu 
+b) proudové chrániče 
+c) nadproudové ochranné přístroje 
+správně: [b, c]
+
+245. Pokud je při ochraně automatickým odpojením od zdroje v síti TT použit proudový chráníč, musí být splněna tato podmínka 
+a) RA x IΔn <= 50 V 
+b) RA x IΔn <= U0 
+c) Zs x Ia <= 50 V 
+správně: [a]
+
+246. Sítě IT musí být provedeny některým z těchto způsobů 
+a) síť musí mít střední bod přímo spojen se zemí přes co nejmenší impedanci 
+b) živé části musí být izolovány od země 
+c) živé části musí být spojeny se zemí přes dostatečně vysokou impedanci 
+správně: [b, c]
+
+247. Neživé části sítí IT musí být uzemněny 
+a) výhradně individuálně 
+b) individuálně, po skupinách nebo společně 
+c) výhradně po skupinách 
+správně: [b]
+
+248. Při ochraně automatickým odpojením od zdroje musí být ve střídavých sítích IT splněna tato podmínka 
+a) RA <= 2 Ω 
+b) RA x Id <= U0 
+c) RA x Id <= 50 V 
+správně: [c]
+
+249. Při ochraně automatickým odpojením od zdroje se u sítí IT doporučuje, aby první porucha byla odstraněna 
+a) okamžitě po jejím výskytu 
+b) co nejdříve 
+c) ještě před koncem pracovní směny 
+správně: [b]
+
+250. V sítích IT lze pro monitorování, hlídání a ochranu používat tyto přístroje 
+a) nadproudové ochranné přístroje 
+b) proudové chrániče 
+c) hlídače izolačního stavu
+správně: [a, b, c]
+
+251. Při ochraně automatickým odpojením od zdroje u sítí IT s nevyvedeným nulovým bodem, ve kterých jsou neživé části propojeny ochranným vodičem a společně uzemněny, musí být v případě výskytu druhé poruchy splněna tato podmínka 
+a) 2 x Ia x Zs <= U 
+b) Zs <= (U0 / Ia) 
+c) Zs <= (3 x U0 / Ia) 
+správně: [a]
+
+252. Při ochraně automatickým odpojením od zdroje u sítí IT, ve kterých je nulový bod vyveden a ve kterých jsou neživé části propojeny ochranným vodičem a společně uzemněny, musí být v případě výskytu druhé poruchy splněna tato podmínka
+a) Zs' <= (3 x U0 / 2 x Ia) 
+b) Zs' <= (3 x U0 / Ia) 
+c) 2 x Ia x Zs' <= U0 
+správně: [c]
+
+253. Pro obvody FELV platí 
+a) neživé části nesmí být spojeny s žádným ochranným vodičem 
+b) neživé části musí být spojeny s ochranným vodičem vstupního obvodu zdroje 
+c) jako zdroj lze použít transformátor alespoň s jednoduchým oddělením vinutí 
+správně: [b, c]
+
+254. Vidlice a zásuvky obvodů FELV musí vyhovět těmto požadavkům 
+a) zásuvky musí mít ochranný kontakt 
+b) zásuvky nesmí mít ochranný kontakt 
+c) do zásuvek FELV nesmí být možno zasunout vidlice sítí o jiných napětích 
+správně: [a, c]
+
+255. Doplňková ochrana proudovými chrániči (do 30 mA) musí být provedena ve střídavé síti u těch zásuvek, které jsou užívány laiky a jsou určeny pro všeobecné použití a jejichž jmenovitý proud nepřekračuje 
+a) 20 A 
+b) 32 A 
+c) 63 A 
+správně: [b]
+
+256. Doplňková ochrana proudovými chrániči musí být ve střídavé síti provedena také u mobilních zařízení určených pro venkovní použití, jejichž jmenovitý proud nepřekračuje 
+a) 32 A 
+b) 40 A 
+c) 63 A 
+správně: [a]
+
+257. Pokud se pro zajištění doplňkové ochrany použijí proudové chrániče, jejich jmenovitý vybavovací reziduální proud nesmí být vyšší než 
+a) 30 mA 
+b) 100 mA 
+c) 300 mA 
+správně: [a]
+
+258. Doplňková ochrana - doplňující ochranné pospojování 
+a) se považuje za základní ochranu 
+b) se považuje za ochranu při poruše 
+c) se považuje za doplnění ochrany při poruše 
+správně: [c]
+
+259. Doplňující ochranné pospojování musí zahrnovat všechny neživé části upevněných zařízení současně přístupné dotyku a cizí vodivé části včetně hlavních kovových armatur železobetonu (pokud je to proveditelné). Systém ochranného pospojování musí být spojen 
+a) pouze s ochrannými vodiči zásuvek 
+b) s ochrannými vodiči všech zařízení včetně zásuvek 
+c) s ochrannými vodiči všech zařízení s vyjírnkou zásuvek
+správně: [b]
+
+260. Zařízení s dvojitou nebo zesílenou izolací (zařízení třídy ochrany II) se označují značkou 
+a) [obr. 5.png] 
+b) [obr. 6.png] 
+c) [obr. 7.png] 
+správně: [c]
+
+261. Zařízení, u něhož byla v průběhu výstavby (montáže) doplněna přídavná izolace, nebo zesílená izolace, musí mít na povrchu a vnítřku krytu umístěnu značku 
+a) [obr. 8.png] 
+b) [obr. 9.png] 
+c) [obr. 10.png] 
+správně: [a]
+
+262. V prostorech s nevodivým okolím 
+a) musí být jediný ochranný vodič 
+b) musí být ochranný vodič veden izolovaně od vodiče středního 
+c) nesmí být žádný ochranný vodič 
+správně: [c]
+
+263. Při ochraně neuzemněným místním pospojováním musí být navzájem spojeny 
+a) všechny neživé části a uzemnění 
+b) všechny neživé části a cizí vodivé části, které jsou současně přístupné dotyku 
+c) všechny živé a neživé části 
+správně: [b]
+
+264. Při ochraně elektrickým oddělením musí být oddělené obvody napájené ze zdroje alespoň s jednoduchým oddělením. Napětí zdroje nesmí přesahovat 
+a) 220 V 
+b) 380 V 
+c) 500 V 
+správně: [c]
+
+265. Při ochraně elektrickým oddělením 
+a) oddělený obvod nesmí být spojen se zemí 
+b) oddělený obvod musí být spojen se zemí 
+c) oddělený obvod může být spojen se zemí 
+správně: [a]
+
+266. Elektrické oddělení je opatření, u kterého 
+a) základní ochrana je zajištěna základní izolací živých částí 
+b) ochrana při poruše je zajištěna oddělením obvodu od ostatních obvodů a od země 
+c) ochrana při poruše je zajištěna dvojitou izolací živých částí 
+správně: [a, b]
+
+267. Na obrázku je nakreslena síť [obr. 11.png] 
+a) TN-C 
+b) TN-S 
+c) TT 
+správně: [b]
+
+268. Na obrázku je nakreslena síť [obr. 12.png] 
+a) TN-C 
+b) TN-S 
+c) TT 
+správně: [a]
+
+269. Na obrázku je nakreslena síť [obr. 13.png] 
+a) TN-S 
+b) TT 
+c) IT 
+správně: [b]
+
+270. Na obrázku je nakreslena síť [obr. 14.png] 
+a) TN-S 
+b) TT 
+c) IT 
+správně: [c]
+
+# ČSN 33 2000-1 ed. 2 - Základní hlediska
+
+271. Elektrická zařízení provedená a provozovaná podle dříve platných norem 
+a) lze ponechat v provozu nejdéle 3 roky od vydání nové normy 
+b) je nutno při nejbližší revizi upravit tak, aby vyhovovala současným předpisům 
+c) lze ponechat v provozu beze změny, jestliže nemají ohrožující závady
+správně: [c]
+
+# Nařízení vlády č. 190/2022 Sb. (nahradilo vyhl. č. 73/2010 Sb.) 
+
+272. Vyhrazená elektrická zařízení jsou: 
+a) elektrická zařízení pro výrobu, přeměnu, přenos, rozvod, distribuci a odběr elektrické energie 
+b) elektrické instalace staveb a technologií 
+c) zařízení určená k ochraně před účinky atmosférické nebo statické elektřiny 
+správně: [a, b, c]
+
+273. Montáž a opravy vyhrazených elektrických zařízení mohou provádět: 
+a) všechny osoby s kvalifikací „vedoucí elektrotechnik" 
+b) podnikající fyzické osoby, které vlastní oprávnění vydané Technickou inspekcí České republiky (TIČR) 
+c) právnické osoby, které vlastní oprávnění vydané Technickou inspekcí České republiky (TIČR)
+správně: [b, c]
+
+# ČSN 33 2000-5-54 ed. 3 - Uzemnění a ochranné vodiče 
+
+274. Vodič PEN (který je zároveň jako vodič ochranný i střední) se může používat 
+a) ve všech sítích TN 
+b) pouze v pevných instalacích a z důvodu mechanické pevnosti nesmí mít průřez menší než 16 mm2 mědi nebo 16 mm2 hliníku 
+c) pouze v pevných instalacích a z důvodu mechanické pevnosti nesmí mít průřez menší než 4 mm2 mědi nebo 6 mm2 hliníku
+správně: [b]
+
+275. Pokud je pevná instalace připojena na síť TN prováděna vodiči o průřezu 1,5 až 4 mm2 Cu 
+a) musí být použit společný vodič pro ochranný i střední vodič (PEN) 
+b) nesmí být vodiče ochranný (PE) a střední (N) vedeny samostatně 
+c) musí být vodič ochranný (PE) veden odděleně od vodiče středního (N) 
+správně: [c]
+
+276. Ocelové zemniče z oceli pozinkované v ohni musí mít tento minimální rozměr 
+a) pásková ocel - průřez 100 mm2 , tloušťka 3 mm 
+b) ocelový drát - průměr 6 mm 
+c) ocelový drát - průměr 8 mm 
+správně: [a, c]
+
+277. Ocelové zemniče z nepozinkované oceli musí mít tento minimální rozměr 
+a) pásková ocel - průřez 150 mm2, tloušťka 4 mm 
+b) ocelový drát - průměr 10 mm 
+c) úhelníky a pod. - průřez 150 mm2, tloušťka stěny 4 mm 
+správně: [a, b, c]
+
+278. Strojené základové zemniče z páskové oceli nebo ocelového drátu patřičného průřezu se ukládají jako obvodový zemnič 
+a) nad izolační vrstvy cca 5 cm nad dnem výkopu, aby vodič byl obklopen betonovou směsí 
+b) pod izolační vrstvy cca 5 cm nad dnem výkopu, aby vodič byl obklopen betonovou směsí 
+c) pod izolační vrstvy přímo na dno výkopu, aby vodič byl z jedné strany obklopen betonovou směsí 
+správně: [b]
+
+279. Jako materiál pro zhotovení základových zemničů mohou být použity: 
+a) ocelová lana 
+b) pozinkované ocelové pásky 
+c) ocelové dráty bez povrchové úpravy 
+správně: [b, c]
+
+280. Jako zemniče se nesmí použít 
+a) kovové potrubí pro hořlavé kapaliny nebo plyny 
+b) zemnič ponořený v proudící vodě, řece, rybníku apod. 
+c) kovová výztuž betonu uloženého v zemi 
+správně: [a, b]
+
+281. Pracovní a ochranné uzemnění různých rozvodných soustav do 1 000 V 
+a) se smí spojovat navzájem ve všech případech 
+b) se smí spojovat pouze u sítí TN 
+c) se smí spojovat pouze u sítí TT 
+správně: [a]
+
+282. Uzemnění sdělovacích zařízení 
+a) nesmí být nikdy spojována s uzemněním hromosvodů 
+b) má být co nejdále od uzemnění hromosvodů 
+c) musí být spojena s uzemněním hromosvodů pokud by jejich vzdálenost byla menší než 5 m 
+správně: [b, c]
+
+283. Ochranný vodič nesmí být 
+a) vybaven žádným spínacím přístrojem 
+b) jištěn proti přetížení 
+c) chráněn před mechanickým poškozením 5 m 
+správně: [a, b]
+
+284. Nejmenší dovolená vzdálenost mezi měděnými a ocelovými zemniči je 
+a) 10 m 
+b) 5 m
+c) 2 m 
+správně: [c]
+
+285. Nejmenší dovolený průřez měděných vodičů ochranného pospojování pro připojení k hlavní uzemňovací svorce je 
+a) 4 mm2 
+b) 6 mm2 
+c) 10 mm2 
+správně: [b]
+
+286. Vodič ochranného pospojování spojujícího dvě neživé části nesmí mít vodivost menší 
+a) než je vodivost silnějšího z ochranných vodičů připojených k neživým částem 
+b) než je vodivost tenčího z ochranných vodičů připojených k neživým částem 
+c) 75% vodivost tenčího z ochranných vodičů připojených k neživým částem 
+správně: [b]
+
+287. Pokud se vodovodní potrubí budovy používá jako uzemnění nebo jako ochranný vodič nebo vodič pospojování, 
+a) nesmí být vodoměr přemostěn 
+b) musí být vodoměr přemostěn 
+c) může být vodoměr přemostěn
+správně: [b]
+
+# První pomoc 
+
+288. Jakou rychlostí má být prováděno umělé dýchání? 
+a) 5 vdechů za minutu 
+b) 10 až 12 vdechů za minutu 
+c) 60 až 80 vdechů za minutu 
+správně: [b]
+
+289. Umělé dýchání lze ukončit 
+a) pokud postižený nezačne do 30 minut dýchat sám 
+b) když postižený začne dýchat sám 
+c) na pokyn lékaře 
+správně: [b, c]
+
+290. Jaká je frekvence stlačování hrudníku při nepřímé srdeční masáži? 
+a) 10 až 12 stlačení za minutu 
+b) 100 až 120 stlačení za minutu 
+c) 150 stlačení za minutu 
+správně: [b]
+
+291. Nepřímou srdeční masáž lze ukončit 
+a) na pokyn lékaře 
+b) pokud dojde k obnovení srdeční činnosti 
+c) pokud ani po 5 minutách nedojde k obnovení srdeční činnosti 
+správně: [a, b]
+
+292. Označte správný postup při poskytování první pomoci při úrazech elektřinou (1. vyprostit postiženého z dosahu proudu, 2. co nejdříve uvědomit nadřízeného a sepsat záznam o úrazu, 3. je-li to nutné, zahájit nepřímou srdeční masáž a umělé dýchání, 4. zjistit zda postižený dýchá a zda je hmatný tep, 5. co nejrychleji přivolat lékaře/zdravotnickou záchrannou službu) 
+a) 1, 2, 4, 3, 5 
+b) 1, 4, 5, 3, 2 
+c) 1, 5, 4, 3, 2 
+správně: [b]
+
+293. Před započetím umělého dýchání z úst do úst je nutno 
+a) zajistit průchodnost dýchacích cest 
+b) uložit postiženého na měkkou podložku 
+c) zaklonit postiženému hlavu 
+správně: [a, c]
+
+294. Před zahájením nepřímé srdeční masáže 
+a) musíme postiženého uložit rovně na záda na rovnou a měkkou podložku 
+b) musíme dát postiženému napít 
+c) musíme postiženého uložit rovně na záda na rovnou a pevnou podložku 
+správně: [c]
+
+295. Při provádění nepřímé srdeční masáže musí mít zachránce 
+a) horní končetiny nataženy v loktech 
+b) horní končetiny pokrčené v loktech 
+c) jednu ruku vsunutou pod záda postiženého a druhou rukou provádí nepřímou srdeční masáž 
+správně: [a]
+
+296. Při provádění nepřímé srdeční masáže je nutno stlačovat hrudní kost 
+a) do hloubky nejméně 5 cm 
+b) maximálně do hloubky 2 cm, aby nedošlo k poškození hrudní kosti 
+c) s frekvencí 100 až 120 stlačení za minutu 
+správně: [a, c]
+
+297. Pokud zůstane postižený po úrazu elektrickým proudem při vědomí, není viditelně zraněn, dýchá a má hmatný tep 
+a) je nutno i přesto přivolat lékaře 
+b) může pokračovat v práci, avšak nejpozději do 24 hod. musí navštívit lékaře 
+c) musíme setrvat u postiženého do příchodu lékaře 
+správně: [a, c]
+
+298. Při úrazu na elektrickém zařízení nad 1 000 V (zejména při pádu vodiče vn nebo vvn) je nutno provádět záchranné práce se zvýšenou opatrností, neboť 
+a) před prováděním záchranných prací je nutno vystavit příkaz „B" 
+b) o úrazu je nutno nejprve uvědomit pracovníky nejbližší rozvodny 
+c) je nebezpečí vzniku krokového napětí
+správně: [c]
+
+299. Při úrazu elektrickým proudem můžeme postiženého vyprostit z dosahu proudu 
+a) odtažením postiženého 
+b) vypnutím přívodu elektrického proudu 
+c) odsunutím zdroje úrazu (např. vodiče z dosahu postiženého) 
+správně: [a, b, c]
+
+300. Ověření znalostí poskytování první pomoci při úrazu elektrickým proudem 
+a) postačí ověřit pouze při nástupu pracovníka do organizace 
+b) musí být součástí zkoušky pracovníků s elektrotechnickou kvalifikací podle vyhlášky č. 50/1978 Sb. 
+c) může být součástí zkoušky pracovníků s elektrotechnickou kvalifikací podle vyhlášky č. 50/1978 Sb. 
+správně: [b]
+
+301. Zdravotnickou záchrannou službu přivoláme pomocí tísňového telefonního čísla 
+a) 150 
+b) 155 
+c) 158 
+správně: [b]
+
+302. Při hašení požáru el. zařízení pod napětím se z důvodu rizika úrazu elektrickým proudem nesmí používat 
+a) vodní hasicí přístroj 
+b) pěnový hasicí přístroj 
+c) práškový hasicí přístroj
+správně: [a, b]
+
+# ČSN 341090 ed. 2-Předpisy pro prozatímní elektrická zařízení 
+
+303. Pro montáž prozatímního elektrického zařízení je třeba, 
+a) aby montáž vždy provedl pouze revizní technik 
+b) aby montáž provedla osoba s odpovídající kvalifikací 
+c) aby montáž byla provedena podle platné dokumentace 
+správně: [b, c]
+
+304. Prozatímní elektrická zařízení jsou taková, která z důvodů předpokládané krátké doby trvání 
+a) není ekonomicky nutné provádět tak důkladně, jako zařízení určená k trvalému užívání 
+b) nemusí být zřizována pracovníky s předepsanou elektrotechnickou kvalifikací 
+c) nemusí mít žádné krytí proti vniknutí vody 
+správně: [a]
+
+305. V domácnostech a zemědělských objektech se prozatímní elektrická zařízení zřizovat 
+a) nesmějí 
+b) mohou 
+c) nedoporučuje 
+správně: [a]
+
+306. Prozatímní elektrická zařízení 
+a) se doporučuje v době mimo provoz vypínat 
+b) se musí v době mimo provoz vypínat (pokud se tím neohrozí bezpečnost osob nebo provozu) 
+c) musí být opatřena hlavním vypínačem označeným tabulkou 
+správně: [b, c]
+
+307. Prozatímní elektrická zařízení 
+a) je zakázáno zřizovat v prostředí s nebezpečím výbuchu a požáru snadno zápalných látek 
+b) se musí v době mimo provoz vypínat (pokud se tím neohrozí bezpečnost osob nebo provozu) 
+c) je zakázáno zřizovat v domácnostech 
+správně: [a, b, c]
+
+308. Pro prozatímní elektrická zařízení na stavbách a staveništích 
+a) platí ustanovení platných el. norem a předpisů, především ČSN 33 2000-7-714 ed. 2 
+b) platí pouze elektrotechnické normy vydané speciálně pro tato zařízení 
+c) není nutno brát ohled na elektrotechnické předpisy 
+správně: [a]
+
+309. Prozatímní elektrická zařízení na staveništích musí být pod pravidelným dohledem 
+a) vedoucího staveniště 
+b) pověřené osoby s příslušnou elektrotechnickou kvalifikací 
+c) pověřeného pracovníka seznámeného 
+správně: [b]
+
+310. Prozatímní el. zařízení na staveništích musí pověřený pracovník kontrolovat v těchto lhůtách 
+a) každý den 
+b) minimálně jedenkrát za měsíc 
+c) četnost kontrol stanoví prokazatelně provozovatel před uvedením prozatímního elektrického zařízení do provozu, s ohledem na místní podmínky
+správně: [c]
+
+311. Před připojením prozatímního el. zařízení na veřejnou distribuční síť 
+a) musí být provedena výchozí revize 
+b) má být provedena výchozí revize 
+c) musí být provedena výchozí revize pouze tehdy, pokud celkový příkon všech připojených el. zařízení přesahuje 10 kW 
+správně: [a]
+
+312. Pokud prozatímní el. zařízení na staveništi není z provozních nebo bezpečnostních důvodů zapotřebí 
+a) doporučuje se vypínat 
+b) musí se vypínat , 
+c) nesmí se vypínat dříve, než skončí pracovní doba 
+správně: [b]
+
+313. Elektrická zařízení v objektech se zvýšeným nebezpečím požáru 
+a) nesmí být do příjezdu hasičů odpojována 
+b) musí být odpojitelná spínačem umístěným uvnitř objektu 
+c) musí být odpojitelná spínačem umístěným vně objektu 
+správně: [c]
+
+314. Pracující osoby na staveništi 
+a) musí být seznámeny s riziky, která mohou vzniknout při neopatrném a nešetrném zacházení s prozatímním el. zařízením 
+b) musí být prokazatelně seznámeny s riziky, která mohou vzniknout při neopatrném a nešetrném zacházení s prozatímním el. zařízením 
+c) musí být vždy na začátku pracovní směny poučeny o nebezpečí, které by mohlo vzniknout při neopatrném a nešetrném zacházení s prozatímním el. zařízením 
+správně: [b]
+
+315. Při zřizování prozatímního el. zařízení se ke stupni kvalifikace osob, které mají přístup na pracoviště 
+a) nemusí přihlížet 
+b) může přihlížet 
+c) musí přihlížet 
+správně: [c]
+
+316. Při zřizování prozatímního el. zařízení na staveništích se ke stupni mechanického namáhání zařízení 
+a) nemusí přihlížet 
+b) musí přihlížet 
+c) může přihlížet 
+správně: [b]
+
+317. Poškozené nebo vadné prozatímní el. zařízení na staveništi 
+a) nesmí být ponecháno v provozu 
+b) může být ponecháno v provozu po dobu maximálně 8 hodin 
+c) může být ponecháno v provozu maximálně do konce pracovní doby 
+správně: [a]
+
+318. Závady na prozatímním el. zařízení smí odstraňovat 
+a) pouze revizní technik 
+b) jakýkoliv pracovník, který prohlásí, že to umí 
+c) pouze pověřená osoba s příslušnou elektrotechnickou kvalifikací 
+správně: [c]
+
+319. Spoje musí být zajištěny tak, 
+a) aby nebyly rozebíratelné 
+b) aby připojovací svorky byly odlehčeny od tahu vodičů 
+c) aby vodiče byly zajištěny proti nežádoucímu rozpojení 
+správně: [b, c]
+
+320. Spínač, kterým lze vypnout dle potřeby (v případě nebezpečí) el. zařízení stavby 
+a) musí být umístěn na vhodném přístupném místě 
+b) musí být označen tabulkou s nápisem „Vypni v nebezpečí" 
+c) musí být uzamykatelný v zapnutém stavu 
+správně: [a, b]
+
+321. Spínač, kterým lze vypnout dle potřeby (v případě nebezpečí) el. zařízení stavby 
+a) nesmí být v době provozu na staveništi uzamčen 
+b) nemá být v době provozu na staveništi uzamčen 
+c) musí být v době noční práce osvětlen
+správně: [a, c]
+
+322. Prozatímní el. zařízení v průmyslových objektech mohou být zřízena 
+a) jen s písemným souhlasem hlavního energetika závodu 
+b) jen s písemným souhlasem osoby odpovědné za elektrické zařízení 
+c) na dobu co nejkratší, nejvýše na 1/2 roku 
+správně: [b, c]
+
+323. Prozatímní elektrická zařízení v průmyslových objektech musí být pod pravidelným dohledem 
+a) OIP 
+b) TIČR 
+c) pověřené osoby s příslušnou elektrotechnickou kvalifikací 
+správně: [c]
+
+324. Prozatímní el. zařízení v průmyslových objektech musí mít hlavní vypínač, 
+a) kterým lze celé zařízení spolehlivě vypnout 
+b) kterým lze vypnout celé zařízení, mimo světelných okruhů 
+c) který musí být výrazně označen červenou barvou s nápadně odlišeným barevným pozadím (například žlutým) a výstražnou tabulkou 
+správně: [a, c]
+
+325. Je-li jištění rozvodného vedení prozatímních elektrických zařízeních na výstavách a poutích na místě přístupném veřejnosti, musí být umístěno 
+a) alespoň 2,5 m nad zemí (podlahou) 
+b) do výklenku ve zdi 
+c) na tepelně izolující desku tloušťky alespoň 60 mm 
+správně: [a]
+
+326. Pro ochranu před úrazem elektrickým proudem pro prozatímní elektrická zařízení platí 
+a) všeobecně norma ČSN 33 2000-4-41 ed. 2 
+b) pro zařízení VN norma ČSN 33 3201 
+c) pro zařízení VN norma ČSN EN 61936-1 
+správně: [a, c]
+
+327. Obalovat svítidla a žárovky papíry nebo látkami 
+a) se nedoporučuje 
+b) je dovoleno nejvýše do příkonu 40 W 
+c) je nepřípustné 
+správně: [c]
+
+# ČSN 341610 - El. silový rozvod v průmyslových provozovnách 
+
+328. Nejvyšší přípustné napětí rozvodné soustavy v průmyslových provozovnách na kterémkoliv místě 
+a) nemá být dlouhodobě větší než 105 % jmenovitého napětí rozvodné soustavy 
+b) nemá být dlouhodobě větší než 110% jmenovitého napětí rozvodné soustavy 
+c) nemá být krátkodobě (např. při chodu naprázdno) větší než 11 O% jmenovitého napětí rozvodné soustavy 
+správně: [a, c]
+
+329. Elektrický silový rozvod musí být navržen, dimenzován a provozován tak, aby napětí na svorkách spotřebiče 
+a) nepokleslo nebo se nezvýšilo více než je stanoveno 
+b) nepokleslo více než je stanoveno, zvýšení není limitováno 
+c) se nezvýšilo více než je stanoveno, pokles není limitován 
+správně: [a]
+
+330. Pokles napětí na svorkách motorického spotřebiče 
+a) nemá být větší než 5 % jmenovitého napětí soustavy 
+b) nemá být větší než 7 % jmenovitého napětí soustavy 
+c) nemá poklesnout pod 95 % jmenovitého napětí motoru 
+správně: [a, c]
+
+331. Pokles napětí v místě světelného zdroje způsobený výpočtovým zatížením 
+a) nemá být větší než 3 % jmenovitého napětí 
+b) nemá být pro venkovní osvětlení komunikací větší než 8 % jmenovitého napětí sítě 
+c) nemá být větší než 15 % jmenovitého napětí
+správně: [a, b]
+
+332. Pro světelné zdroje umístěné na stroji, které jsou napájeny z přívodu pro motor stroje 
+a) je nutno dodržet pokles napětí platící pro světelné zdroje 
+b) je dovoleno stejné procento poklesu napětí jako pro motor stroje 
+c) není stanoveno omezení pro pokles napětí 
+správně: [b]
+
+333. Pokles napětí v místě tepelného spotřebiče způsobený výpočtovým zatížením 
+a) nemá být větší než 10 % jmenovitého napětí rozvodné soustavy 
+b) nemá být větší než 5 % jmenovitého napětí rozvodné soustavy 
+c) nemá klesnout pod 95 % jmenovitého napětí rozvodné soustavy 
+správně: [b, c]
+
+334. V průmyslových provozovnách, kde nelze vhodnou volbou a dimenzováním spotřebičů dosáhnout požadovaného účiníku 
+a) musí se vždy provést kompenzace jalového proudu 
+b) doporučuje se provést kompenzaci jalového proudu 
+c) nelze připojit spotřebiče, které by dále zvyšovaly jalový proud 
+správně: [b]
+
+335. U motorů pro zvlášť důležitá zařízení, jejichž náhlé vypnutí v důsledku jištění by způsobilo velké hospodářské škody nebo přímo ohrožení lidských životů, 
+a) musí se jištění vynechat. Zařízení se však musí opatřit signalizací poruchy a musí mít trvalou obsluhu. 
+b) musí se jištění provádět o dva stupně silnějšími jistícími prvky 
+c) musí se použít k jištění výhradně pomalé pojistky 
+správně: [a]
+
+# ČSN 33 3320 ed. 2 - Elektrické přípojky 
+
+336. Přípojková skříň kabelového vedení je součástí přípojky. Umisťuje se zpravidla na nemovitosti zákazníka, a to v oplocení, obvodovém zdivu budovy nebo na jiném vhodném a snadno přístupném místě. Spodní okraj skříně má být 
+a) minimálně 0,6 m nad definitivně upraveným terénem (maximálně 1,5 m) 
+b) minimálně 0,5 m nad definitivně upraveným terénem (maximálně 2,5 m) 
+c) minimálně 0,2 m nad definitivně upraveným terénem (maximálně 3,0 m) 
+správně: [a]
+
+# ČSN EN IEC 61936-1 ed. 2 - Elektrické instalace nad AC 1 kV - ČSN EN 50522 ed. 2 - Uzemňování elektrických instalací nad AC 1 kV 
+
+337. Vnější oplocení venkovních instalací musí splňovat tyto podmínky 
+a) plot musí být zhotoven z plného materiálu bez otvorů 
+b) plot musí být vysoký nejméně 1,8 m 
+c) plot musí být vybaven trojúhelníkovou výstražnou značkou 
+správně: [b, c]
+
+338. Okna budov se zařízením vn musí být navržena tak, aby byl ztížen vstup. Která z následujících opatření to zajišťují? 
+a) okno má rozměr maximálně 150 x 150 cm 
+b) okno je z nerozbitného materiálu nebo je chráněno drátěným pletivem 
+c) spodní okraj okna je nejméně 1,8 m nad zemí (nad přístupnou úrovní) 
+správně: [b, c]
+
+339. Pro vstupní dveře do prostor s elektrickým zařízením vn je předepsáno, že 
+a) musí být vybaveny bezpečnostními zámky 
+b) dveře se musí otevírat směrem dovnitř 
+c) dveře se musí otevírat směrem ven 
+správně: [a, c]
+
+340. Pro nouzové dveře z prostor s elektrickým zařízením vn je předepsáno, že 
+a) musí mít výšku alespoň 2000 mm 
+b) šířka otevření musí být alespoň 900 mm 
+c) šířka otevření musí být alespoň 750 mm 
+správně: [a, c]
+
+341. Uličky pro údržbu elektrických stanic musí být široké nejméně 
+a) 80 cm 
+b) 120 cm 
+c) 140 cm 
+správně: [a]
+
+342. V místech, kde otevřené dveře zasahují do únikových cest, musí zůstat prostor pro evakuaci široký nejméně 
+a) 90 cm 
+b) 70 cm 
+c) 50 cm
+správně: [c]
+
+343. Dveře skříní rozváděčů nebo kobek rozvodny se mají 
+a) otevírat ve směru úniku 
+b) zavírat ve směru úniku 
+c) otevírat pouze směrem nahoru ke stropu 
+správně: [b]
+
+344. Dveře mezi různými místnostmi uvnitř uzavřené elektrické provozovny 
+a) nemusí být opatřeny zámky 
+b) musí mít vždy zámky 
+c) nesmí mít nikdy zámky 
+správně: [a]
+
+345. Tam, kde je pro zhotovení zábran vhodné použití řetězů nebo provazů, musí být umístěny 
+a) v minimální výšce 1 200 mm 
+b) v maximální výšce 1 400 mm 
+c) v maximální výšce 1 950 mm 
+správně: [a, b]
+
+346. Venkovní stanoviště s olejovými transformátory musí být vybaveno záchytnou jímkou tehdy, jestliže 
+a) objem oleje v jednom transformátoru je 1 000 litrů a více 
+b) objem oleje v jednom transformátoru je 500 litrů a více 
+c) je transformátor umístěn v ochranném pásmu vodního zdroje 
+správně: [a, c]
+
+347. Chodby a únikové cesty musí mít výšku 
+a) minimálně 1900 mm 
+b) minimálně 1950 mm 
+c) minimálně 2000 mm 
+správně: [c]
+
+348. Sekundární obvody všech přístrojových transformátorů musí být uzemněny. Požaduje se minímální průřez uzemňovacího vodiče 
+a) 1,5 mm2 Cu, pokud je uzemňovací vodič mechanicky chráněn 
+b) 2,5 mm2 Cu, pokud je uzemňovací vodič mechanicky chráněn 
+c) 4 mm2 Cu, pokud uzemňovací vodič není mechanicky chráněn 
+správně: [b, c]
+
+349. Soustava, ve které středy transformátorů a generátorů nejsou úmyslně spojeny se zemí (s výjimkou vysokoimpedančních spojení pro účely signalizace, měření nebo ochrany) se označuje jako 
+a) síť IT 
+b) síť TT 
+c) síť TN
+správně: [a]
+
+# ČSN 33 2000-7-729 - Uličky pro obsluhu nebo údržbu
+
+350. Vstupní dveře uliček v uzavřeném prostoru s omezeným přístupem 
+a) se musí otevírat směrem ven z tohoto prostoru 
+b) se musí otevírat směrem dovnitř do tohoto prostoru 
+c) musí zůstat trvale otevřené 
+správně: [a]
+
+351. V stup ní dveře uliček v uzavřeném prostoru s omezeným přístupem musí mít minimální rozměry 
+a) šířka 600 mm, výška 1 970 mm 
+b) šířka 700 mm, výška 2 000 mm 
+c) šířka 800 mm, výška 2 100 mm 
+správně: [b]
+
+352. V prostoru s omezeným přístupem musí být nechráněné součásti elektrického zařízení pod napětím umístěny tak, aby šíře uličky mezi zdí a součástmi pod napětím byla minimálně [obr. 15.png] 
+a) 900 mm 
+b) 1000 mm 
+c) 1200 mm 
+správně: [a]
+
+353. V prostoru s omezeným přístupem musí být zařízení uspořádáno tak, aby volný prostor mezi zdí a ovládacími prvky byl minimálně [obr. 16.png] 
+a) 500 mm 
+b) 700 mm 
+c) 950 mm 
+správně: [b]
+
+354. V prostoru s omezeným přístupem musí být zařízení uspořádáno tak, aby šíře uličky mezi součástmi pod napětím byla minimálně [obr. 17.png] 
+a) 1300 mm 
+b) 1200 mm 
+c) 1 000 mm 
+správně: [a]
+
+355. V prostoru s omezeným přístupem musí být zařízení uspořádáno tak, aby volný prostor mezi ovládacími prvky (rukojeťmi) byl minimálně [obr. 18.png] 
+a) 900 mm 
+b) 1 800 mm 
+c) 2 300 mm
+správně: [a]
+
+356. U uliček, kde mohou osoby stát nebo procházet se požaduje výška živých částí nad podlahou 
+a) minimálně 2,3 m 
+b) minimálně 2,5 m 
+c) maximálně 2,1 m 
+správně: [b]
+
+357. Uzavřený prostor s omezeným přístupem o délce vyšší než 20 m 
+a) musí být uzamčen 
+b) stačí zpřístupnit z jedné strany 
+c) musí být přístupný dveřmi na obou koncích 
+správně: [c]
+
+358. Uličky musím umožnit otevření dveří nebo panelů 
+a) minimálně v úhlu 60° 
+b) minimálně v úhlu 90° 
+c) minimálně v úhlu 120°
+správně: [b]
+
+# ČSN 33 2130 ed. 4 - Vnitřní elektrické rozvody
+
+359. Pokud je osvětlení společných komunikací objektu ovládáno samočinnými schodišťovými spínači, 
+a) musí být na každém patře ještě dva další nezávislé světelné okruhy 
+b) musí být na každém patře alespoň čtyři spínače 
+c) musí být možnost zapnout osvětlení trvale 
+správně: [c]
+
+360. Zásuvky a spínače 
+a) mohou být v umývacím prostoru, ale musí být ve výšce alespoň 1,2 m nad podlahou 
+b) nesmějí být umístěny v umývacím prostoru 
+c) mohou být výjimečně v umývacím prostoru tehdy, jsou-li součástí zařízení určeného výrobcem i do umývacího prostoru (v návodu to musí být výslovně uvedeno!) 
+správně: [b, c]
+
+361. Kolik svítidel se smí připojit na jeden světelný obvod?
+a) 5 
+b) 10 
+c) tolik, aby součet jejich jmenovitých proudů nepřekročil jmenovitý proud jistícího přístroje obvodu 
+správně: [c]
+
+362. Kolébkové spínače a ovládače se doporučuje osadit tak, aby do polohy „zapnuto" bylo nutno stlačit kolébku 
+a) nahoře (neplatí u střídavých a křížových přepínačů) 
+b) nahoře. Nutno dodržet i u střídavých a křížových přepínačů. 
+c) dole. Netýká se střídavých a křížových přepínačů. 
+správně: [a]
+
+363. Ve světelných obvodech bytové a občanské výstavby 
+a) nemusí být použita doplňková ochrana proudovým chráničem (do 30 mA) 
+b) nesmí být použita doplňková ochrana proudovým chráničem (do 30 mA) 
+c) musí být použita doplňková ochrana proudovým chráničem (do 30 mA) 
+správně: [c]
+
+364. Kolik zásuvek lze nejvýše připojit na jeden zásuvkový obvod? (dvojzásuvka se považuje za jeden zásuvkový vývod) 
+a) 4 
+b) 10 
+c) 15 
+správně: [b]
+
+365. Jaký je maximální celkový příkon jednoúčelových spotřebičů pro krátkodobé použití, které lze pevně připojit na zásuvkové obvody? 
+a) 60 VA 
+b) 500 VA 
+c) 2 000 VA 
+správně: [c]
+
+366. Zásuvkové obvody se musí jistit pojistkou nebo jističem 
+a) odpovídající nejvýše jmenovitému proudu použitých zásuvek 
+b) odpovídající nejvýše trojnásobku jmenovitého proudu použitých zásuvek 
+c) o hodnotě max. 25 A
+správně: [a]
+
+367. Zásuvkové obvody jejich jmenovitý proud nepřekračuje 32 A 
+a) nemusí mít doplňkovou ochranu proudovým chráničem 
+b) musí mít doplňkovou ochranu proudovým chráničem do 30 mA 
+c) nesmí mít doplňkovou ochranu proudovým chráničem 
+správně: [b]
+
+368. Nejmenší dovolený průřez jader vodičů v trubkách a lištách je 
+a) 1,5 mm2 Cu 
+b) 1,5 mm2 Al 
+c) 2,5 mm2 Al 
+správně: [a, c]
+
+369. Jaký typ proudových chráničů se nesmí P.oužívat u světelných obvodů? 
+a) Proudové chrániče typu A 
+b) Proudové chrániče typu B 
+c) Proudové chrániče typu AC 
+správně: [c]
+
+370. V bytové jednotce je obvod pro automatickou pračku napájen z jističe 16 A kabelem Cu uloženým pod omítkou. Jaký je předepsaný minimální průřez vodičů? 
+a) 6 mm2 
+b) 1,5 mm2 
+c) 2,5 mm2 
+správně: [c]
+
+371. V budovách, kde je do bytu (bytů) zaveden plyn, nesmí být instalovány 
+a) jiskřící zvonky (tj. zvonky s přerušovačem) 
+b) elektronické zvonky - nejiskřící 
+c) bzučákové zvonky - nejiskřící 
+správně: [a]
+
+372. Pro zásuvky u umyvadel ve školních učebnách platí, že 
+a) se nesmějí umísťovat blíže než 1,5 m od hranice umývacího prostoru. 
+b) mohou být již ve vzdálenosti 60 cm od hranice umývacího prostoru. 
+c) u umyvadel musí být vždy instalovány alespoň 2 zásuvky. 
+správně: [a]
+
+373. Co lze instalovat do univerzální instalační krabice bez prostorového oddělení? 
+a) Zásuvky připojené na různé obvody 
+b) Pouze zásuvky a spínače, které jsou připojeny na stejný obvod. 
+c) Nelze instalovat nic jiného, než zásuvky pro obvody SELV nebo PELV. 
+správně: [b]
+
+# ČSN 33 1500 - Revize elektrických zařízení 
+
+374. Co je účelem revize elektrických zařízení? 
+a) Ověřování stavu zařízení z hlediska možných úspor elektrické energie 
+b) Ověřování stavu zařízení z hlediska bezpečnosti 
+c) Ověřování stavu zařízení z hlediska životnosti 
+správně: [b]
+
+375. U nových elektrických zařízení musí být výchozí revize provedena 
+a) nejpozději do 6 měsíců po uvedení do provozu 
+b) před jejich uvedením do provozu 
+c) pouze tehdy, když se jedná o zařízení v prostorách s nebezpečím výbuchu 
+správně: [b]
+
+376. Elektrické zařízení je možno po opravě provozovat jen tehdy, jestliže 
+a) pracovník provádějící opravu oznámí ústně dokončení opravy provozovateli 
+b) stav zařízení byl prověřen kontrolou a o kontrole byl vyhotoven záznam s podpisem pověřeného pracovníka 
+c) stav zařízení byl prověřen kontrolou. Výsledek kontroly není nutno zapisovat. 
+správně: [b]
+
+377. Pro pravidelné revize ve zděných kancelářských budovách byla stanovena lhůta mezi revizemí 
+a) 2 roky 
+b) 5 roků 
+c) není nikde stanoveno 
+správně: [b]
+
+378. Součástí podkladů k provádění revizí je také 
+a) dokumentace elektrického zařízení odpovídající skutečnému provedení 
+b) protokol o určení druhu prostředí, pokud není součástí dokumentace 
+c) záznamy o kontrolách a měřeních provedených na elektrickém zařízení před jeho uvedením do provozu
+správně: [a, b, c]
+
+# ČSN 33 2000-6 ed. 2 - Elektrické instalace nn - Revize 
+
+379. Součástí prohlídky při prováděni výchozí revize je také ověření 
+a) přístupnosti zařízení z hlediska jeho ovládáni a údržby 
+b) označení nulových a ochranných vodičů 
+c) označení obvodů, nadproudových ochranných přístrojů, spínačů a svorek 
+správně: [a, b, c]
+
+380. Minimální hodnoty izolačního odporu jsou 
+a) pro obvody SELV a PELV: 0,5 MΩ (při zkušebním napětí DC 250 V) 
+b) pro obvody do 500 V: 1,0 MΩ (při zkušebním napětí DC 500 V) 
+c) pro obvody do 500 V: 0,5 MΩ (při zkušebním napětí DC 500 V) 
+správně: [a, b]
+
+381. Podle ČSN 33 2000-6 ed. 2 se provádějí u elektrických instalací tyto revize 
+a) výchozí revize 
+b) opakovaná revize 
+c) pravidelná revize 
+správně: [a, c]
+
+382. U elektrických instalací jsou doporučeny tyto lhůty mezi pravidelnými revizemi 
+a) plavecké bazény a fontány 1 rok 
+b) zemědělská a zahradnická zařízení 3 roky 
+c) venkovní osvětlení 4 roky 
+správně: [a, b, c]
+
+383. Pokud není při pravidelné revizi k dispozici předchozí revizní zpráva 
+a) pravidelnou revizi již není nutno provádět 
+b) pravidelnou revizi není možno provést 
+c) pravidelná revize se provede v rozsahu výchozí revize 
+správně: [c]
+
+384. Před tím, než se provede měření impedance poruchové smyčky, je třeba 
+a) odpojit celou instalaci od zdroje napájení 
+b) vodivě spojit ochranný vodič s nulovým vodičem 
+c) provést zkoušku spojitosti ochranných vodičů 
+správně: [c]
+
+# ČSN 33 1600 ed. 2 - Revize a kontroly elektrických spotřebičů 
+
+385. Elektrické ruční nářadí se v rámci normy ČSN 33 1600 ed. 2 považuje za 
+a) nepřipevněný elektrický spotřebič držený v ruce 
+b) strojní zařízení 
+c) připevněný elektrický spotřebič 
+správně: [a]
+
+386. Pro často používané elektrické ruční nářadí je vhodné stanovit místním provozním a bezpečnostním předpisem kratší lhůty mezi opakovanými zkouškami a opakovanými revizemi než uvádí norma 
+a) týká se to však pouze nářadí z půjčoven 
+b) týká se to nářadí s využitím více než 250 provozních hodin za rok 
+c) týká se to však pouze nářadí, které se drží oběma rukama 
+správně: [b]
+
+387. U spotřebičů třídy ochrany II a u elektrického ručního nářadí třídy ochrany II se izolační odpor měří 
+a) mezi živými částmi a přístupnými vodivými částmi (bez rozebírání) 
+b) tak, že se změří nejprve základní izolace a pak přídavná izolace (nutno rozebrat) 
+c) izolační odpor není nutno měřit 
+správně: [a]
+
+388. Opakované revize elektrických spotřebičů zajišťuje 
+a) jejich provozovatel 
+b) vždy jejich uživatel 
+c) v případě dlouhodobého pronájmu jejich uživatel 
+správně: [a, c]
+
+389. Norma ČSN 33 1600 ed. 2 se nevztahuje na 
+a) zdravotnické elektrické spotřebiče, strojní zařízení, svářečky 
+b) prodlužovací a odpojitelné přívody 
+c) elektrické spotřebiče na napětí SELV a PELV, které se nepřipojují k síti nn
+správně: [a, c]
+
+390. Opakované revize nepřipevněných spotřebičů skupiny C držených v ruce 
+a) musí být prováděny u třídy ochrany I nejméně jednou za 24 měsíců 
+b) musí být prováděny u třídy ochrany I a II nejméně jednou za 60 měsíců 
+c) musí být prováděny u třídy ochrany II a III nejméně jednou za 48 měsíců 
+správně: [a, c]
+
+391. Ochranný vodič musí být spolehlivě připojen. Odpor ochranného vodiče, měřený mezi ochrannou zdířkou vidlice a přístupnými vodivými neživými částmi spojenými s ochranným vodičem, může být maximálně 
+a) 0,1 Ω při délce pohyblivého přívodu do 3 m 
+b) 0,2 Ω při délce pohyblivého přívodu do 3 m 
+c) 0,4 Ω při délce pohyblivého přívodu do 5 m 
+správně: [b]
+
+392. Je-li délka pohyblivého přívodu spotřebiče větší než 3 m 
+a) připočte se k dovolené hodnotě odporu ochranného vodiče 0,1 Ω na každé další 3 m délky (V žádném případě ale nesmí být překročena hodnota 1 Ω.) 
+b) připočte se k dovolené hodnotě odporu ochranného vodiče 0,2 Ω na každých dalších 5 m délky 
+c) nesmí být překročena hodnota odporu ochranného vodiče 0,2 Ω 
+správně: [a]
+
+393. Izolační odpor spotřebičů třídy ochrany I držených za provozu v ruce musí být 
+a) nejméně 2 MΩ 
+b) nejméně 5 MΩ 
+c) nejméně 7 MΩ 
+správně: [a]
+
+394. Izolační odpor spotřebičů třídy ochrany II držených za provozu v ruce musí být 
+a) nejméně 2 MΩ 
+b) nejméně 5 MΩ 
+c) nejméně 7 MΩ 
+správně: [c]
+
+395. Při měření proudu protékajícího ochranným vodičem u spotřebičů třídy ochrany I nesmí být (kromě v normě uvedených výjimek) překročena hodnota 
+a) 0,5 mA 
+b) 3,5 mA 
+c) 10 mA 
+správně: [b]
+
+396. Při měření dotykového proudu u spotřebičů třídy ochrany II nesmí dotykový proud na vodivých částech přístupných dotyku překročit hodnotu 
+a) 3,5 mA 
+b) 1,5 mA 
+c) 0,5 mA
+správně: [c]
+
+# Nařízení vlády č.390/2021 Sb. - Ochranné pracovní prostředky 
+
+397. Tytéž ochranné prostředky smí používat více různých zaměstnanců. Mohou si je tedy vzájemně půjčovat. Je to však možné pouze v případě, že 
+a) tytéž ochranné prostředky nepoužívá více než 5 pracovníků 
+b) jsou učiněna taková opatření, která zamezí ohrožení infekčními onemocněními 
+c) všichni pracovníci jsou pracovníci znalí 
+správně: [b]
+
+# ČSN 34 3278 - Provoz přístrojových transformátorů 
+
+398. Pokud nejsou k transformátoru proudu připojeny přístroje, musí být sekundární svorky 
+a) ponechány nezapojeny 
+b) označeny výstražnou tabulkou 
+c) zkratovány
+správně: [c]
+
+# ČSN 33 2000-7-708 ed. 4 - Parkovací místa v kempincích 
+
+399. Pro zásuvky na parkovacích místech pro karavany v kempincích platí, že: 
+a) na jeden proudový chránič smí být zapojeno nejvýše 6 zásuvek 
+b) zásuvky musí mít krytí alespoň IP 44 a mít jmenovitý proud minimálně 16 A 
+c) každý zásuvkový vývod musí být chráněn samostatně proudovým chráničem, jehož vybavovací reziduální proud nepřesahuje 30 mA
+správně: [b, c]
+
+# ČSN 33 2180 - Připojování el. přístrojů a spotřebičů 
+
+400. Jak vysoko nad podlahou mají být umístěny zásuvky v obytných místnostech? 
+a) alespoň 40 cm (měřeno od středu zásuvky) 
+b) alespoň 20 cm (měřeno od spodního okraje zásuvky) 
+c) alespoň 20 cm (měřeno od středu zásuvky) 
+správně: [c]
+
+401. V jaké výši nad podlahou mají být umístěny instalační spínače?
+a) 0,6 m až 1,0 m 
+b) 0,9 m až 1,2 m 
+c) 0,9 m až 1,4 m 
+správně: [b]
+
+402. Jednopólové spínací přístroje nesmí být montovány 
+a) do ochranného vodiče 
+b) do fázového vodiče 
+c) do středního vodiče 
+správně: [a, c]
+
+403. Kdy je povoleno jednopólové vypínání silových obvodů spínači? 
+a) ve všech světelných obvodech 
+b) jen ve světelných obvodech do 250 V a do 1 000 W a to pouze v obvodech, jejichž jeden pól je spojen se zemí 
+c) pouze v obvodech s ochranou proudovým chráničem 
+správně: [b]
+
+404. Kdy mohou být použity spínače nn, které volně visí (např. šňůrové spínače)? 
+a) při proudu do 10 A. Části vedoucí proud musí být v pevném izolačním pouzdru 
+b) při proudu do 10 A. Části vedoucí proud musí být v kovovém uzemněném pouzdru 
+c) při proudu do 6 A. Části vedoucí proud musí být v pevném izolačním pouzdru 
+správně: [c]
+
+405. Do jakého proudu se smí užívat šňůrových spínačů? 
+a) 6 A 
+b) 10 A 
+c) 16 A 
+správně: [a]
+
+406. Izolační odpor elektrických vedení má být 
+a) 40 Ω na 1 V provozního napětí v novostavbách 
+b) 50 Ω na 1 V provozního napětí u zařízení v mokrých a prosáklých prostorách 
+c) 1 000 Ω na 1 V provozního napětí
+správně: [b, c]
+
+# ČSN EN 60034-8 ed. 2 - Točivé stroje - Značení svorek 
+
+407. Označte správné připojení svorek asynchronního motoru při zapojení do trojúhelníku 
+a) [obr. 19.png] 
+b) [obr. 20.png] 
+c) [obr. 21.png] 
+správně: [b]
+
+408. Označte správné připojení svorek asynchronního motoru při zapojení do hvězdy 
+a) [obr. 22.png] 
+b) [obr. 23.png] 
+c) [obr. 24.png] 
+správně: [c]
+
+# ČSN 33 2000-7-701 ed. 2 - Prostory s vanou nebo sprchou 
+
+409. El. zařízení v koupelnách a sprchách musí mít stupeň ochrany krytem minimálně 
+a) v zóně 2 - IPX4. Pokud se očekává použití tryskající vody, tak IPX5. 
+b) v zóně 1 - IPX4. Pokud se očekává použití tryskající vody, tak IPX5. 
+c) v zóně 0 - IPX6 
+správně: [a, b]
+
+410. V místnostech s vanou nebo sprchou musí být všechny elektrické obvody vybaveny proudovými chrániči se jmenovitým vybavovacím rozdílovým proudem nepřesahujícím 30 mA. Proudový chránič se nevyžaduje pouze pro tyto obvody: 
+a) pro obvody, kde je ochrana zajištěna zábranou nebo polohou 
+b) pro obvody SELV a PELV 
+c) pro obvody s ochranou elektrickým oddělením 
+správně: [b, c]
+
+411. V zóně 1 mohou být umístěna pouze elektrická zařízení, která jsou upevněná, jsou trvale připojená a jsou podle výrobce do zóny 1 vhodná. Mohou to být: 
+a) ohřívače vody, ventilační zařízení, vířivé vany a sprchová čerpadla 
+b) zásuvky a vypínače nízkého napětí 
+c) svítidla a sušiče ručníků 
+správně: [a, c]
+
+412. Vedení napájející elektrické zařízení v zóně 1 musí být uloženo ve stěně tímto způsobem: 
+a) svisle shora nebo vodorovně k zadní straně spotřebiče upevněného nad vanou 
+b) svisle zdola nebo vodorovně k zadní straně spotřebiče upevněného pod vanou 
+c) nejkratší cestou šikmo z rohu místnosti od podlahy k zadní straně spotřebiče 
+správně: [a, b]
+
+413. V zóně 2 se smí umístit například: 
+a) libovolná zásuvka 230 V, pokud má krytí alespoň IPX4 
+b) jedna zásuvka 230 V určená pouze pro připojení pračky 
+c) infrazářič s krytím alespoň IPX4
+správně: [c]
+
+# ČSN 34 3085 ed. 2 - Ustanovení pro zacházení s elektrickým zařízením při požárech nebo záplavách 
+
+414. Místnost s elektrickým zařízením, které při zkratu, přetížení, přepětí nebo provozní poruše stroje může způsobit požár, musí být vybavena 
+a) alespoň jedním vodním hasicím přístrojem 
+b) vhodnými hasicími přístroji v dostatečném počtu 
+c) výhradně stabilním hasicím zařízením pro hašení požáru 
+správně: [b]
+
+415. Po odpojení napájení v místě požáru se musí prověřit, zda nedošlo k odpojení 
+a) požárních čerpadel a čerpadel k plnění vodních zásobníků 
+b) nouzového osvětlení 
+c) zařízení, které je nutné k evakuaci lidí, zvířat nebo majetku (požární výtahy apod.)
+správně: [a, b, c]
+
+# ČSN 33 2312 ed. 2 - El. zařízení v hořlavých látkách a na nich 
+
+416. Elektrické předměty, které je možno montovat přímo na hořlavé látky, mají označení
+a) [obr. 25.png] 
+b) [obr. 26.png] 
+c) [obr. 27.png] 
+správně: [c]
+
+417. Elektrické předměty, které je možno montovat přímo do hořlavých látek, mají označení 
+a) [obr. 28.png] 
+b) [obr. 29.png] 
+c) [obr. 30.png] 
+správně: [b]
+
+418. Elektrická svítidla, která se nesmí montovat přímo na hořlavé látky, mají označení 
+a) [obr. 31.png] 
+b) [obr. 32.png] 
+c) [obr. 33.png] 
+správně: [b]
+
+419. Elektrické přístroje je možno montovat na hořlavé látky pokud jsou od těchto látek odděleny alespoň 
+a) pozinkovaným plechem síly minimálně 0,6 mm 
+b) nehořlavou tepelně izolační podložkou síly alespoň 5 mm 
+c) vzduchovou mezerou širokou alespoň 30 mm
+správně: [b, c]
+
+# ČSN EN 62305-3 ed. 2 - Ochrana před bleskem - Hmotné škody
+
+420. V závislosti na vlastnostech chráněné stavby a uvažované úrovni ochrany před bleskem (LPL) se ochrana dělí do tříd (LPS). Tyto třídy LPS jsou celkem 
+a) čtyři 
+b) tři 
+c) dvě 
+správně: [a]
+
+421. Pro stanovení umístění jímací soustavy jsou přípustné tyto metody: 
+a) metoda použití aktivního jímače 
+b) pouze metoda mřížové soustavy 
+c) metoda ochranného úhlu, metoda valící se koule a metoda mřížové soustavy 
+správně: [c]
+
+422. Při použití mřížové soustavy pro ochranu před bleskem 
+a) smí být maximální rozměr ok 5 x 5 m pro třídu LPS I 
+b) smí být maximální rozměr ok 20 x 60 m pro všechny třídy LPS 
+c) smí být maximální rozměr ok 10 x 10 m pro třídu LPS II 
+správně: [a, c]
+
+423. Při použití mřížové soustavy pro ochranu před bleskem 
+a) smí být maximální rozměr ok 20 x 60 m pro všechny třídy LPS 
+b) smí být maximální rozměr ok 15 x 15 m pro třídu LPS III 
+c) smí být maximální rozměr ok 20 x 20 m pro třídu LPS IV 
+správně: [b, c]
+
+424. Pokud není nutno zabránit propálení nebo zapálení, lze za náhodný jímač považovat i měděné oplechování, které má tloušťku alespoň 
+a) 0,5 mm 
+b) 0,4 mm 
+c) 0,35 mm 
+správně: [a]
+
+425. Není-li možno dodržet vzdálenost mezi svodem hromosvodu a hořlavým materiálem (0,1 m), měl by svod mít průřez minimálně 
+a) 100 mm2 
+b) 150 mm2 
+c) 200 mm2 
+správně: [a]
+
+426. Přednostně by měl být při ochraně před bleskem použit tento zemnič: 
+a) zemnící tyč 
+b) deskový zemnič 
+c) vzájemně spojené ocelové armování v základovém betonu 
+správně: [c]
+
+427. Pro vodiče svodů mají být použity tyto minimální rozměry: 
+a) pozinkovaný ocelový drát průměr 8 mm, minimální průřez 50 mm2 
+b) drát z nerezové oceli průměr 6 mm, postačuje průřez 35 mm2 
+c) pozinkovaný ocelový pásek, minimální průřez 50 mm2
+správně: [a, c]
+
+428. Pokud se při ochraně před bleskem zhotovuje zemnící vodič z pozinkovaného ocelového drátu, měl by mít průměr minimálně 
+a) 10 mm (78 mm2) 
+b) 14 mm (150 mm2) 
+c) 16 mm (200 mm2) 
+správně: [a]
+
+429. Vzdálenosti mezi svody závisí na třídě LPS a jsou v normě stanoveny takto: 
+a) 15 m pro LPS I, 15 m pro LPS II, 30 m pro LPS III, 30 m pro LPS VI 
+b) 10 m pro LPS I, 10 m pro LPS II, 15 m pro LPS III, 20 m pro LPS VI 
+c) 20 m pro LPS I, 20 m pro LPS II, 30 m pro LPS III, 40 m pro LPS VI 
+správně: [b]
+
+430. Základový zemnič je dostatečně chráněn proti korozi, pokud je ze všech stran obalen vrstvou betonu silnou nejméně 
+a) 0,5 m 
+b) 20 cm 
+c) 50 mm 
+správně: [c]
+
+431. Uzemňovací soustavu typu A tvoří 
+a) ocelová síť uložená pod celým chráněným objektem 
+b) vodorovné nebo svislé zemniče, ke kterým jsou připojeny svody 
+c) obvodový zemnič, který je spojen se základovým zemničem
+správně: [b]
+
+# ČSN EN 60038 - Jmenovitá napětí 
+
+432. Jmenovité střídavé napětí veřejných napájecích sítí je 
+a) 220/380V 
+b) 230/380V 
+c) 230/400V
+správně: [c]
+
+# ČSN EN 60529 - Stupně ochrany krytem (krytí - IP kód)
+
+433. Při označování stupně krytí pomocí IP kódu označuje 
+a) první číslice stupeň ochrany před vniknutím pevných těles 
+b) první číslice stupeň ochrany proti vniknutí vody 
+c) druhá číslice stupeň ochrany proti vniknutí vody 
+správně: [a, c]
+
+434. Který z následujících stupňů ochrany krytím zajišťuje ochranu proti tryskající vysokotlaké horké vodě? 
+a) IP44 
+b) IP68 
+c) IP69
+správně: [c]
+
+# ČSN 34 2600 ed. 2 - Železniční zabezpečovací zařízení 
+
+435. Způsob ochrany u zabezpečovacích zařízení a jeho částí se volí podle normy ČSN 33 2000-4-41 ed. 2 se zřetelem na 
+a) hlavní funkci zabezpečovacího zařízení 
+b) vlivy elektrické trakce 
+c) vlivy elektrických zařízení vn, vvn a zvn 
+správně: [a, b, c]
+
+436. Elektrické obvody zabezpečovacích zařízení musí být 
+a) připojeny na silové obvody 
+b) elektricky odděleny od silových obvodů 
+c) napájeny výhradně z akumulátorů
+správně: [b]
+
+# ČSN EN IEC 62485-2 - Staniční akumulátorové baterie
+
+437. Olověné, nikl-kadmiové a nikl-metalhydridové akumulátorové baterie 
+a) musí být pokud možno umístěny v oddělených prostorech 
+b) musí být umístěny společně v jedné místnosti 
+c) mají být umístěny společně v jedné místnosti
+správně: [a]
+
+438. Ve stavu, kdy bateriemi protéká proud, 
+a) nesmi být na článcích měřeno napětí 
+b) nesmí být baterie spojovány 
+c) nesmí být baterie rozpojovány
+správně: [b, c]
+
+# ČSN EN 62485-3 - Trakční baterie 
+
+439. Izolační odpor mezi vývodem baterie (do 120 V) a kostrou vozidla 
+a) musí být pro novou akumulátorovou baterii alespoň 1 MΩ 
+b) při provozu nesmí klesnout pod 200 Ω na 1 V jmenovitého napětí 
+c) při provozu nesmí klesnout pod 50 Ω na 1 V jmenovitého napětí (min. však 1 kΩ)
+správně: [a, c]
+
+# ČSN 33 0165 ed. 2 - Značení vodičů barvami nebo číslicemi 
+
+440. Holé vodiče třífázové soustavy se značí těmito barvami 
+a) fázový vodič - oranžová 
+b) fázový vodič - červená 
+c) nulový vodič - světle modrá 
+správně: [a, c]
+
+441. Holé vodiče elektrických trakčních zařízení provozovaných střídavým jednofázovým proudem jsou označeny těmito barvami: 
+a) vodič připojený k trolejovému vedení (napájecí vedení) - hnědá 
+b) vodič připojený k trolejovému vedení (napájecí vedení) - fialová 
+c) vodič připojený ke kolejovému vedení (odváděcí vedení) - žlutá 
+správně: [b, c]
+
+442. Izolované vodiče a kabely se označují těmito barvami 
+a) fázový nebo krajní vodič - černá, hnědá, šedá 
+b) nulový/střední vodič - světlemodrá 
+c) nulový/střední vodič - tmavěmodrá 
+správně: [a, b]
+
+443. Kabel s barevným kódováním 4B se skládá z jednoho vodiče označeného barvou zelená/žlutá, jednoho vodiče označeného hnědou barvou a 
+a) jednoho vodiče barvy černé a jednoho vodiče barvy šedé 
+b) jednoho vodiče barvy modré a jednoho vodiče barvy černé 
+c) jednoho vodiče barvy černé a jednoho vodiče barvy červené 
+správně: [a]
+
+444. Jaké označení má kabel, který obsahuje tyto barvy vodičů: lx žlutá/zelená, lx světlemodrá, lx hnědá, lx černá a lx šedá 
+a) 4C 
+b) 5C 
+c) 5D
+správně: [b]
+
+# ČSN ISO 3864 -1 - Bezpečnostní barvy a bezpečnostní značky 
+
+445. Bezpečnostní značky v provedení červeném (červený kruh na bílém pozadí s červeným úhlopříčným přeškrtnutím a černým symbolem nebo textem) jsou 
+a) značky příkazu 
+b) značky zákazu 
+c) informační značky 
+správně: [b]
+
+446. Bezpečnostní značky v provedení modrém (modrý kruh s bílým textem nebo symbolem) jsou 
+a) značky příkazu 
+b) značky zákazu 
+c) značky výstrahy 
+správně: [a]
+
+447. Bezpečnostní značky v provedení žlutém (žlutý trojúhelník, černě orámovaný s černým textem nebo symbolem) jsou 
+a) značky zákazu 
+b) značky výstrahy 
+c) informační značky 
+správně: [b]
+
+448. Bezpečnostní značky v provedení zeleném (zelený čtverec, bílý text nebo symbol) jsou 
+a) značky zákazu 
+b) značky výstrahy 
+c) informační značky týkající se bezpečného stavu
+správně: [c]
+
+# ČSN EN 61140 ed. 3 - Ochrana před úrazem el. proudem 
+
+449. Do jaké třídy ochrany patří el. zařízení, které má pouze ochranu základní izolací a nemá žádné prostředky pro připojení ochranného vodiče? 
+a) 0 (použití zařízení třídy O je v ČR vyloučeno) 
+b) I 
+c) III 
+správně: [a]
+
+450. Do jaké třídy ochrany patří el. zařízení, které má pouze ochranu základní izolací a je opatřeno prostředky pro připojení ochranného vodiče? 
+b) I 
+a) 0 
+c) II 
+správně: [b]
+
+451. Do jaké třídy ochrany patří el. zařízení, které má ochranu základní izolací a ještě ochranu přídavnou izolací a nemá žádné prostředky pro připojení ochranného vodiče? 
+a) I 
+b) II 
+c) III 
+správně: [b]
+
+452. Do jaké třídy ochrany patří el. zařízení, které je konstruováno pro napájení ze zdroje SELV nebo PELV? 
+a) I 
+b) II 
+c) III 
+správně: [c]
+
+453. Které z uvedených připojení elektrických spotřebičů není správné? 
+a) [obr. 34.png] 
+b) [obr. 35.png] 
+c) [obr. 36.png] 
+správně: [a, b]
+
+# ČSN EN 60079-0 ed. 5 - Výbušné atmosféry Část O: Zařízení - Obecné požadavky 
+
+454. Ex zařízení jsou určena pro použití 
+a) při vysokých teplotách 
+b) pro elektrická zařízení jeřábů 
+c) ve výbušných atmosférách 
+správně: [c]
+
+455. Elektrické zařízení musí mít uvnitř připojovacího prostoru svorku 
+a) pro připojení telekomunikačního kabelu 
+b) pro připojení uzemňovacího vodiče 
+c) pro připojení proudového chrániče 
+správně: [b]
+
+456. Svorka pro vzájemné pospojování na venkovní straně el. zařízení musí zajistit 
+a) připojení vodiče o průřezu alespoň 4 mm2 
+b) připojení vodiče o průřezu alespoň 6 mm2 
+c) připojení nejméně dvou vodičů o průřezu alespoň 4 mm2 
+správně: [a]
+
+457. Elektrická zařízení pro výbušné atmosféry se dělí do těchto skupin 
+a) skupina I : Elektrické zařízení pro doly s výskytem metanu 
+b) skupina II : Elektrické zařízení pro výbušnou plynnou atmosféru jinou, než doly s výskytem metanu 
+c) skupina III : Elektrické zařízení pro akumulátorové nabíjecí stanice 
+správně: [a, b]
+
+458. Které plyny mohou ve směsi se vzduchem vytvořit výbušnou atmosféru? 
+a) metan 
+b) vodík 
+c) acetylén
+správně: [a, b, c]
+
+# ČSN EN 60079-10-1 ed. 3 - Určování nebezpečných prostorů
+
+459. Prostor, ve kterém je vznik výbušné plynné atmosféry pravděpodobný za normálního provozu, je 
+a) zóna SNV 1 
+b) zóna 1 
+c) zóna 2 
+správně: [b]
+
+460. Prostor, ve kterém je výbušná plynná atmosféra přítomna trvale nebo po dlouhá časová období nebo často, je 
+a) zóna 0 
+b) zóna 1 
+c) zóna 2 
+správně: [a]
+
+461. Prostor, ve kterém vznik výbušné plynné atmosféry není za normálního provozu pravděpodobný, nebo může vzniknout pouze na krátké období, je 
+a) zóna 1 
+b) zóna SNV 2 
+c) zóna 2 
+správně: [c]
+
+462. Prostor, ve kterém je, nebo může být přítomna výbušná plynná atmosféra v takovém množství, že jsou nutná speciální opatření pro konstrukci, instalaci a používání zařízení, je 
+a) zóna O 
+b) nebezpečný prostor 
+c) zóna 1 
+správně: [b]
+
+463. Prostor, v němž se neočekává přítomnost výbušné plynné atmosféry v takovém množství, aby bylo nutné speciální opatření pro konstrukci, instalaci a používání zařízení, je 
+a) prostor bez nebezpečí (s ohledem na výbušnou plynnou atmosféru) 
+b) ochranný prostor 
+c) SNV 1 
+správně: [a]
+
+464. Existují tyto stupně úniku hořlavých plynů, par, mlhy nebo kapaliny 
+a) trvalý stupeň úniku 
+b) primární stupeň úniku 
+c) sekundární stupeň úniku 
+správně: [a, b, c]
+
+465. Únik, který je trvalý nebo jehož vznik se očekává často nebo po dlouhá časová období, se nazývá 
+a) sekundární stupeň úniku 
+b) koncentrovaný únik 
+c) trvalý stupeň úniku 
+správně: [c]
+
+466. V situacích, kdy může být přítomna výbušná atmosféra, mají být provedeny tyto kroky 
+a) okamžitě uzavřít okna 
+b) vyloučit iniciační zdroje 
+c) vyloučit pravděpodobnost, že v okolí iniciačního zdroje vznikne výbušná plynná atmosféra 
+správně: [b, c]
+
+467. Látka, která je sama o sobě hořlavá nebo je schopna vytvářet hořlavé páry, plyny nebo mlhu je 
+a) hořlavá látka 
+b) výbušnina 
+c) katalyzátor 
+správně: [a]
+
+468. Zdrojem vytvářejícím sekundární stupeň úniku mohou být 
+a) těsnění čerpadel, kompresorů nebo ventilů 
+b) příruby, spoje a armatury na potrubí 
+c) pojistné ventily
+správně: [a, b, c]
+
+469. Nejnižší teplota kapaliny, při které tato kapalina uvolňuje páry v takovém množství, že jsou schopny vytvořit zápalnou směs par se vzduchem, se nazývá 
+a) bod vzplanutí 
+b) bod zážehu 
+c) bod varu
+správně: [a]
+
+# ČSN EN 60079-14 ed. 4 -Výbušné atmosféry - Návrh, výběr a zřizování elektrických instalací
+
+470. Za účelem usnadnění výběru vhodného elektrického zařízení se prostory s nebezpečím výbuchu dělí na 
+a) zóny 0, 1 a 2 pro plyny, páry a mlhy 
+b) zóny 3, 4 a 5 pro hořlavé prachy 
+c) zóny 20, 21 a 22 pro hořlavé prachy 
+správně: [a, c]
+
+471. Pokud je na elektrickém zařízení vyznačen symbol teplotní třídy, označení T1 odpovídá maximální povrchová teplota elektrického zařízení 
+a) 85 °C 
+b) 200 °C 
+c) 450 °C 
+správně: [c]
+
+472. Je-li při ochraně před nebezpečným (zápalným) jiskřením použita napájecí síť TN, musí být v nebezpečném prostoru použita síť typu 
+a) TN - S 
+b) TN - C 
+c) TN - C s hlídáním unikajících proudů 
+správně: [a]
+
+473. Je-li při ochraně před nebezpečným (zápalným) jiskřením použita napájecí síť TT musí být chráněna 
+a) proudovým chráničem 
+b) jističem 
+c) pojistkou 
+správně: [a]
+
+474. Je-li při ochraně před nebezpečným (zápalným) jiskřením použita napájecí síť IT, musí být použito 
+a) dokonalé uzemnění středu napájecí sítě 
+b) zařízení pro hlídání izolace, které signalizuje druhé zemní spojení 
+c) zařízení pro hlídání izolace, které signalizuje první zemní spojení 
+správně: [c]
+
+475. Je-li při ochraně před nebezpečným (zápalným) jiskřením použita síť s malým bezpečným napětím SELV, živé části 
+a) mohou být spojeny se zemí 
+b) musí být spojeny s ochrannými vodiči jiných obvodů 
+c) nesmí být spojeny se zemí ani s ochrannými vodiči jiných obvodů 
+správně: [c]
+
+476. V instalacích v nebezpečném prostoru v sítích TN, TT a IT pospojování být 
+a) musí 
+b) nesmí 
+c) nemusí
+správně: [a]
+
+# ČSN EN 60079-0 ed. 5 - Výbušné atmosféry - Část 0: Zařízení - Obecné požadavky
+
+477. Závěr, u kterého není vnikání prachu zcela zabráněno, avšak prach nevniká v takovém množství, aby bránil bezpečnému provozu zařízení je 
+a) závěr s ochranou proti prachu 
+b) prachotěsný závěr 
+c) vodotěsný závěr
+správně: [a]
+
+478. Závěr (kryt) schopný zabránit vnikání všem viditelným částicím prachu je 
+a) závěr s ochranou proti prachu 
+b) prachotěsný závěr 
+c) vodotěsný závěr
+správně: [b]
+
+479. Elektrické zařízení s úrovní ochrany Da je vhodné pro výbušné atmosféry s prachem. Má „velmi vysokou" úroveň ochrany a není zdrojem iniciace 
+a) v normálním provozu 
+b) v normálním provozu ani při očekávaných poruchách 
+c) v normálním provozu, při očekávaných poruchách ani při vzniku výjimečných poruch 
+správně: [c]
+
+480. Elektrické zařízení s úrovní ochrany Db je vhodné pro výbušné atmosféry s prachem. Má „vysokou" úroveň ochrany a není zdrojem iniciace 
+a) v normálním provozu, ani při očekávaných poruchách 
+b) v normálním provozu 
+c) při vzniku výjimečných poruch 
+správně: [a]
+
+481. Elektrické zařízení s úrovní ochrany De je vhodné pro výbušné atmosféry s prachem. Má „zvýšenou" úroveň ochrany a není zdrojem iniciace 
+a) v normálním provozu, ani při očekávaných poruchách 
+b) v normálním provozu 
+c) při vzniku výjimečných poruch 
+správně: [b]
+
+482. Baterie zabudované do nevýbušného zařízení musí být tvořeny 
+a) pouze z článků, které jsou zapojeny pouze paralelně 
+b) z článků, které jsou zapojeny v sérii nebo paralelně 
+c) pouze z článků, které jsou zapojeny pouze v sérii
+správně: [c]
+
+# ČSN EN 60079-14 ed. 4 - Výbušné atmosféry Návrh, výběr a zřizování elektrických instalací 
+
+483. Prostor, ve kterém je výbušná atmosféra tvořena oblakem rozvířeného hořlavého prachu ve vzduchu přítomna trvale nebo po dlouhou dobu nebo často, je 
+a) zóna 22 
+b) zóna 1 
+c) zóna 20 
+správně: [c]
+
+484. Prostor, ve kterém může výbušná atmosféra tvořena oblakem rozvířeného hořlavého prachu ve vzduchu vznikat příležitostně v normálním provozu, je 
+a) zóna 4 
+b) zóna 20 
+c) zóna 21 
+správně: [c]
+
+485. Pro výběr elektrických zařízení pro prostory s nebezpečím výbuchu jsou nutné i tyto údaje 
+a) klasifikace nebezpečného prostoru 
+b) teplota vznícení vyskytujícího se plynu 
+c) minimální teplota vznícení hořlavého prachu ve vrstvě 
+správně: [a, b, c]
+
+486. Prostor, ve kterém není pravděpodobný vznik výbušné atmosféry tvořené oblakem rozvířeného hořlavého prachu ve vzduchu za normálního provozu je 
+a) SNV 2 
+b) zóna 22 
+c) zóna 1 
+správně: [b]
+
+487. Jsou-li pro prostory s hořlavým prachem použity pro uložení kabelu žlaby, potrubí, trubky nebo kanály, opatření pro zabránění pronikání nebo hromadění hořlavého prachu v těchto prostorech 
+a) nemusí být provedena 
+b) nesmí být provedena 
+c) musí být provedena
+správně: [c]
+
+488. V prostoru s hořlavým prachem nejsou vidlice a zásuvky povoleny 
+a) v zóně 22 
+b) v zóně 21 
+c) v zóně 20 
+správně: [c]
+
+# ČSN 33 2340 ed. 2 - Prostředí s nebezpečím výbuchu výbušnin 
+
+489. Prostředí s nebezpečím požáru nebo výbuchu výbušnin se třídí takto 
+a) zóna 1, zóna 2, zóna 3 
+b) zóna V1, zóna V2, zóna V3 
+c) A, B, C1, C2, C3 
+správně: [b]
+
+490. V prostředí s nebezpečím požáru nebo výbuchu výbušin vidlice a zásuvky nejsou povoleny 
+a) v zóně V3 
+b) v zóně V2 
+c) v žádné zóně 
+správně: [a]
+
+491. Každý obvod musí být vybaven vhodnými odpojovacími prostředky, které 
+a) odpojí všechny vodiče obvodů, kromě středního vodiče 
+b) odpojí pouze střední vodič 
+c) odpojí všechny vodiče obvodů, včetně středního vodiče 
+správně: [c]
+
+# ČSN EN 60417-1 / IEC 60417-DB - Grafické značky 
+
+492. Na obrázku je značka pro [obr. 37.png] 
+a) transformátor odolný proti zkratu 
+b) oddělovací ochranný transformátor 
+c) bezpečnostní ochranný transformátor 
+správně: [b]
+
+493. Na obrázku je značka pro [obr. 38.png] 
+a) transformátor odolný proti zkratu 
+b) oddělovací ochranný transformátor 
+c) bezpečnostní ochranný transformátor  
+správně: [c]
+
+494. Na obrázku je značka pro [obr. 39.png] 
+a) transformátor odolný proti zkratu 
+b) oddělovací ochranný transformátor 
+c) bezpečnostní ochranný transformátor 
+správně: [a]
+
+495. Na obrázku je značka pro [obr. 40.png] 
+a) bezpečnostní ochranný transformátor pro hračky 
+b) transformátor pro kolejová vozidla 
+c) mobilní autotransformátor 
+správně: [a]
+
+# ČSN EN 61558-2-8 ed. 2 - Zvonkové transformátory 
+
+496. Pro zvonkové transformátory platí 
+a) jmenovité výstupní napětí nesmí překročit 24 V AC nebo 33 V DC bez zvlnění 
+b) jmenovitý výkon transformátoru nesmí být vyšší než 100 VA 
+c) jmenovitý výkon transformátoru může být maximálně 200 VA 
+správně: [a, b]
+
+# ČSN EN 61558-2-7 ed. 2 - Transformátory pro hračky 
+
+497. Pro transformátory pro hračky platí 
+a) jmenovité výstupní napětí nesmí překročit 24 V AC nebo 33 V DC bez zvlnění 
+b) jmenovitý výkon transformátoru nesmí být vyšší než 200 VA 
+c) jmenovitý výstupní proud transformátoru nesmí být vyšší než 10 A
+správně: [a, b, c]
+
+# ČSN EN IEC 62368-1 ed. 2 - Zařízení informační technologie 
+
+498. Síťový napájecí zdroj k notebooku je obvykle v provedení s dvojitou izolací. Pokud je u něj v přívodní šňůře použit třetí vodič, neplní funkci ochranného vodiče, ale jedná se o vodič pracovního uzemnění. Takový síťový napájecí zdroj se pak označuje značkou: 
+a) [obr. 41.png] 
+b) [obr. 42.png] 
+c) [obr. 43.png] 
+správně: [a]
+
+# ČSN EN 60204-1 ed. 3 - El. zařízení strojů - Obecné požadavky 
+
+499. Určete, které ze zapojení řídicích obvodů strojních zařízení je správné 
+a) [obr. 44.png] 
+b) [obr. 45.png] 
+c) [obr. 46.png] 
+správně: [b]
+
+500. Jako ochranné vodiče u strojních zařízení nesmí být nikdy použity tyto části 
+a) nosná konstrukce stroje 
+b) kovové instalační kanály 
+c) kovové kabelové pláště 
+správně: [b, c]
+
+501. Určete, které z následujících úkonů jsou z hlediska bezpečnostních předpisů definovány jako práce na el. zařízení 
+a) výměna pevně připojeného síťového přívodu 
+b) výměna závitových pojistek 
+c) orientační měření přenosnými měřicími přístroji 
+správně: [a, c]
+
+502. Určete, které z následujících úkonů jsou z hlediska bezpečnostních předpisů definovány jako obsluha el. zařízení 
+a) výměna žárovek v běžných svítidlech 
+b) měření pomocí trvale namontovaných měřicích přístrojů 
+c) výměna nožových pojistek 
+správně: [a, b]
+
+# ČSN 33 2000-5-51 ed. 3+Z1+Z2 Výběr a stavba elektrických zařízení
+
+503. Vnější vlivy jsou podle normy ČSN 33 2000-5-51 ed. 3+Z1+Z2 označovány tak, že každý stupeň vnějšího vlivu je kódován 
+a) jedním písmenem velké abecedy a dvěma číslicemi (např. Al2) 
+b) dvěma písmeny velké abecedy a číslicí (např. AD4) 
+c) třemi číslicemi (např. 311) 
+správně: [b]
+
+504. Protokol o určení vnějších vlivů je součástí dokumentace a musí být 
+a) archivován po dobu 5 roků 
+b) archivován po dobu 10 roků 
+c) archivován po celou dobu životnosti zařízení nebo objektu 
+správně: [c]
+
+505. Při stanovení vnějších vlivů u objektů či prostorů se výskyt vody označuje 
+a) kódy AD1 až AD8 
+b) kódy AF1 až AF5 
+c) kódy AQ1 až AQ3
+správně: [a]
+
+506. Jestliže je v sítích IT vyveden nulový vodič, musí být zařízení připojené mezi fázovým a nulovým vodičem izolováno 
+a) jako pro napětí fázové 
+b) jako pro napětí sdružené 
+c) jako pro napětí, které se rovná součtu fázového a sdruženého napětí 
+správně: [b]
+
+507. Užití modrého vodiče k jiným účelům než jako vodiče nulového nebo středního 
+a) je dovoleno pouze tam, kde nehrozí záměna 
+b) není v ČR dovoleno 
+c) je dovoleno, ale je nutno provést jeho přeznačení návlečkou na obou koncích 
+správně: [b]
+
+# ČSN 33 2000-7-702 ed. 3 - Plavecké bazény a jiné nádrže 
+
+508. U plaveckých bazénů a fontán se klasifikují zóny 
+a) 0, 1, 2 a 3 
+b) 0, 1 a 2 
+c) 1, 2 a 3 
+správně: [b]
+
+509. K zajištění ochrany před úrazem elektrickým proudem před nebezpečným dotykem živých částí u bazénů není dovolena ochrana 
+a) zábranou 
+b) umístěním mimo dosah (polohou) 
+c) pomocí SELV 
+správně: [a, b]
+
+# ČSN 33 2000-7-703 ed. 2 - Místnosti a kabiny se saunovými kamny 
+
+510. Veškerá elektrická zařízení v místnosti se saunovými kamny musí mít krytí alespoň 
+a) IP 14 
+b) IP 21 
+c) IP 24 
+správně: [c]
+
+511. V prostoru, který obsahuje saunová kamna, se zásuvky 
+a) nesmí instalovat 
+b) mohou instalovat pouze v zóně 3 
+c) mohou instalovat pouze v zóně 4 
+správně: [a]
+
+# ČSN 33 2000-7-704 ed. 3 - Staveniště a demolice
+
+512. Pokud je na staveništi pro napájení zásuvek do 32 A použito elektrické oddělení obvodů: 
+a) smí být na jedno výstupní vinutí transformátoru zapojeno maximálně 6 zásuvek 
+b) každá zásuvka musí být napájena z vlastního oddělovacího transformátoru 
+c) z jednoho oddělovacího transformátoru může být napájeno více zásuvek, ale pro každou zásuvku musí být použito samostatné sekundární vinutí 
+správně: [b, c]
+
+# ČSN 33 2000-7-705 ed. 2 - Zemědělská a zahradnická zařízení 
+
+513. V zemědělských a zahradnických zařízeních musí být obvody napájející zásuvky se jmenovitým proudem do 32 A chráněny proudovým chráničem se jmenovitým reziduálním vypínacím proudem maximálně 
+a) 50 mA 
+b) 30 mA 
+c) 100 mA 
+správně: [b]
+
+514. V zemědělských a zahradnických zařízeních musí být také všechny ostatní obvody, které nenapájejí zásuvky, chráněny proudovým chráničem se jmenovitým reziduálním vypínacím proudem maximálně 
+a) 800 mA 
+b) 500 mA 
+c) 300 mA 
+správně: [c]
+
+515. V zemědělských a zahradnických zařízeních musí mít elektrické zařízení pro normální provoz stupeň ochrany krytem minimálně 
+a) IP21 
+b) IP44 
+c) IP68 
+správně: [b]
+
+516. Elektrická topidla určená pro chov hospodářských zvířat musí být upevněna na vhodném místě, aby se zabránilo 
+a) jakémukoliv ohrožení spálením hospodářských zvířat 
+b) jakékoliv iniciaci požáru hořlavých hmot 
+c) jakémukoliv přístupu pracovníků k těmto topidlům
+správně: [a, b]
+
+# ČSN 33 2000-7-706 ed. 2 - Omezené vodivé prostory 
+
+517. Omezený vodivý prostor je 
+a) prostor sestávající převážně z kovových nebo vodivých okolních částí, uvnitř kterého je pravděpodobné, že osoba se částí svého těla dotkne vodivých okolních částí, přičemž možnost přerušení tohoto kontaktu je omezená 
+b) prostor sestávající z kovových nebo vodivých okolních částí, u kterého je nutné tyto části spojit s nejbližším vodičem N 
+c) prostor sestávající z nevodivých okolních částí, uvnitř kterého je pravděpodobné, že osoba se částí svého těla dotkne doplňujícího místního pospojování 
+správně: [a]
+
+518. Pro napájení ručního nářadí a přenosných zařízení v omezených vodivých prostorech je povoleno napájení z těchto zdrojů: 
+a) PELV nebo elektrickým oddělením 
+b) SELV nebo elektrickým oddělením 
+c) SELV nebo PELV 
+správně: [b]
+
+# ČSN 33 2000-7-710 - Zdravotnické prostory 
+
+519. V závislosti na použití příložných částí a na přípustnou dobu přerušení napájení se všechny zdravotnické prostory zařazují do jedné z těchto skupin 
+a) skupina 0, skupina 1 a skupina 2 
+b) skupina 1, skupina 2 a skupina 3 
+c) skupina A, skupina B a skupina C 
+správně: [a]
+
+520. V lékařských prostorech skupiny 1 a 2, kde jsou požadované proudové chrániče, je možno použít 
+a) pouze proudové chrániče typu AC 
+b) pouze proudové chrániče typu A, nebo B 
+c) libovolné typy proudových chráničů 
+správně: [b]
+
+521. Ve zdravotnických prostorech není dovoleno používat obvody s napětím 
+a) FELV 
+b) SELV 
+c) PELV
+správně: [a]
+
+# ČSN 33 2000-7-708 ed. 4 - Parkovací místa - karavany a kempinky 
+
+522. Zásuvky v kempincích určené k připojení obytných vozidel 
+a) musí být chráněny proudovým chráničem s vybavovacím proudem do 30 mA 
+b) musí být chráněny proudovým chráničem s vybavovacím proudem do 100 mA 
+c) musí být chráněny proudovým chráničem s vybavovacím proudem do 300 mA 
+správně: [a]
+
+523. Na jeden proudový chránič se jmenovitým vybavovacím proudem do 30 mA se smí v kempinku připojit maximálně 
+a) 2 zásuvky 
+b) 1 zásuvka 
+c) 6 zásuvek 
+správně: [b]
+
+# ČSN 33 2000-7-721 ed. 2 - Elektrická instalace v karavanech 
+
+524. Elektroinstalace v karavanech musí být vybavena hlavním odpojovacím přístrojem. Tento přístroj musí být umístěn 
+a) na vnější části karavanu, na dobře přístupném místě 
+b) uvnitř karavanu, na vhodném, snadno přístupném místě 
+c) zvenčí, na spodní části karavanu 
+správně: [b]
+
+525. Měděné vodiče použité v instalaci karavanu musí odpovídat proudové zátěži instalovaných zařízení a jejich průřez nesmí být menší než 
+a) 4,0 mm2 
+b) 1,5 mm2 
+c) 2,5 mm2 
+správně: [b]
+
+526. Kabely v karavanu, které nejsou umístěny v pevných instalačních trubkách, kanálech nebo ohebných elektroinstalačních trubkách musí být připevněny ve vzdálenostech nejvýše 
+a) 0,6 m ve svislém směru a 0,4 m ve vodorovném směru 
+b) 0,8 m ve svislém i vodorovném směru 
+c) 0,4 m ve svislém směru a 0,25 m ve vodorovném směru 
+správně: [c]
+
+# ČSN 33 2000-7-714 ed. 2 - Venkovní světelné instalace 
+
+527. Osvětlení v telefonních budkách, zastávkách autobusů, městských plánech apod. musí být vybavena doplňkovou ochranou 
+a) proudovým chráničem se jmenovitým vybavovacím proudem do 30 mA 
+b) neuzemněným místním pospojováním 
+c) umístěním mimo dosah 
+správně: [a]
+
+528. Elektrické zařízení venkovní světelné instalace musí mít stupeň ochrany krytem 
+a) nejméně IP 21 
+b) nejméně IP 33 
+c) nejméně IP 3X 
+správně: [b]
+
+# ČSN 33 2000-7-711 ed. 2 - Výstavy, přehlídky a stánky 
+
+529. Provizorní instalace na výstavách, přehlídkách a ve stáncích musí splňovat tyto požadavky: 
+a) všechny zásuvkové obvody do 32 A a všechny koncové obvody pro osvětlení (kromě nouzového osvětlení) musí být chráněny proudovým chráničem se jmenovitým vybavovacím poruchovým proudem maximálně 30 mA 
+b) v síti TN musí být instalace provedena jako TN-C 
+c) v síti TN musí být instalace provedena jako TN-S (nesmí se použít vodič PEN) 
+správně: [a, c]
+
+# ČSN 33 2000-7-753 ed. 2 - Podlahové a stropní vytápění 
+
+530. Podrobná dokumentace topné soustavy, včetně rozložení a umístění topných jednotek, musí být stále upevněna nebo uložena: 
+a) v rozváděči topné soustavy 
+b) v hlavním rozváděči 
+c) jako povinná příloha revizní zprávy topného systému
+správně: [a]
+
+# ČSN 33 1600 ed. 2 - Revize a kontroly elektrických spotřebičů 
+
+531. Během používání elektrických spotřebičů se v pravidelných intervalech provádí 
+a) pouze opakované zkoušky 
+b) opakované zkoušky a opakované revize 
+c) pouze opakované revize 
+správně: [b]
+
+532. El. spotřebiče jsou podle užívání rozděleny do skupin. Do skupiny C patří: 
+a) spotřebiče používané při průmyslové a řemeslné činnosti ve vnitřních prostorách 
+b) spotřebiče používané ve veřejně přístupných prostorách 
+c) spotřebiče používané při administrativní činnosti 
+správně: [a]
+
+533. Pokud při opakované revizi není známo, do které skupiny je spotřebič zařazen 
+a) nebrání to v řádném provedení opakované revize 
+b) není možno opakovanou revizi provést 
+c) musí se opakovaná revize přerušit a pokračovat lze až po zjištění skupiny 
+správně: [a]
+
+534. Opakované revize spotřebičů skupiny E, které nejsou držené v ruce 
+a) musí být prováděny nejméně jednou za 24 měsíců 
+b) musí být prováděny nejméně jednou za 96 měsíců 
+c) musí být prováděny nejméně jednou za 120 měsíců 
+správně: [b]
+
+535. Pokud je ve spotřebiči generováno bezpečné malé napětí a je ze spotřebiče vyvedeno, při revizi se ověřuje, zda není překročena mezní dovolená hodnota tohoto bezpečného malého napětí. 
+a) Napětí u SELV a PELV nesmí mezi vodiči překročit 25 V AC nebo 60 V DC. 
+b) Napětí u SELV a PELV nesmí mezi vodiči překročit 24 V AC nebo 100 V DC. 
+c) Napětí u SELV a PELV nesmí mezi vodiči překročit 50 V AC nebo 120 V DC. 
+správně: [c]
+
+536. U prodlužovacích a odpojitelných přívodů se izolační stav měří mezi ochranným vodičem a vzájemně propojenými ostatními vodiči. 
+a) Změřený izolační odpor nesmí být menší než 2 MΩ 
+b) Změřený izolační odpor nesmí být menší než 5 MΩ 
+c) Změřený izolační odpor nesmí být menší než 7 MΩ 
+správně: [c]
+
+537. Pro odpojitelné přívody se stanovuje lhůta mezi opakovanými revizemi 
+a) nejméně jednou za 6 měsíců 
+b) stejná, jako lhůta uvedená pro spotřebič držený v ruce 
+c) stejná, jako lhůta uvedená pro spotřebič, se kterým se používají 
+správně: [c]
+
+538. U nově zakoupených spotřebičů třídy ochrany I a u prodlužovacích a odpojitelných přívodů se před uvedením do provozu 
+a) musí změřit izolační stav 
+b) musí udělat kompletní revize 
+c) doporučuje ověřit spojitost ochranného vodiče 
+správně: [c]
+
+539. Součástí opakované revize podle normy ČSN 33 1600 ed. 2 - Revize a kontroly elektrických spotřebičů během používání je také 
+a) vypracování dokladu o provedení opakované revize 
+b) kontrola označení revidovaného elektrického spotřebiče 
+c) prohlídka, měření, zkouška chodu 
+správně: [a, b, c]
+
+540. Osoba, která provedla opakovanou revizi, se na protokolu o opakované revizi prokáže alespoň jedním z těchto způsobů: 
+a) razítkem (podpis není nutný) 
+b) vlastnoručním podpisem 
+c) elektronickým podpisem
+správně: [b, c]
