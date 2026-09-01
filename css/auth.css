@@ -5,15 +5,17 @@
 /* --- Tlačítko v pravém horním rohu --- */
 
 .auth-btn {
-	position: fixed;
+	position: absolute;
 	right: 20px;
-	top: 20px;
+	top: 24px;
 	z-index: 1000;
 
 	display: inline-flex;
 	align-items: center;
 	gap: 9px;
 	width: auto;
+	min-height: 40px;
+	box-sizing: border-box;
 	margin: 0;
 	padding: 9px 16px;
 	border: 1px solid rgba(255, 255, 255, 0.22);
@@ -325,7 +327,7 @@ body.auth-modal-open {
 @media (max-width: 600px) {
 	.auth-btn {
 		right: 14px;
-		top: 14px;
+		top: 24px;
 		padding: 9px 12px;
 	}
 

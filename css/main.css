@@ -87,7 +87,7 @@ canvas {
 
 /* MENU BUTTON */
 .menu__toggler {
-  position: fixed;
+  position: absolute;
   top: 24px;
   left: 24px;
   z-index: 999;
@@ -131,7 +131,7 @@ canvas {
 
 /* SLIDING MENU PANEL */
 .menu {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: -280px;
   z-index: 998;
