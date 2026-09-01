@@ -8,7 +8,9 @@
 window.NV194ResultView = (function () {
 	'use strict';
 
-	var formatErrorCount = window.NV194Evaluation.formatErrorCount;
+	function formatErrorCount(count, lang) {
+		return window.NV194Evaluation.formatErrorCount(count, lang);
+	}
 
 	function element(tag, className) {
 		var node = document.createElement(tag);
@@ -18,9 +20,10 @@ window.NV194ResultView = (function () {
 		return node;
 	}
 
-	/** Procenta v českém zápisu s desetinnou čárkou. */
-	function formatPercent(value) {
-		return String(value).replace('.', ',') + ' %';
+	/** Procenta v českém zápisu s desetinnou čárkou, jinde s tečkou. */
+	function formatPercent(value, lang) {
+		var text = lang === 'en' ? String(value) : String(value).replace('.', ',');
+		return text + ' %';
 	}
 
 	function statRow(label, value, modifier) {
@@ -40,11 +43,13 @@ window.NV194ResultView = (function () {
 	function create(options) {
 		options = options || {};
 		var onSelectQuestion = options.onSelectQuestion || function () {};
+		var i18n = window.I18n;
+		var lastResult = null;
 
 		var root = element('div', 'quiz-result');
 
 		var title = element('h2', 'quiz-result__title');
-		title.textContent = 'Test dokončen';
+		title.textContent = i18n.t('nv194.summary.title');
 
 		var stats = element('dl', 'quiz-result__stats');
 
@@ -62,8 +67,8 @@ window.NV194ResultView = (function () {
 
 		function updateToggle() {
 			detailsToggle.textContent = list.hidden
-				? 'Zobrazit výsledky jednotlivých otázek'
-				: 'Skrýt výsledky jednotlivých otázek';
+				? i18n.t('nv194.summary.showDetails')
+				: i18n.t('nv194.summary.hideDetails');
 			detailsToggle.setAttribute('aria-expanded', String(!list.hidden));
 		}
 
@@ -78,26 +83,26 @@ window.NV194ResultView = (function () {
 			var button = element('button', 'quiz-result__question-btn');
 			button.type = 'button';
 			button.dataset.questionId = String(item.id);
-			button.title = 'Přejít na otázku č. ' + item.id;
+			button.title = i18n.t('nv194.summary.goToQuestion', { id: item.id });
 
 			var position = element('span', 'quiz-result__position');
 			position.textContent = item.position + '.';
 
 			var number = element('span', 'quiz-result__number');
-			number.textContent = 'č. ' + item.id;
+			number.textContent = i18n.t('nv194.summary.questionNumber', { id: item.id });
 
 			var chapter = element('span', 'quiz-result__chapter');
 			chapter.textContent = item.chapter || '';
 
 			var status = element('span', 'quiz-result__status');
 			if (!item.answered) {
-				status.textContent = 'Nezodpovězeno';
+				status.textContent = i18n.t('nv194.summary.unanswered');
 				row.classList.add('is-unanswered');
 			} else if (item.isCorrect) {
-				status.textContent = 'Správně';
+				status.textContent = i18n.t('nv194.summary.statusCorrect');
 				row.classList.add('is-correct');
 			} else {
-				status.textContent = formatErrorCount(item.errors);
+				status.textContent = formatErrorCount(item.errors, i18n.getLang());
 				row.classList.add('is-wrong');
 			}
 
@@ -120,22 +125,30 @@ window.NV194ResultView = (function () {
 			 * @param {Object} result neměnný souhrn z stavu testu
 			 */
 			render: function (result) {
+				var lang = i18n.getLang();
+				var isSameResult = result === lastResult;
+				var wasHidden = list.hidden;
+				lastResult = result;
+
+				title.textContent = i18n.t('nv194.summary.title');
+
 				stats.textContent = '';
-				stats.appendChild(statRow('Otázek celkem', result.total));
-				stats.appendChild(statRow('Správně zodpovězeno', result.correctQuestions, 'is-correct'));
-				stats.appendChild(statRow('Chybných otázek', result.wrongQuestions, 'is-wrong'));
-				stats.appendChild(statRow('Chyb celkem', result.errors, 'is-wrong'));
+				stats.appendChild(statRow(i18n.t('nv194.summary.total'), result.total));
+				stats.appendChild(statRow(i18n.t('nv194.summary.correctQuestions'), result.correctQuestions, 'is-correct'));
+				stats.appendChild(statRow(i18n.t('nv194.summary.wrongQuestions'), result.wrongQuestions, 'is-wrong'));
+				stats.appendChild(statRow(i18n.t('nv194.summary.errors'), result.errors, 'is-wrong'));
 				if (result.unanswered > 0) {
-					stats.appendChild(statRow('Nezodpovězeno', result.unanswered));
+					stats.appendChild(statRow(i18n.t('nv194.summary.unanswered'), result.unanswered));
 				}
-				stats.appendChild(statRow('Úspěšnost', formatPercent(result.successRate), 'is-rate'));
+				stats.appendChild(statRow(i18n.t('nv194.summary.successRate'), formatPercent(result.successRate, lang), 'is-rate'));
 
 				list.textContent = '';
 				result.questions.forEach(function (item) {
 					list.appendChild(buildQuestionRow(item));
 				});
 
-				list.hidden = true;
+				// Při pouhé změně jazyka zůstane rozbalený seznam zachovaný.
+				list.hidden = isSameResult ? wasHidden : true;
 				updateToggle();
 			}
 		};

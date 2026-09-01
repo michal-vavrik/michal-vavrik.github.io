@@ -12,11 +12,19 @@
 
 /* --- Tlačítko v pravém horním rohu --- */
 
-.auth-btn {
+.header-controls {
 	position: absolute;
 	right: 20px;
 	top: 24px;
 	z-index: 1000;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.auth-btn {
+	position: static;
+	z-index: auto;
 
 	display: inline-flex;
 	align-items: center;
@@ -322,9 +330,13 @@ body.auth-modal-open {
 }
 
 @media (max-width: 600px) {
-	.auth-btn {
+	.header-controls {
 		right: 14px;
 		top: 24px;
+		gap: 6px;
+	}
+
+	.auth-btn {
 		padding: 9px 12px;
 	}
 

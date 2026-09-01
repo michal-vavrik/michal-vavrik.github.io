@@ -7,6 +7,7 @@
 		<link rel="stylesheet" type="text/css" href="css/main.css?v=header-scroll-1">
 		<link rel="stylesheet" type="text/css" href="css/nv194.css?v=mobile-action-order-1">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=hide-locked-menu-2">
+		<link rel="stylesheet" type="text/css" href="css/i18n.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
 		<script src="js/auth.js"></script>
@@ -15,77 +16,92 @@
 	<body class="subpage">
 				<!-- Menu elements-->
 		<nav class="menu">
-			<a class="menu__link" href="index.html">Home</a>
-			<a class="menu__link" href="personal.html">Personal</a>
-			<a class="menu__link" href="cv.html">CV</a>
-			<a class="menu__link" href="games.html">Games</a>
-			<a class="menu__link" href="contact.html">Contact</a>
+			<a class="menu__link" href="index.html" data-i18n="nav.home">Home</a>
+			<a class="menu__link" href="personal.html" data-i18n="nav.personal">Personal</a>
+			<a class="menu__link" href="cv.html" data-i18n="nav.cv">CV</a>
+			<a class="menu__link" href="games.html" data-i18n="nav.games">Games</a>
+			<a class="menu__link" href="contact.html" data-i18n="nav.contact">Contact</a>
 			<a class="menu__link active" href="nv194.html">NV 194</a>
 		</nav>
 		<div class="menu__toggler"><span></span></div>
 		
-		<button type="button" class="auth-btn" id="auth-btn" aria-haspopup="dialog" aria-controls="auth-modal">
-			<i class="fa fa-user auth-btn__icon" aria-hidden="true"></i>
-			<span class="auth-btn__label">Přihlásit</span>
-		</button>
+		<div class="header-controls">
+			<div class="lang-switcher" id="lang-switcher">
+				<button type="button" class="lang-switcher__toggle" id="lang-switcher-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-switcher-menu" data-i18n-aria-label="lang.switcher.label">
+					<span class="lang-switcher__code" id="lang-switcher-code">CS</span>
+					<span class="lang-switcher__caret" aria-hidden="true">▾</span>
+				</button>
+				<div class="lang-switcher__menu" id="lang-switcher-menu" role="menu" hidden>
+					<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="cs" data-i18n="lang.name.cs">Čeština</button>
+					<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="en" data-i18n="lang.name.en">English</button>
+				</div>
+			</div>
+
+			<button type="button" class="auth-btn" id="auth-btn" aria-haspopup="dialog" aria-controls="auth-modal">
+				<i class="fa fa-user auth-btn__icon" aria-hidden="true"></i>
+				<span class="auth-btn__label">Přihlásit</span>
+			</button>
+		</div>
 
 		<div class="auth-modal" id="auth-modal" hidden>
 			<div class="auth-modal__backdrop" data-auth-close></div>
 
 			<div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-				<button type="button" class="auth-modal__close" data-auth-close aria-label="Zavřít">&times;</button>
+				<button type="button" class="auth-modal__close" data-auth-close data-i18n-aria-label="auth.close">&times;</button>
 
 				<div class="auth-modal__icon" aria-hidden="true"><i class="fa fa-lock"></i></div>
-				<h2 class="auth-modal__title" id="auth-title">Přihlášení</h2>
-				<p class="auth-modal__lead">Chráněné stránky jsou dostupné po zadání hesla.</p>
+				<h2 class="auth-modal__title" id="auth-title" data-i18n="auth.title.login">Přihlášení</h2>
+				<p class="auth-modal__lead" data-i18n="auth.lead.login">Chráněné stránky jsou dostupné po zadání hesla.</p>
 
 				<p class="auth-modal__notice" id="auth-notice" hidden></p>
 
 				<div class="auth-panel" id="auth-login-panel">
 					<form id="auth-form" novalidate>
-						<label class="auth-form__label" for="auth-password">Heslo</label>
+						<label class="auth-form__label" for="auth-password" data-i18n="auth.form.label">Heslo</label>
 						<div class="auth-form__field">
-							<input type="password" id="auth-password" name="password" placeholder="Zadejte heslo" autocomplete="current-password">
+							<input type="password" id="auth-password" name="password" placeholder="Zadejte heslo" data-i18n-placeholder="auth.form.placeholder" autocomplete="current-password">
 							<button type="button" class="auth-form__reveal" id="auth-reveal" aria-pressed="false">Zobrazit</button>
 						</div>
 						<p class="auth-form__error" id="auth-error" role="alert" hidden></p>
-						<button type="submit" class="auth-modal__submit">Přihlásit se</button>
+						<button type="submit" class="auth-modal__submit" data-i18n="auth.form.submit">Přihlásit se</button>
 					</form>
 				</div>
 
 				<div class="auth-panel" id="auth-status-panel" hidden>
 					<div class="auth-status__row">
-						<span class="auth-status__label">Oprávnění:</span>
+						<span class="auth-status__label" data-i18n="auth.status.role">Oprávnění:</span>
 						<span class="auth-status__value is-role" id="auth-status-role"></span>
 					</div>
 					<div class="auth-status__row">
-						<span class="auth-status__label">Dostupné stránky:</span>
+						<span class="auth-status__label" data-i18n="auth.status.pages">Dostupné stránky:</span>
 						<span class="auth-status__value" id="auth-status-pages"></span>
 					</div>
-					<button type="button" class="auth-modal__logout" id="auth-logout">Odhlásit se</button>
+					<button type="button" class="auth-modal__logout" id="auth-logout" data-i18n="auth.status.logout">Odhlásit se</button>
 				</div>
 			</div>
 		</div>
 
-		<script src="js/auth-ui.js?v=hide-locked-menu-1"></script>
+		<script src="js/i18n.js?v=nav-labels-1"></script>
+		<script src="js/lang-switcher.js"></script>
+		<script src="js/auth-ui.js?v=nav-labels-1"></script>
 		<script src="js/menu.js"></script>
 
 		<main class="quiz">
-			<h1 class="quiz__title">NV 194/2022 – Testové otázky</h1>
-			<p class="quiz__subtitle">Procvičování otázek k odborné způsobilosti v elektrotechnice.</p>
+			<h1 class="quiz__title" data-i18n="nv194.title">NV 194/2022 – Testové otázky</h1>
+			<p class="quiz__subtitle" data-i18n="nv194.subtitle">Procvičování otázek k odborné způsobilosti v elektrotechnice.</p>
 
-			<p class="quiz__status" id="quiz-status">Načítám otázky…</p>
+			<p class="quiz__status" id="quiz-status" data-i18n="nv194.status.loading">Načítám otázky…</p>
 
 			<div class="quiz__layout" id="quiz-layout" hidden>
 				<aside class="quiz__sidebar" id="quiz-sidebar">
 					<button type="button" class="quiz__nav-toggle" id="quiz-nav-toggle" aria-expanded="true" aria-controls="quiz-nav-host">
 						<span class="quiz__nav-toggle-icon" aria-hidden="true">☰</span>
-						<span class="quiz__nav-toggle-text">Přehled otázek</span>
+						<span class="quiz__nav-toggle-text" data-i18n="nv194.nav.toggle">Přehled otázek</span>
 					</button>
 
 					<div class="quiz__nav-tools" id="quiz-nav-tools">
-						<button type="button" class="quiz__nav-tool" id="quiz-nav-expand">Rozbalit vše</button>
-						<button type="button" class="quiz__nav-tool" id="quiz-nav-collapse">Sbalit vše</button>
+						<button type="button" class="quiz__nav-tool" id="quiz-nav-expand" data-i18n="nv194.nav.expandAll">Rozbalit vše</button>
+						<button type="button" class="quiz__nav-tool" id="quiz-nav-collapse" data-i18n="nv194.nav.collapseAll">Sbalit vše</button>
 					</div>
 
 					<div class="quiz__nav-host" id="quiz-nav-host"></div>
@@ -93,29 +109,29 @@
 
 				<div class="quiz__main">
 					<section class="quiz__panel" id="quiz-start" hidden>
-						<h2 class="quiz__panel-title">Zvolte režim testu</h2>
+						<h2 class="quiz__panel-title" data-i18n="nv194.start.heading">Zvolte režim testu</h2>
 						<div class="quiz__modes">
 							<button type="button" class="quiz__mode-btn" data-mode="paragraph6">
-								<span class="quiz__mode-name">Test na §6</span>
-								<span class="quiz__mode-detail">40 náhodných otázek</span>
-								<span class="quiz__mode-hint">Náhodný výběr napříč všemi kapitolami</span>
+								<span class="quiz__mode-name" data-i18n="nv194.mode.paragraph6.name">Test na §6</span>
+								<span class="quiz__mode-detail" data-i18n="nv194.mode.paragraph6.detail">40 náhodných otázek</span>
+								<span class="quiz__mode-hint" data-i18n="nv194.mode.hint.random">Náhodný výběr napříč všemi kapitolami</span>
 							</button>
 							<button type="button" class="quiz__mode-btn" data-mode="paragraph7">
-								<span class="quiz__mode-name">Test na §7</span>
-								<span class="quiz__mode-detail">60 náhodných otázek</span>
-								<span class="quiz__mode-hint">Náhodný výběr napříč všemi kapitolami</span>
+								<span class="quiz__mode-name" data-i18n="nv194.mode.paragraph7.name">Test na §7</span>
+								<span class="quiz__mode-detail" data-i18n="nv194.mode.paragraph7.detail">60 náhodných otázek</span>
+								<span class="quiz__mode-hint" data-i18n="nv194.mode.hint.random">Náhodný výběr napříč všemi kapitolami</span>
 							</button>
 							<button type="button" class="quiz__mode-btn" data-mode="all">
-								<span class="quiz__mode-name">Všechny otázky postupně</span>
-								<span class="quiz__mode-hint">Celá sada v pořadí podle kapitol</span>
+								<span class="quiz__mode-name" data-i18n="nv194.mode.all.name">Všechny otázky postupně</span>
+								<span class="quiz__mode-hint" data-i18n="nv194.mode.all.hint">Celá sada v pořadí podle kapitol</span>
 							</button>
 							<!-- DOČASNÉ: zkušební režim pro ověření celého průchodu, později bude odstraněn. -->
 							<button type="button" class="quiz__mode-btn quiz__mode-btn--temporary" data-mode="demo3" hidden>
-								<span class="quiz__mode-name">Zkušební test (3 otázky)</span>
-								<span class="quiz__mode-hint">Rychlé vyzkoušení celého průběhu</span>
+								<span class="quiz__mode-name" data-i18n="nv194.mode.demo.name">Zkušební test (3 otázky)</span>
+								<span class="quiz__mode-hint" data-i18n="nv194.mode.demo.hint">Rychlé vyzkoušení celého průběhu</span>
 							</button>
 						</div>
-						<p class="quiz__lead">Nebo si otevřete libovolnou otázku z přehledu vlevo.</p>
+						<p class="quiz__lead" data-i18n="nv194.start.lead">Nebo si otevřete libovolnou otázku z přehledu vlevo.</p>
 					</section>
 
 					<section class="quiz__panel" id="quiz-run" hidden>
@@ -129,17 +145,17 @@
 						<div id="quiz-question-host"></div>
 
 						<div class="quiz__actions">
-							<button type="button" class="quiz__btn quiz__btn--secondary quiz__btn--new-test" id="quiz-reset-test">Nový test</button>
-							<button type="button" class="quiz__btn quiz__btn--primary quiz__btn--question-action" id="quiz-question-action">Potvrdit</button>
+							<button type="button" class="quiz__btn quiz__btn--secondary quiz__btn--new-test" id="quiz-reset-test" data-i18n="nv194.action.newTest">Nový test</button>
+							<button type="button" class="quiz__btn quiz__btn--primary quiz__btn--question-action" id="quiz-question-action" data-i18n="nv194.action.confirm">Potvrdit</button>
 							<button type="button" class="quiz__btn quiz__btn--secondary" id="quiz-back-to-test" hidden>Zpět na otázku testu</button>
-							<button type="button" class="quiz__btn quiz__btn--secondary" id="quiz-modes" hidden>Výběr režimu</button>
+							<button type="button" class="quiz__btn quiz__btn--secondary" id="quiz-modes" hidden data-i18n="nv194.action.modeSelect">Výběr režimu</button>
 						</div>
 					</section>
 
 					<section class="quiz__panel" id="quiz-done" hidden>
 						<div id="quiz-result-host"></div>
 						<div class="quiz__actions">
-							<button type="button" class="quiz__btn quiz__btn--primary" id="quiz-new-test">Zahájit nový test</button>
+							<button type="button" class="quiz__btn quiz__btn--primary" id="quiz-new-test" data-i18n="nv194.action.startNewTest">Zahájit nový test</button>
 						</div>
 					</section>
 				</div>
@@ -150,25 +166,25 @@
 			<div class="auth-modal__backdrop" data-quiz-reset-cancel></div>
 			<div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="quiz-reset-title" aria-describedby="quiz-reset-message">
 				<div class="auth-modal__icon" aria-hidden="true">↻</div>
-				<h2 class="auth-modal__title" id="quiz-reset-title">Zahájit nový test?</h2>
-				<p class="auth-modal__lead" id="quiz-reset-message">Aktuální postup a odpovědi budou ztraceny.</p>
+				<h2 class="auth-modal__title" id="quiz-reset-title" data-i18n="nv194.resetModal.title">Zahájit nový test?</h2>
+				<p class="auth-modal__lead" id="quiz-reset-message" data-i18n="nv194.resetModal.message">Aktuální postup a odpovědi budou ztraceny.</p>
 				<div class="quiz-reset-modal__actions">
-					<button type="button" class="auth-modal__logout" data-quiz-reset-cancel>Zrušit</button>
-					<button type="button" class="auth-modal__submit" id="quiz-reset-confirm">Zahájit nový test</button>
+					<button type="button" class="auth-modal__logout" data-quiz-reset-cancel data-i18n="nv194.resetModal.cancel">Zrušit</button>
+					<button type="button" class="auth-modal__submit" id="quiz-reset-confirm" data-i18n="nv194.resetModal.confirm">Zahájit nový test</button>
 				</div>
 			</div>
 		</div>
 
 		<script src="js/nv194-parser.js"></script>
-		<script src="js/nv194-evaluation.js"></script>
+		<script src="js/nv194-evaluation.js?v=i18n-1"></script>
 		<script src="js/nv194-answer-state.js"></script>
 		<script src="js/nv194-quiz.js?v=paragraph-modes-1"></script>
 		<script src="js/nv194-images.js"></script>
 		<script src="js/nv194-nav-tree.js"></script>
-		<script src="js/nv194-nav-view.js"></script>
-		<script src="js/nv194-question-view.js?v=result-space-3"></script>
-		<script src="js/nv194-result-view.js"></script>
-		<script src="js/nv194-page.js?v=reset-test-modal-1"></script>
+		<script src="js/nv194-nav-view.js?v=i18n-1"></script>
+		<script src="js/nv194-question-view.js?v=i18n-1"></script>
+		<script src="js/nv194-result-view.js?v=i18n-1"></script>
+		<script src="js/nv194-page.js?v=i18n-2"></script>
 
 	</body>
 </html>

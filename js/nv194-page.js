@@ -14,6 +14,12 @@
 
 	var SOURCE_URL = 'data/otazky.txt';
 	var IMAGE_BASE = window.NV194Images.DEFAULT_BASE;
+	var i18n = window.I18n;
+
+	// Statická část stránky (nadpisy, tlačítka, resetovací dialog) je v HTML
+	// až za skriptem js/i18n.js, takže při načtení stránky ještě nemusela
+	// dostat překlad - jakmile existuje v DOM, doplní ho zde.
+	i18n.applyStatic();
 
 	var CONTEXT = { NONE: 'none', TEST: 'test', BROWSE: 'browse' };
 	var DEMO_MODE = 'demo3';
@@ -175,8 +181,8 @@
 		}
 
 		positionEl.textContent = context.kind === CONTEXT.TEST
-			? 'Otázka ' + test.position() + ' z ' + test.total + ' (č. ' + slot.question.id + ')'
-			: 'Prohlížení – otázka č. ' + slot.question.id;
+			? i18n.t('nv194.progress.test', { position: test.position(), total: test.total, id: slot.question.id })
+			: i18n.t('nv194.progress.browse', { id: slot.question.id });
 
 		renderContextNote(slot);
 		questionView.render(slot.question, slot.state());
@@ -193,10 +199,8 @@
 		}
 		contextNoteEl.hidden = false;
 		contextNoteEl.textContent = test.isFinished()
-			? 'Tato otázka je součástí dokončeného testu (' + (slot.testIndex + 1) + '. z ' +
-				test.total + '). Výsledek už nelze změnit.'
-			: 'Tato otázka je součástí testu (' + (slot.testIndex + 1) + '. z ' +
-				test.total + '). Odpovědi se ukládají do testu.';
+			? i18n.t('nv194.contextNote.finished', { position: slot.testIndex + 1, total: test.total })
+			: i18n.t('nv194.contextNote.inProgress', { position: slot.testIndex + 1, total: test.total });
 	}
 
 	function updateActions() {
@@ -208,8 +212,11 @@
 		if (test) {
 			var score = test.score();
 			scoreEl.hidden = false;
-			scoreEl.textContent = 'Správně ' + score.correct + ' z ' + score.confirmed +
-				' zodpovězených · chyb ' + score.errors;
+			scoreEl.textContent = i18n.t('nv194.progress.score', {
+				correct: score.correct,
+				confirmed: score.confirmed,
+				errors: score.errors
+			});
 		} else {
 			scoreEl.hidden = true;
 			scoreEl.textContent = '';
@@ -219,16 +226,16 @@
 		var canMoveToNext = inTest && test.isConfirmed();
 		questionActionBtn.disabled = canMoveToNext ? false : !slot.canConfirm();
 		if (canMoveToNext) {
-			questionActionBtn.textContent = test.isLast() ? 'Dokončit' : 'Další';
+			questionActionBtn.textContent = test.isLast() ? i18n.t('nv194.action.finish') : i18n.t('nv194.action.next');
 		} else {
-			questionActionBtn.textContent = 'Potvrdit';
+			questionActionBtn.textContent = i18n.t('nv194.action.confirm');
 		}
 
 		backToTestBtn.hidden = inTest || !test;
 		if (!backToTestBtn.hidden) {
 			backToTestBtn.textContent = test.isFinished()
-				? 'Zpět na výsledek testu'
-				: 'Zpět na otázku testu';
+				? i18n.t('nv194.action.backToTestResult')
+				: i18n.t('nv194.action.backToTestQuestion');
 		}
 
 		modesBtn.hidden = inTest || Boolean(test);
@@ -366,7 +373,7 @@
 		}
 		var mode = button.getAttribute('data-mode');
 		if (mode === DEMO_MODE && !canUseDemoMode()) {
-			setStatus('Zkušební test je dostupný pouze s plným přístupem.', true);
+			setStatus(i18n.t('nv194.mode.demo.restricted'), true);
 			return;
 		}
 		try {
@@ -396,7 +403,7 @@
 	fetch(SOURCE_URL)
 		.then(function (response) {
 			if (!response.ok) {
-				throw new Error('Nepodařilo se načíst otázky (HTTP ' + response.status + ').');
+				throw new Error(i18n.t('nv194.error.loadFailed', { status: response.status }));
 			}
 			return response.text();
 		})
@@ -405,7 +412,7 @@
 			questions = result.questions;
 
 			if (questions.length === 0) {
-				throw new Error('Zdrojový soubor neobsahuje žádné otázky.');
+				throw new Error(i18n.t('nv194.error.noQuestions'));
 			}
 
 			questions.forEach(function (question) {
@@ -419,8 +426,10 @@
 
 			if (result.errors.length > 0) {
 				// Data se načtou i s chybami, uživatel je ale musí vidět.
-				setStatus('Načteno ' + questions.length + ' otázek, ' + result.errors.length +
-					' záznamů obsahuje chybu ve zdrojových datech.', true);
+				setStatus(i18n.t('nv194.status.loadedWithErrors', {
+					count: questions.length,
+					errCount: result.errors.length
+				}), true);
 				result.errors.forEach(function (error) {
 					console.warn('[NV194] ' + error.code + ' (otázka ' + error.questionId +
 						', řádek ' + error.line + '): ' + error.message);
@@ -434,4 +443,15 @@
 		.catch(function (error) {
 			setStatus(error.message, true);
 		});
+
+	document.addEventListener('site:langchange', function () {
+		if (questions.length > 0) {
+			navView.retranslate();
+		}
+		if (context.kind === CONTEXT.TEST || context.kind === CONTEXT.BROWSE) {
+			renderActive();
+		} else if (test && test.isFinished()) {
+			resultView.render(test.result());
+		}
+	});
 })();

@@ -116,8 +116,11 @@ window.NV194Evaluation = (function () {
 		};
 	}
 
-	/** České skloňování počtu chyb. */
-	function formatErrorCount(count) {
+	/** Skloňování počtu chyb - čeština má tři tvary, angličtina jen dva. */
+	function formatErrorCount(count, lang) {
+		if (lang === 'en') {
+			return count + (count === 1 ? ' error' : ' errors');
+		}
 		if (count === 1) {
 			return '1 chyba';
 		}

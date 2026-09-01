@@ -26,10 +26,11 @@ window.NV194QuestionView = (function () {
 	}
 
 	function renderImage(node, imageBase, imageAlt) {
+		var i18n = window.I18n;
 		var source = window.NV194Images.resolve(node.src, imageBase);
 
 		if (source === null) {
-			return imageError(node, 'Neplatný odkaz na obrázek');
+			return imageError(node, i18n.t('nv194.image.invalidLink'));
 		}
 
 		var image = element('img', 'quiz-question__image');
@@ -39,7 +40,7 @@ window.NV194QuestionView = (function () {
 		image.addEventListener('error', function () {
 			// Chybějící soubor nesmí rozbít zbytek otázky - nahradí se hláškou.
 			if (image.parentNode) {
-				image.parentNode.replaceChild(imageError(node, 'Obrázek se nepodařilo načíst'), image);
+				image.parentNode.replaceChild(imageError(node, i18n.t('nv194.image.loadFailed')), image);
 			}
 		});
 		return image;
@@ -67,6 +68,7 @@ window.NV194QuestionView = (function () {
 		options = options || {};
 		var imageBase = options.imageBase || window.NV194Images.DEFAULT_BASE;
 		var onToggle = options.onToggle || function () {};
+		var i18n = window.I18n;
 
 		var root = element('article', 'quiz-question');
 
@@ -99,8 +101,9 @@ window.NV194QuestionView = (function () {
 			var body = element('span', 'quiz-answer__body');
 			var content = element('span', 'quiz-answer__content');
 			var badge = element('span', 'quiz-answer__badge quiz-answer__badge--placeholder');
-			renderContent(answer.content, content, imageBase, 'Obrázek odpovědi ' +
-				(LETTER_LABELS[answer.letter] || answer.letter));
+			renderContent(answer.content, content, imageBase, i18n.t('nv194.answer.imageAlt', {
+				letter: LETTER_LABELS[answer.letter] || answer.letter
+			}));
 			body.appendChild(content);
 			body.appendChild(badge);
 
@@ -134,11 +137,11 @@ window.NV194QuestionView = (function () {
 			if (result.isCorrect) {
 				item.classList.add('is-correct');
 				badge.textContent = result.isSelected
-					? '✓ Správně'
-					: '✓ Správně (nezvoleno)';
+					? i18n.t('nv194.answer.badge.correctSelected')
+					: i18n.t('nv194.answer.badge.correctMissed');
 			} else if (result.isSelected) {
 				item.classList.add('is-wrong');
-				badge.textContent = '✗ Chybná volba';
+				badge.textContent = i18n.t('nv194.answer.badge.wrongSelected');
 			} else {
 				return;
 			}
@@ -147,7 +150,7 @@ window.NV194QuestionView = (function () {
 		}
 
 		function errorsLabel(count) {
-			return window.NV194Evaluation.formatErrorCount(count);
+			return window.NV194Evaluation.formatErrorCount(count, i18n.getLang());
 		}
 
 		function renderResult(question, state) {
@@ -168,14 +171,16 @@ window.NV194QuestionView = (function () {
 			if (evaluation.isCorrect) {
 				result.classList.add('is-correct');
 				icon.textContent = '✓';
-				message.textContent = 'Správně, bez chyby.';
+				message.textContent = i18n.t('nv194.result.correct');
 			} else {
 				result.classList.add('is-wrong');
 				icon.textContent = '✗';
-				message.textContent = 'Špatně – ' + errorsLabel(evaluation.errors) + '. Správně: ' +
-					question.correctAnswers.map(function (letter) {
+				message.textContent = i18n.t('nv194.result.wrong', {
+					errors: errorsLabel(evaluation.errors),
+					answers: question.correctAnswers.map(function (letter) {
 						return LETTER_LABELS[letter] || letter;
-					}).join(', ') + '.';
+					}).join(', ')
+				});
 			}
 
 			result.textContent = '';
@@ -194,7 +199,7 @@ window.NV194QuestionView = (function () {
 				chapter.textContent = question.chapter || '';
 				chapter.hidden = !question.chapter;
 
-				renderContent(question.content, text, imageBase, 'Obrázek k otázce ' + question.id);
+				renderContent(question.content, text, imageBase, i18n.t('nv194.question.imageAlt', { id: question.id }));
 
 				answerList.textContent = '';
 				question.answers.forEach(function (answer) {

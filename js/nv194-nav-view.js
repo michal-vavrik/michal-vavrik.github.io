@@ -31,12 +31,21 @@ window.NV194NavView = (function () {
 	function create(options) {
 		options = options || {};
 		var onSelect = options.onSelect || function () {};
+		var i18n = window.I18n;
 
 		var root = element('nav', 'quiz-nav');
-		root.setAttribute('aria-label', 'Navigace otázek');
+		root.setAttribute('aria-label', i18n.t('nv194.nav.ariaLabel'));
 
 		var buttonsById = {};
 		var chapterByQuestionId = {};
+		var questionsById = {};
+
+		function labelAndTitle(button, question) {
+			var text = questionLabel(question);
+			var label = button.querySelector('.quiz-nav__label');
+			label.textContent = text || i18n.t('nv194.nav.imageFallback');
+			button.title = i18n.t('nv194.nav.goToQuestion', { id: question.id }) + (text ? ' – ' + text : '');
+		}
 
 		function buildQuestionItem(question) {
 			var item = element('li', 'quiz-nav__item');
@@ -49,9 +58,6 @@ window.NV194NavView = (function () {
 			number.textContent = question.id + '.';
 
 			var label = element('span', 'quiz-nav__label');
-			var text = questionLabel(question);
-			label.textContent = text || 'Otázka s obrázkem';
-			button.title = 'Otázka č. ' + question.id + (text ? ' – ' + text : '');
 
 			button.appendChild(number);
 			button.appendChild(label);
@@ -59,8 +65,11 @@ window.NV194NavView = (function () {
 				onSelect(question.id);
 			});
 
+			labelAndTitle(button, question);
+
 			item.appendChild(button);
 			buttonsById[question.id] = button;
+			questionsById[question.id] = question;
 			return item;
 		}
 
@@ -94,6 +103,7 @@ window.NV194NavView = (function () {
 				root.textContent = '';
 				buttonsById = {};
 				chapterByQuestionId = {};
+				questionsById = {};
 
 				tree.forEach(function (chapter) {
 					root.appendChild(buildChapter(chapter));
@@ -143,6 +153,14 @@ window.NV194NavView = (function () {
 				var chapters = root.querySelectorAll('.quiz-nav__chapter');
 				Array.prototype.forEach.call(chapters, function (details) {
 					details.open = open;
+				});
+			},
+
+			/** Přeloží texty závislé na jazyce beze ztráty stavu rozbaleného stromu. */
+			retranslate: function () {
+				root.setAttribute('aria-label', i18n.t('nv194.nav.ariaLabel'));
+				Object.keys(buttonsById).forEach(function (key) {
+					labelAndTitle(buttonsById[key], questionsById[key]);
 				});
 			}
 		};

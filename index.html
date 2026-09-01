@@ -5,6 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<link rel="stylesheet" type="text/css" href="css/main.css?v=header-scroll-1">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=hide-locked-menu-2">
+		<link rel="stylesheet" type="text/css" href="css/i18n.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
 		<script src="js/auth.js"></script>
@@ -14,59 +15,74 @@
 		<canvas></canvas>
 				<!-- Menu elements-->
 		<nav class="menu">
-			<a class="menu__link active" href="index.html">Home</a>
-			<a class="menu__link" href="personal.html">Personal</a>
-			<a class="menu__link" href="cv.html">CV</a>
-			<a class="menu__link" href="games.html">Games</a>
-			<a class="menu__link" href="contact.html">Contact</a>
+			<a class="menu__link active" href="index.html" data-i18n="nav.home">Home</a>
+			<a class="menu__link" href="personal.html" data-i18n="nav.personal">Personal</a>
+			<a class="menu__link" href="cv.html" data-i18n="nav.cv">CV</a>
+			<a class="menu__link" href="games.html" data-i18n="nav.games">Games</a>
+			<a class="menu__link" href="contact.html" data-i18n="nav.contact">Contact</a>
 			<a class="menu__link" href="nv194.html">NV 194</a>
 		</nav>
 		<div class="menu__toggler"><span></span></div>
 		
-		<button type="button" class="auth-btn" id="auth-btn" aria-haspopup="dialog" aria-controls="auth-modal">
-			<i class="fa fa-user auth-btn__icon" aria-hidden="true"></i>
-			<span class="auth-btn__label">Přihlásit</span>
-		</button>
+		<div class="header-controls">
+			<div class="lang-switcher" id="lang-switcher">
+				<button type="button" class="lang-switcher__toggle" id="lang-switcher-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-switcher-menu" data-i18n-aria-label="lang.switcher.label">
+					<span class="lang-switcher__code" id="lang-switcher-code">CS</span>
+					<span class="lang-switcher__caret" aria-hidden="true">▾</span>
+				</button>
+				<div class="lang-switcher__menu" id="lang-switcher-menu" role="menu" hidden>
+					<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="cs" data-i18n="lang.name.cs">Čeština</button>
+					<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="en" data-i18n="lang.name.en">English</button>
+				</div>
+			</div>
+
+			<button type="button" class="auth-btn" id="auth-btn" aria-haspopup="dialog" aria-controls="auth-modal">
+				<i class="fa fa-user auth-btn__icon" aria-hidden="true"></i>
+				<span class="auth-btn__label">Přihlásit</span>
+			</button>
+		</div>
 
 		<div class="auth-modal" id="auth-modal" hidden>
 			<div class="auth-modal__backdrop" data-auth-close></div>
 
 			<div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
-				<button type="button" class="auth-modal__close" data-auth-close aria-label="Zavřít">&times;</button>
+				<button type="button" class="auth-modal__close" data-auth-close data-i18n-aria-label="auth.close">&times;</button>
 
 				<div class="auth-modal__icon" aria-hidden="true"><i class="fa fa-lock"></i></div>
-				<h2 class="auth-modal__title" id="auth-title">Přihlášení</h2>
-				<p class="auth-modal__lead">Chráněné stránky jsou dostupné po zadání hesla.</p>
+				<h2 class="auth-modal__title" id="auth-title" data-i18n="auth.title.login">Přihlášení</h2>
+				<p class="auth-modal__lead" data-i18n="auth.lead.login">Chráněné stránky jsou dostupné po zadání hesla.</p>
 
 				<p class="auth-modal__notice" id="auth-notice" hidden></p>
 
 				<div class="auth-panel" id="auth-login-panel">
 					<form id="auth-form" novalidate>
-						<label class="auth-form__label" for="auth-password">Heslo</label>
+						<label class="auth-form__label" for="auth-password" data-i18n="auth.form.label">Heslo</label>
 						<div class="auth-form__field">
-							<input type="password" id="auth-password" name="password" placeholder="Zadejte heslo" autocomplete="current-password">
+							<input type="password" id="auth-password" name="password" placeholder="Zadejte heslo" data-i18n-placeholder="auth.form.placeholder" autocomplete="current-password">
 							<button type="button" class="auth-form__reveal" id="auth-reveal" aria-pressed="false">Zobrazit</button>
 						</div>
 						<p class="auth-form__error" id="auth-error" role="alert" hidden></p>
-						<button type="submit" class="auth-modal__submit">Přihlásit se</button>
+						<button type="submit" class="auth-modal__submit" data-i18n="auth.form.submit">Přihlásit se</button>
 					</form>
 				</div>
 
 				<div class="auth-panel" id="auth-status-panel" hidden>
 					<div class="auth-status__row">
-						<span class="auth-status__label">Oprávnění:</span>
+						<span class="auth-status__label" data-i18n="auth.status.role">Oprávnění:</span>
 						<span class="auth-status__value is-role" id="auth-status-role"></span>
 					</div>
 					<div class="auth-status__row">
-						<span class="auth-status__label">Dostupné stránky:</span>
+						<span class="auth-status__label" data-i18n="auth.status.pages">Dostupné stránky:</span>
 						<span class="auth-status__value" id="auth-status-pages"></span>
 					</div>
-					<button type="button" class="auth-modal__logout" id="auth-logout">Odhlásit se</button>
+					<button type="button" class="auth-modal__logout" id="auth-logout" data-i18n="auth.status.logout">Odhlásit se</button>
 				</div>
 			</div>
 		</div>
 
-		<script src="js/auth-ui.js?v=hide-locked-menu-1"></script>
+		<script src="js/i18n.js?v=nav-labels-1"></script>
+		<script src="js/lang-switcher.js"></script>
+		<script src="js/auth-ui.js?v=nav-labels-1"></script>
 		<script src="js/menu.js"></script>
 		<script src="js/starfield.js"></script>
 

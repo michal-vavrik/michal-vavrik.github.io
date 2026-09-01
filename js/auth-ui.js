@@ -2,25 +2,33 @@
  * Ovládání přihlašovacího dialogu a stavu přihlášení v UI.
  *
  * Skript se načítá na konci stránky. Vlastní logika přístupu je v js/auth.js.
+ * Texty se překládají přes window.I18n - viz js/i18n.js.
  */
 (function () {
 	'use strict';
 
 	var auth = window.SiteAuth;
-	if (!auth) {
+	var i18n = window.I18n;
+	if (!auth || !i18n) {
 		return;
 	}
 
-	var ROLE_LABELS = {};
-	ROLE_LABELS[auth.ROLES.NV194] = 'Přístup ke stránce NV194';
-	ROLE_LABELS[auth.ROLES.FULL] = 'Přístup ke všem stránkám';
+	var t = i18n.t;
 
-	var PAGE_LABELS = {
-		'index.html': 'Home',
-		'personal.html': 'Personal',
-		'cv.html': 'CV',
-		'games.html': 'Games',
-		'contact.html': 'Contact',
+	var ROLE_LABEL_KEYS = {};
+	ROLE_LABEL_KEYS[auth.ROLES.NV194] = 'auth.role.nv194';
+	ROLE_LABEL_KEYS[auth.ROLES.FULL] = 'auth.role.full';
+
+	/* Jméno stránky NV 194 je jednotné v obou jazycích, ostatní se překládají stejně jako v nabídce. */
+	var PAGE_LABEL_KEYS = {
+		'index.html': 'nav.home',
+		'personal.html': 'nav.personal',
+		'cv.html': 'nav.cv',
+		'games.html': 'nav.games',
+		'contact.html': 'nav.contact',
+		'nv194.html': null
+	};
+	var PAGE_LABEL_FALLBACK = {
 		'nv194.html': 'NV 194'
 	};
 
@@ -44,9 +52,15 @@
 	/** Stránka, na kterou se má po úspěšném přihlášení přejít. */
 	var pendingTarget = null;
 	var lastFocused = null;
+	/** Stránka, kvůli které je zobrazená hláška "vyžaduje přihlášení" - drží se kvůli přepočtu při změně jazyka. */
+	var deniedNoticePage = null;
 
 	function pageLabel(page) {
-		return PAGE_LABELS[page] || page;
+		var key = PAGE_LABEL_KEYS[page];
+		if (key) {
+			return t(key);
+		}
+		return PAGE_LABEL_FALLBACK[page] || page;
 	}
 
 	/* --- Otevírání a zavírání --- */
@@ -107,6 +121,7 @@
 			return;
 		}
 		if (!message) {
+			deniedNoticePage = null;
 			noticeEl.hidden = true;
 			noticeEl.textContent = '';
 			return;
@@ -120,7 +135,7 @@
 			return;
 		}
 		input.type = revealed ? 'text' : 'password';
-		revealBtn.textContent = revealed ? 'Skrýt' : 'Zobrazit';
+		revealBtn.textContent = revealed ? t('auth.form.reveal.hide') : t('auth.form.reveal.show');
 		revealBtn.setAttribute('aria-pressed', String(revealed));
 	}
 
@@ -141,17 +156,15 @@
 		}
 
 		if (titleEl) {
-			titleEl.textContent = signedIn ? 'Jste přihlášeni' : 'Přihlášení';
+			titleEl.textContent = signedIn ? t('auth.title.loggedIn') : t('auth.title.login');
 		}
 		if (leadEl) {
-			leadEl.textContent = signedIn
-				? 'Přihlášení platí do zavření prohlížeče.'
-				: 'Chráněné stránky jsou dostupné po zadání hesla.';
+			leadEl.textContent = signedIn ? t('auth.lead.loggedIn') : t('auth.lead.login');
 		}
 
 		if (signedIn) {
 			if (statusRoleEl) {
-				statusRoleEl.textContent = ROLE_LABELS[role] || role;
+				statusRoleEl.textContent = ROLE_LABEL_KEYS[role] ? t(ROLE_LABEL_KEYS[role]) : role;
 			}
 			if (statusPagesEl) {
 				statusPagesEl.textContent = auth.accessiblePages().map(pageLabel).join(', ');
@@ -164,12 +177,12 @@
 		var label = openBtn.querySelector('.auth-btn__label');
 
 		if (label) {
-			label.textContent = role === null ? 'Přihlásit' : 'Přihlášen';
+			label.textContent = role === null ? t('auth.openButton.login') : t('auth.openButton.loggedIn');
 		}
 		openBtn.classList.toggle('is-signed-in', role !== null);
 		openBtn.title = role === null
-			? 'Přihlásit se'
-			: (ROLE_LABELS[role] || 'Přihlášen');
+			? t('auth.form.submit')
+			: (ROLE_LABEL_KEYS[role] ? t(ROLE_LABEL_KEYS[role]) : t('auth.openButton.loggedIn'));
 	}
 
 	/**
@@ -190,10 +203,22 @@
 		});
 	}
 
+	/** Znovu přeloží texty, které jsou zobrazené v danou chvíli (chyba/hláška), pokud jsou vidět. */
+	function refreshTransientTexts() {
+		if (errorEl && !errorEl.hidden) {
+			errorEl.textContent = t('auth.form.error');
+		}
+		if (noticeEl && !noticeEl.hidden && deniedNoticePage) {
+			noticeEl.textContent = t('auth.notice.pageRequiresLoginDirect', { page: pageLabel(deniedNoticePage) });
+		}
+		setRevealed(input.type === 'text');
+	}
+
 	function refreshAll() {
 		refreshButton();
 		refreshMenu();
 		refreshPanels();
+		refreshTransientTexts();
 	}
 
 	/* --- Události --- */
@@ -234,7 +259,7 @@
 		var granted = auth.login(input.value);
 
 		if (granted === null) {
-			showError('Nesprávné heslo.');
+			showError(t('auth.form.error'));
 			input.select();
 			return;
 		}
@@ -266,6 +291,8 @@
 		});
 	}
 
+	document.addEventListener('site:langchange', refreshAll);
+
 	/* --- Start --- */
 
 	refreshAll();
@@ -277,7 +304,8 @@
 		if (auth.canAccess(deniedPage)) {
 			window.location.replace(auth.BASE_PATH + deniedPage);
 		} else {
-			setNotice('Stránka ' + pageLabel(deniedPage) + ' vyžaduje přihlášení.');
+			deniedNoticePage = deniedPage;
+			setNotice(t('auth.notice.pageRequiresLoginDirect', { page: pageLabel(deniedPage) }));
 			openModal(deniedPage);
 			// Parametr v adrese už není potřeba.
 			window.history.replaceState({}, '', window.location.pathname);
