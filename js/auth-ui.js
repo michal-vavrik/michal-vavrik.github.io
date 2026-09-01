@@ -21,7 +21,7 @@
 		'cv.html': 'CV',
 		'games.html': 'Games',
 		'contact.html': 'Contact',
-		'nv194.html': 'NV194'
+		'nv194.html': 'NV 194'
 	};
 
 	var openBtn = document.getElementById('auth-btn');
@@ -173,8 +173,8 @@
 	}
 
 	/**
-	 * Odkazy na nedostupné stránky se označí jako zamčené a místo přechodu
-	 * otevřou přihlašovací dialog.
+	 * Odkazy na nedostupné stránky se v nabídce vůbec nezobrazují - bez
+	 * oprávnění pro ně není důvod nabídku zaplňovat.
 	 */
 	function refreshMenu() {
 		var links = document.querySelectorAll('.menu__link');
@@ -186,16 +186,7 @@
 				return;
 			}
 
-			var locked = !auth.canAccess(page);
-			link.classList.toggle('menu__link--locked', locked);
-
-			if (locked) {
-				link.setAttribute('aria-disabled', 'true');
-				link.title = 'Vyžaduje přihlášení';
-			} else {
-				link.removeAttribute('aria-disabled');
-				link.removeAttribute('title');
-			}
+			link.hidden = !auth.canAccess(page);
 		});
 	}
 
@@ -274,21 +265,6 @@
 			refreshAll();
 		});
 	}
-
-	// Zamčené položky nabídky otevřou dialog místo přechodu na stránku.
-	document.addEventListener('click', function (event) {
-		var link = event.target.closest ? event.target.closest('.menu__link--locked') : null;
-		if (!link) {
-			return;
-		}
-		event.preventDefault();
-
-		var href = link.getAttribute('href') || '';
-		var page = href.split('/').pop().split('?')[0].toLowerCase();
-
-		setNotice('Stránka ' + pageLabel(page) + ' je dostupná až po přihlášení.');
-		openModal(page);
-	});
 
 	/* --- Start --- */
 

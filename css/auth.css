@@ -2,6 +2,14 @@
 
 /* Přihlašovací tlačítko a dialog, sdílené všemi stránkami webu. */
 
+/* --- Skryté položky nabídky ---
+   .menu__link má v main.css vlastní "display: block", což by jinak přebilo
+   výchozí prohlížečové pravidlo pro atribut hidden. Bez tohoto přebití by se
+   nedostupné odkazy i tak zobrazovaly. */
+.menu__link[hidden] {
+	display: none;
+}
+
 /* --- Tlačítko v pravém horním rohu --- */
 
 .auth-btn {
@@ -311,17 +319,6 @@ body.auth-modal-open {
 
 .auth-status__value.is-role {
 	color: #7df0bd;
-}
-
-/* --- Zamčené položky nabídky --- */
-
-.menu__link--locked {
-	opacity: 0.55;
-}
-
-.menu__link--locked::after {
-	content: " \1F512";
-	font-size: 0.85em;
 }
 
 @media (max-width: 600px) {
