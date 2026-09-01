@@ -900,6 +900,15 @@
 		align-items: stretch;
 	}
 
+	.quiz__btn--question-action {
+		order: 1;
+		margin-left: 0;
+	}
+
+	.quiz__btn--new-test {
+		order: 2;
+	}
+
 	.quiz__btn {
 		width: 100%;
 		padding: 14px 18px;
