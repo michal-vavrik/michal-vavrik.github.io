@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html>
 	<head>
+		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Games</title>
 		<link rel="stylesheet" type="text/css" href="css/main.css">
+		<link rel="stylesheet" type="text/css" href="css/auth.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
+		<script src="js/auth.js"></script>
 	</head>
 	
 	<body class="subpage">
@@ -19,26 +23,50 @@
 		</nav>
 		<div class="menu__toggler"><span></span></div>
 		
-		<button class="LoginBtn" onclick="document.getElementById('id01').style.display='block'" style="width:auto;"><i class="fa fa-user"></i></button>
-		<div id="id01" class="modal">
-		  
-		  <form class="modal-content animate" action="/action_page.php" method="post">
-			<div class="imgcontainer">
-			  <span onclick="document.getElementById('id01').style.display='none'" class="close" title="Close Modal">&times;</span>
-			  <i class="fa fa-user-circle" aria-hidden="true" style="font-size: 12vw"></i>
-			  <!-- <img src="img_avatar2.png" alt="Avatar" class="avatar"> -->
-			</div>
+		<button type="button" class="auth-btn" id="auth-btn" aria-haspopup="dialog" aria-controls="auth-modal">
+			<i class="fa fa-user auth-btn__icon" aria-hidden="true"></i>
+			<span class="auth-btn__label">Přihlásit</span>
+		</button>
 
-			<div class="container">
-			  <label for="psw"><b>Password</b></label>
-			  <input type="password" placeholder="Enter Password" name="psw" required>
-				
-			  <button type="submit">Login</button>
+		<div class="auth-modal" id="auth-modal" hidden>
+			<div class="auth-modal__backdrop" data-auth-close></div>
+
+			<div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+				<button type="button" class="auth-modal__close" data-auth-close aria-label="Zavřít">&times;</button>
+
+				<div class="auth-modal__icon" aria-hidden="true"><i class="fa fa-lock"></i></div>
+				<h2 class="auth-modal__title" id="auth-title">Přihlášení</h2>
+				<p class="auth-modal__lead">Chráněné stránky jsou dostupné po zadání hesla.</p>
+
+				<p class="auth-modal__notice" id="auth-notice" hidden></p>
+
+				<div class="auth-panel" id="auth-login-panel">
+					<form id="auth-form" novalidate>
+						<label class="auth-form__label" for="auth-password">Heslo</label>
+						<div class="auth-form__field">
+							<input type="password" id="auth-password" name="password" placeholder="Zadejte heslo" autocomplete="current-password">
+							<button type="button" class="auth-form__reveal" id="auth-reveal" aria-pressed="false">Zobrazit</button>
+						</div>
+						<p class="auth-form__error" id="auth-error" role="alert" hidden></p>
+						<button type="submit" class="auth-modal__submit">Přihlásit se</button>
+					</form>
+				</div>
+
+				<div class="auth-panel" id="auth-status-panel" hidden>
+					<div class="auth-status__row">
+						<span class="auth-status__label">Oprávnění:</span>
+						<span class="auth-status__value is-role" id="auth-status-role"></span>
+					</div>
+					<div class="auth-status__row">
+						<span class="auth-status__label">Dostupné stránky:</span>
+						<span class="auth-status__value" id="auth-status-pages"></span>
+					</div>
+					<button type="button" class="auth-modal__logout" id="auth-logout">Odhlásit se</button>
+				</div>
 			</div>
-		  </form>
 		</div>
 
-		<script src="js/login-modal.js"></script>
+		<script src="js/auth-ui.js"></script>
 		<script src="js/menu.js"></script>
 
 	</body>
