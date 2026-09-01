@@ -1,0 +1,101 @@
+@charset "utf-8";
+
+/* Styly stránky Contact. */
+
+.contact {
+	position: relative;
+	z-index: 1;
+	max-width: 640px;
+	margin: 0 auto;
+	padding: 104px 24px 64px;
+	color: #e8edf5;
+	font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	line-height: 1.6;
+}
+
+.contact__title {
+	font-size: clamp(1.8rem, 4vw, 2.5rem);
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	margin-bottom: 10px;
+}
+
+.contact__lead {
+	color: #93a3ba;
+	margin-bottom: 32px;
+	font-size: 1.05rem;
+}
+
+.contact__list {
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	margin: 0;
+	padding: 0;
+}
+
+.contact__item {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 18px 20px;
+	border: 1px solid rgba(255, 255, 255, 0.11);
+	border-radius: 14px;
+	background: rgba(9, 13, 24, 0.62);
+}
+
+.contact__icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	background: rgba(99, 102, 241, 0.2);
+	color: #a5b4fc;
+	font-size: 1.2rem;
+}
+
+.contact__text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.contact__label {
+	font-size: 0.78rem;
+	font-weight: 600;
+	color: #93a3ba;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.contact__value {
+	font-size: 1.05rem;
+	color: #e8edf5;
+	overflow-wrap: anywhere;
+}
+
+.contact__value a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.contact__value a:hover {
+	color: #a5b4fc;
+	text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+	.contact {
+		padding: 92px 18px 48px;
+	}
+
+	.contact__item {
+		padding: 15px 16px;
+		gap: 12px;
+	}
+}
