@@ -323,7 +323,13 @@
 		resetTest();
 	});
 
-	resetTestBtn.addEventListener('click', resetTest);
+	resetTestBtn.addEventListener('click', function () {
+		if (test && !test.isFinished() &&
+			!window.confirm('Opravdu chcete zahájit nový test? Aktuální postup a odpovědi budou ztraceny.')) {
+			return;
+		}
+		resetTest();
+	});
 
 	startPanel.addEventListener('click', function (event) {
 		var button = event.target.closest('[data-mode]');
