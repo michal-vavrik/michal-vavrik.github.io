@@ -36,6 +36,9 @@
 
 	var questionActionBtn = document.getElementById('quiz-question-action');
 	var resetTestBtn = document.getElementById('quiz-reset-test');
+	var resetModal = document.getElementById('quiz-reset-modal');
+	var resetConfirmBtn = document.getElementById('quiz-reset-confirm');
+	var resetCancelBtns = document.querySelectorAll('[data-quiz-reset-cancel]');
 	var backToTestBtn = document.getElementById('quiz-back-to-test');
 	var modesBtn = document.getElementById('quiz-modes');
 
@@ -272,6 +275,16 @@
 		showModeSelection();
 	}
 
+	function closeResetModal() {
+		resetModal.hidden = true;
+		resetTestBtn.focus();
+	}
+
+	function openResetModal() {
+		resetModal.hidden = false;
+		resetConfirmBtn.focus();
+	}
+
 	var NARROW_SCREEN = '(max-width: 900px)';
 
 	function isNarrowScreen() {
@@ -324,11 +337,26 @@
 	});
 
 	resetTestBtn.addEventListener('click', function () {
-		if (test && !test.isFinished() &&
-			!window.confirm('Opravdu chcete zahájit nový test? Aktuální postup a odpovědi budou ztraceny.')) {
+		if (test && !test.isFinished()) {
+			openResetModal();
 			return;
 		}
 		resetTest();
+	});
+
+	resetConfirmBtn.addEventListener('click', function () {
+		resetModal.hidden = true;
+		resetTest();
+	});
+
+	resetCancelBtns.forEach(function (button) {
+		button.addEventListener('click', closeResetModal);
+	});
+
+	document.addEventListener('keydown', function (event) {
+		if (event.key === 'Escape' && !resetModal.hidden) {
+			closeResetModal();
+		}
 	});
 
 	startPanel.addEventListener('click', function (event) {

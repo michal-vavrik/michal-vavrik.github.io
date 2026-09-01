@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>NV194</title>
 		<link rel="stylesheet" type="text/css" href="css/main.css">
-		<link rel="stylesheet" type="text/css" href="css/nv194.css?v=nav-scrollbar-arrows-1">
+		<link rel="stylesheet" type="text/css" href="css/nv194.css?v=reset-test-modal-auth-style-1">
 		<link rel="stylesheet" type="text/css" href="css/auth.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
@@ -146,6 +146,19 @@
 			</div>
 		</main>
 
+		<div class="auth-modal quiz-reset-modal" id="quiz-reset-modal" hidden>
+			<div class="auth-modal__backdrop" data-quiz-reset-cancel></div>
+			<div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="quiz-reset-title" aria-describedby="quiz-reset-message">
+				<div class="auth-modal__icon" aria-hidden="true">↻</div>
+				<h2 class="auth-modal__title" id="quiz-reset-title">Zahájit nový test?</h2>
+				<p class="auth-modal__lead" id="quiz-reset-message">Aktuální postup a odpovědi budou ztraceny.</p>
+				<div class="quiz-reset-modal__actions">
+					<button type="button" class="auth-modal__logout" data-quiz-reset-cancel>Zrušit</button>
+					<button type="button" class="auth-modal__submit" id="quiz-reset-confirm">Zahájit nový test</button>
+				</div>
+			</div>
+		</div>
+
 		<script src="js/nv194-parser.js"></script>
 		<script src="js/nv194-evaluation.js"></script>
 		<script src="js/nv194-answer-state.js"></script>
@@ -155,7 +168,7 @@
 		<script src="js/nv194-nav-view.js"></script>
 		<script src="js/nv194-question-view.js?v=result-space-3"></script>
 		<script src="js/nv194-result-view.js"></script>
-		<script src="js/nv194-page.js?v=reset-test-confirmation-1"></script>
+		<script src="js/nv194-page.js?v=reset-test-modal-1"></script>
 
 	</body>
 </html>

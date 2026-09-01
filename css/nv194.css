@@ -697,6 +697,23 @@
 	cursor: not-allowed;
 }
 
+/* --- Potvrzení nového testu --- */
+
+.quiz-reset-modal {
+	z-index: 1200;
+}
+
+.quiz-reset-modal__actions {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.quiz-reset-modal__actions .auth-modal__submit,
+.quiz-reset-modal__actions .auth-modal__logout {
+	margin-top: 0;
+}
+
 /* --- Závěrečné shrnutí --- */
 
 .quiz-result {
