@@ -98,16 +98,18 @@ window.NV194QuestionView = (function () {
 
 			var body = element('span', 'quiz-answer__body');
 			var content = element('span', 'quiz-answer__content');
+			var badge = element('span', 'quiz-answer__badge quiz-answer__badge--placeholder');
 			renderContent(answer.content, content, imageBase, 'Obrázek odpovědi ' +
 				(LETTER_LABELS[answer.letter] || answer.letter));
 			body.appendChild(content);
+			body.appendChild(badge);
 
 			label.appendChild(checkbox);
 			label.appendChild(letter);
 			label.appendChild(body);
 			item.appendChild(label);
 
-			applyEvaluation(item, body, answer.letter, state);
+			applyEvaluation(item, badge, answer.letter, state);
 
 			return item;
 		}
@@ -117,7 +119,7 @@ window.NV194QuestionView = (function () {
 		 * správná zeleně (ať už byla zvolena, nebo ne), špatně zvolená červeně.
 		 * Slovní označení doplňuje barvu, aby výsledek nezáležel jen na barvě.
 		 */
-		function applyEvaluation(item, body, letter, state) {
+		function applyEvaluation(item, badge, letter, state) {
 			if (!state.confirmed || !state.evaluation) {
 				return;
 			}
@@ -128,8 +130,6 @@ window.NV194QuestionView = (function () {
 			if (!result) {
 				return;
 			}
-
-			var badge = element('span', 'quiz-answer__badge');
 
 			if (result.isCorrect) {
 				item.classList.add('is-correct');
@@ -143,7 +143,7 @@ window.NV194QuestionView = (function () {
 				return;
 			}
 
-			body.appendChild(badge);
+			badge.classList.remove('quiz-answer__badge--placeholder');
 		}
 
 		function errorsLabel(count) {

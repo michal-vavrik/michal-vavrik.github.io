@@ -8,19 +8,22 @@ window.NV194Quiz = (function () {
 	'use strict';
 
 	var MODES = {
-		RANDOM_40: 'random40',
+		PARAGRAPH_6: 'paragraph6',
+		PARAGRAPH_7: 'paragraph7',
 		ALL: 'all',
 		/* DOČASNÉ: zkušební režim pro rychlé ověření celého průchodu testem. */
 		DEMO_3: 'demo3'
 	};
 
-	var RANDOM_MODE_SIZE = 40;
+	var PARAGRAPH_6_SIZE = 40;
+	var PARAGRAPH_7_SIZE = 60;
 
 	/* DOČASNÉ: velikost zkušebního režimu. */
 	var DEMO_MODE_SIZE = 3;
 
 	var MODE_LABELS = {
-		random40: '40 náhodných otázek',
+		paragraph6: 'Test na §6',
+		paragraph7: 'Test na §7',
 		all: 'Všechny otázky postupně',
 		/* DOČASNÉ */
 		demo3: 'Zkušební test (3 otázky)'
@@ -84,8 +87,9 @@ window.NV194Quiz = (function () {
 	function selectQuestions(questions, mode, options) {
 		options = options || {};
 
-		if (mode === MODES.RANDOM_40) {
-			var size = options.size || RANDOM_MODE_SIZE;
+		if (mode === MODES.PARAGRAPH_6 || mode === MODES.PARAGRAPH_7) {
+			var defaultSize = mode === MODES.PARAGRAPH_6 ? PARAGRAPH_6_SIZE : PARAGRAPH_7_SIZE;
+			var size = options.size || defaultSize;
 			return shuffle(questions, options.random).slice(0, size);
 		}
 
@@ -328,7 +332,8 @@ window.NV194Quiz = (function () {
 	return {
 		MODES: MODES,
 		MODE_LABELS: MODE_LABELS,
-		RANDOM_MODE_SIZE: RANDOM_MODE_SIZE,
+		PARAGRAPH_6_SIZE: PARAGRAPH_6_SIZE,
+		PARAGRAPH_7_SIZE: PARAGRAPH_7_SIZE,
 		DEMO_MODE_SIZE: DEMO_MODE_SIZE,
 		selectQuestions: selectQuestions,
 		createTest: createTest

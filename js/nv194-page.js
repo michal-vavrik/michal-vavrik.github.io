@@ -16,6 +16,7 @@
 	var IMAGE_BASE = window.NV194Images.DEFAULT_BASE;
 
 	var CONTEXT = { NONE: 'none', TEST: 'test', BROWSE: 'browse' };
+	var DEMO_MODE = 'demo3';
 
 	var statusEl = document.getElementById('quiz-status');
 	var layoutEl = document.getElementById('quiz-layout');
@@ -33,15 +34,20 @@
 	var scoreEl = document.getElementById('quiz-score');
 	var contextNoteEl = document.getElementById('quiz-context-note');
 
-	var confirmBtn = document.getElementById('quiz-confirm');
-	var nextBtn = document.getElementById('quiz-next');
+	var questionActionBtn = document.getElementById('quiz-question-action');
+	var resetTestBtn = document.getElementById('quiz-reset-test');
 	var backToTestBtn = document.getElementById('quiz-back-to-test');
 	var modesBtn = document.getElementById('quiz-modes');
 
 	var doneSummaryHost = document.getElementById('quiz-result-host');
 	var newTestBtn = document.getElementById('quiz-new-test');
+	var demoModeBtn = document.querySelector('[data-mode="' + DEMO_MODE + '"]');
 
 	var answerState = window.NV194AnswerState;
+
+	function canUseDemoMode() {
+		return window.SiteAuth && window.SiteAuth.role() === window.SiteAuth.ROLES.FULL;
+	}
 
 	var questions = [];
 	var questionsById = {};
@@ -206,13 +212,13 @@
 			scoreEl.textContent = '';
 		}
 
-		confirmBtn.disabled = !slot.canConfirm();
-
 		var inTest = context.kind === CONTEXT.TEST;
-		nextBtn.hidden = !inTest;
-		if (inTest) {
-			nextBtn.disabled = !test.isConfirmed();
-			nextBtn.textContent = test.isLast() ? 'Dokončit' : 'Další';
+		var canMoveToNext = inTest && test.isConfirmed();
+		questionActionBtn.disabled = canMoveToNext ? false : !slot.canConfirm();
+		if (canMoveToNext) {
+			questionActionBtn.textContent = test.isLast() ? 'Dokončit' : 'Další';
+		} else {
+			questionActionBtn.textContent = 'Potvrdit';
 		}
 
 		backToTestBtn.hidden = inTest || !test;
@@ -260,6 +266,12 @@
 		refreshNav();
 	}
 
+	function resetTest() {
+		test = null;
+		setStatus('');
+		showModeSelection();
+	}
+
 	var NARROW_SCREEN = '(max-width: 900px)';
 
 	function isNarrowScreen() {
@@ -278,21 +290,19 @@
 		}
 	}
 
-	confirmBtn.addEventListener('click', function () {
+	questionActionBtn.addEventListener('click', function () {
+		if (context.kind === CONTEXT.TEST && test.isConfirmed()) {
+			if (test.next()) {
+				renderActive();
+			} else {
+				finishTest();
+			}
+			return;
+		}
+
 		var slot = activeSlot();
 		if (slot && slot.confirm()) {
 			renderActive();
-		}
-	});
-
-	nextBtn.addEventListener('click', function () {
-		if (context.kind !== CONTEXT.TEST) {
-			return;
-		}
-		if (test.next()) {
-			renderActive();
-		} else {
-			finishTest();
 		}
 	});
 
@@ -310,18 +320,23 @@
 	modesBtn.addEventListener('click', showModeSelection);
 
 	newTestBtn.addEventListener('click', function () {
-		test = null;
-		setStatus('');
-		showModeSelection();
+		resetTest();
 	});
+
+	resetTestBtn.addEventListener('click', resetTest);
 
 	startPanel.addEventListener('click', function (event) {
 		var button = event.target.closest('[data-mode]');
 		if (!button) {
 			return;
 		}
+		var mode = button.getAttribute('data-mode');
+		if (mode === DEMO_MODE && !canUseDemoMode()) {
+			setStatus('Zkušební test je dostupný pouze s plným přístupem.', true);
+			return;
+		}
 		try {
-			test = window.NV194Quiz.createTest(questions, button.getAttribute('data-mode'));
+			test = window.NV194Quiz.createTest(questions, mode);
 		} catch (error) {
 			setStatus(error.message, true);
 			return;
@@ -364,6 +379,7 @@
 			});
 
 			navView.render(window.NV194NavTree.build(questions, result.chapters));
+			demoModeBtn.hidden = !canUseDemoMode();
 			layoutEl.hidden = false;
 			setNavOpen(!isNarrowScreen());
 

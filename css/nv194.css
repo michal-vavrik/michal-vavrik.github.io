@@ -327,6 +327,12 @@
 	font-weight: 600;
 }
 
+.quiz__mode-detail {
+	color: #cbd6e6;
+	font-size: 0.88rem;
+	font-weight: 600;
+}
+
 .quiz__mode-hint {
 	color: var(--quiz-muted);
 	font-size: 0.84rem;
@@ -508,11 +514,17 @@
 
 /* Slovní označení doplňuje barvu, výsledek tak nezáleží jen na ní. */
 .quiz-answer__badge {
+	box-sizing: border-box;
+	min-height: 24px;
 	padding: 3px 10px;
 	border-radius: 999px;
 	font-size: 0.76rem;
 	font-weight: 700;
 	letter-spacing: 0.01em;
+}
+
+.quiz-answer__badge--placeholder {
+	visibility: hidden;
 }
 
 .quiz-answer.is-correct .quiz-answer__label {
@@ -551,6 +563,7 @@
 	display: flex;
 	align-items: center;
 	gap: 12px;
+	min-height: 28px;
 	margin-top: 20px;
 	padding: 14px 18px;
 	border-radius: 12px;
@@ -559,7 +572,9 @@
 }
 
 .quiz-question__result[hidden] {
-	display: none;
+	display: flex !important;
+	height: 56px;
+	visibility: hidden;
 }
 
 .quiz-question__result-icon {
@@ -607,6 +622,14 @@
 	font-size: 1rem;
 	font-weight: 600;
 	transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.quiz__btn--question-action {
+	min-width: 150px;
+}
+
+.quiz__btn--new-test {
+	margin-left: auto;
 }
 
 .quiz__btn--primary {

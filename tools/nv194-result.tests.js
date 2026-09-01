@@ -33,6 +33,18 @@ window.NV194ResultTests = (function () {
 		return result.questions;
 	}
 
+	function randomModeSelection(runner) {
+		var questions = questionsOf(100);
+		var paragraph6 = Quiz.selectQuestions(questions, Quiz.MODES.PARAGRAPH_6);
+		var paragraph7 = Quiz.selectQuestions(questions, Quiz.MODES.PARAGRAPH_7);
+
+		runner.equal('§6 vybírá 40 otázek', paragraph6.length, 40);
+		runner.equal('§6 neobsahuje duplicitní otázky', new Set(paragraph6).size, 40);
+		runner.equal('§7 vybírá 60 otázek', paragraph7.length, 60);
+		runner.equal('§7 neobsahuje duplicitní otázky', new Set(paragraph7).size, 60);
+		runner.equal('režim všech otázek zachovává celý zdroj', Quiz.selectQuestions(questions, Quiz.MODES.ALL).length, 100);
+	}
+
 	/** Projde test a u každé otázky zvolí odpovědi podle předané funkce. */
 	function playThrough(test, choose) {
 		for (var at = 0; at < test.total; at++) {
@@ -142,6 +154,7 @@ window.NV194ResultTests = (function () {
 
 	function run() {
 		var runner = window.NV194TestRunner.create();
+		randomModeSelection(runner);
 		exampleScenario(runner);
 		errorsVersusQuestions(runner);
 		edgeCases(runner);
