@@ -30,6 +30,9 @@
 	var navToggle = document.getElementById('quiz-nav-toggle');
 	var navExpandBtn = document.getElementById('quiz-nav-expand');
 	var navCollapseBtn = document.getElementById('quiz-nav-collapse');
+	var navSearchInput = document.getElementById('quiz-nav-search');
+	var navSearchClearBtn = document.getElementById('quiz-nav-search-clear');
+	var navSearchEmptyEl = document.getElementById('quiz-nav-search-empty');
 
 	var startPanel = document.getElementById('quiz-start');
 	var runPanel = document.getElementById('quiz-run');
@@ -396,6 +399,30 @@
 
 	navCollapseBtn.addEventListener('click', function () {
 		navView.setAllChaptersOpen(false);
+	});
+
+	/** Prohledá strom otázek a zobrazí případnou hlášku o nulovém výsledku. */
+	function updateNavSearch() {
+		var query = navSearchInput.value;
+		var matches = navView.search(query);
+		navSearchClearBtn.hidden = query.trim() === '';
+		navSearchEmptyEl.hidden = matches === null || matches > 0;
+	}
+
+	navSearchInput.addEventListener('input', updateNavSearch);
+
+	navSearchInput.addEventListener('keydown', function (event) {
+		if (event.key === 'Escape' && navSearchInput.value !== '') {
+			event.stopPropagation();
+			navSearchInput.value = '';
+			updateNavSearch();
+		}
+	});
+
+	navSearchClearBtn.addEventListener('click', function () {
+		navSearchInput.value = '';
+		updateNavSearch();
+		navSearchInput.focus();
 	});
 
 	/* --- Načtení dat --- */

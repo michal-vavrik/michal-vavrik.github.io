@@ -70,6 +70,10 @@ window.I18n = (function () {
 			'nv194.nav.ariaLabel': 'Navigace otázek',
 			'nv194.nav.imageFallback': 'Otázka s obrázkem',
 			'nv194.nav.goToQuestion': 'Otázka č. {id}',
+			'nv194.nav.searchLabel': 'Hledat otázku',
+			'nv194.nav.searchPlaceholder': 'Hledat v otázkách a odpovědích…',
+			'nv194.nav.searchClear': 'Vymazat hledání',
+			'nv194.nav.searchNoResults': 'Žádné otázky neodpovídají hledanému výrazu.',
 
 			'nv194.start.heading': 'Zvolte režim testu',
 			'nv194.start.lead': 'Nebo si otevřete libovolnou otázku z přehledu vlevo.',
@@ -184,6 +188,10 @@ window.I18n = (function () {
 			'nv194.nav.ariaLabel': 'Question navigation',
 			'nv194.nav.imageFallback': 'Question with image',
 			'nv194.nav.goToQuestion': 'Question no. {id}',
+			'nv194.nav.searchLabel': 'Search questions',
+			'nv194.nav.searchPlaceholder': 'Search questions and answers…',
+			'nv194.nav.searchClear': 'Clear search',
+			'nv194.nav.searchNoResults': 'No questions match your search.',
 
 			'nv194.start.heading': 'Choose a test mode',
 			'nv194.start.lead': 'Or open any question from the overview on the left.',

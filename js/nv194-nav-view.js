@@ -25,6 +25,26 @@ window.NV194NavView = (function () {
 			.trim();
 	}
 
+	/** Text otázky i všech odpovědí spojený do jednoho řetězce pro hledání. */
+	function questionSearchText(question) {
+		var parts = [String(question.id), questionLabel(question)];
+		(question.answers || []).forEach(function (answer) {
+			parts.push(questionLabel({ content: answer.content }));
+		});
+		return parts.join(' ');
+	}
+
+	/**
+	 * Normalizuje text pro porovnání při hledání - malá písmena a bez diakritiky,
+	 * aby uživatel nemusel psát přesně (např. "medove" najde i "medové").
+	 */
+	function normalizeForSearch(text) {
+		return String(text || '')
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.toLowerCase();
+	}
+
 	/**
 	 * @param {{onSelect?: function(number): void}} [options]
 	 */
@@ -37,8 +57,15 @@ window.NV194NavView = (function () {
 		root.setAttribute('aria-label', i18n.t('nv194.nav.ariaLabel'));
 
 		var buttonsById = {};
+		var itemsById = {};
+		var searchTextById = {};
 		var chapterByQuestionId = {};
 		var questionsById = {};
+		/** Kapitoly v pořadí vykreslení - kvůli filtrování a obnově rozbalení. */
+		var chapterEntries = [];
+
+		/** Stav rozbalení kapitol před zahájením hledání, pro obnovu po smazání dotazu. */
+		var openBeforeSearch = null;
 
 		function labelAndTitle(button, question) {
 			var text = questionLabel(question);
@@ -69,12 +96,15 @@ window.NV194NavView = (function () {
 
 			item.appendChild(button);
 			buttonsById[question.id] = button;
+			itemsById[question.id] = item;
 			questionsById[question.id] = question;
+			searchTextById[question.id] = normalizeForSearch(questionSearchText(question));
 			return item;
 		}
 
 		function buildChapter(chapter) {
 			var details = element('details', 'quiz-nav__chapter');
+			var entry = { details: details, questionIds: [] };
 
 			var summary = element('summary', 'quiz-nav__chapter-title');
 			var title = element('span', 'quiz-nav__chapter-name');
@@ -88,10 +118,12 @@ window.NV194NavView = (function () {
 			chapter.questions.forEach(function (question) {
 				list.appendChild(buildQuestionItem(question));
 				chapterByQuestionId[question.id] = details;
+				entry.questionIds.push(question.id);
 			});
 
 			details.appendChild(summary);
 			details.appendChild(list);
+			chapterEntries.push(entry);
 			return details;
 		}
 
@@ -102,8 +134,12 @@ window.NV194NavView = (function () {
 			render: function (tree) {
 				root.textContent = '';
 				buttonsById = {};
+				itemsById = {};
+				searchTextById = {};
 				chapterByQuestionId = {};
 				questionsById = {};
+				chapterEntries = [];
+				openBeforeSearch = null;
 
 				tree.forEach(function (chapter) {
 					root.appendChild(buildChapter(chapter));
@@ -154,6 +190,58 @@ window.NV194NavView = (function () {
 				Array.prototype.forEach.call(chapters, function (details) {
 					details.open = open;
 				});
+			},
+
+			/**
+			 * Fulltextově prohledá text otázek i odpovědí (bez ohledu na
+			 * velikost písmen a diakritiku) a zobrazí jen vyhovující otázky.
+			 * Kapitoly bez shody se skryjí, kapitoly se shodou se rozbalí.
+			 * Prázdný dotaz obnoví stav rozbalení kapitol z doby před hledáním.
+			 *
+			 * @param {string} rawQuery hledaný text
+			 * @returns {number|null} počet nalezených otázek, nebo null pokud je dotaz prázdný
+			 */
+			search: function (rawQuery) {
+				var query = normalizeForSearch(rawQuery).trim();
+
+				if (query === '') {
+					if (openBeforeSearch) {
+						chapterEntries.forEach(function (entry, index) {
+							entry.details.hidden = false;
+							entry.details.open = openBeforeSearch[index];
+							entry.questionIds.forEach(function (id) {
+								itemsById[id].hidden = false;
+							});
+						});
+						openBeforeSearch = null;
+					}
+					return null;
+				}
+
+				if (!openBeforeSearch) {
+					openBeforeSearch = chapterEntries.map(function (entry) {
+						return entry.details.open;
+					});
+				}
+
+				var totalMatches = 0;
+				chapterEntries.forEach(function (entry) {
+					var chapterMatches = 0;
+					entry.questionIds.forEach(function (id) {
+						var isMatch = searchTextById[id].indexOf(query) !== -1;
+						itemsById[id].hidden = !isMatch;
+						if (isMatch) {
+							chapterMatches++;
+						}
+					});
+					entry.details.hidden = chapterMatches === 0;
+					if (chapterMatches > 0) {
+						entry.details.open = true;
+					}
+					totalMatches += chapterMatches;
+				});
+
+				return totalMatches;
 			},
 
 			/** Přeloží texty závislé na jazyce beze ztráty stavu rozbaleného stromu. */

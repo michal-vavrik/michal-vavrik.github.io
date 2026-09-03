@@ -446,7 +446,7 @@ b) předány osobám v rámci školení bezpečnosti práce
 c) dostupné v elektronické podobě
 správně: [a, b]
 
-75. Vedoucí práce, osoba pověřená kontrolou elektrického zařízení během pracovní cmnostJ a osoba odpovědná za elektrické zařízení 
+75. Vedoucí práce, osoba pověřená kontrolou elektrického zařízení během pracovní činnosti a osoba odpovědná za elektrické zařízení 
 a) musí být tatáž osoba 
 b) nesmí být tatáž osoba 
 c) může být tatáž osoba 
@@ -1814,8 +1814,8 @@ správně: [a, b, c]
 
 300. Ověření znalostí poskytování první pomoci při úrazu elektrickým proudem 
 a) postačí ověřit pouze při nástupu pracovníka do organizace 
-b) musí být součástí zkoušky pracovníků s elektrotechnickou kvalifikací podle vyhlášky č. 50/1978 Sb. 
-c) může být součástí zkoušky pracovníků s elektrotechnickou kvalifikací podle vyhlášky č. 50/1978 Sb. 
+b) musí být součástí zkoušky pracovníků s elektrotechnickou kvalifikací podle nařízení vlády č. 194/2022 sb. 
+c) může být součástí zkoušky pracovníků s elektrotechnickou kvalifikací podle nařízení vlády č. 194/2022 sb. 
 správně: [b]
 
 301. Zdravotnickou záchrannou službu přivoláme pomocí tísňového telefonního čísla 

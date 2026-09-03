@@ -129,8 +129,84 @@
 }
 
 .quiz__layout:not(.is-nav-open) .quiz__nav-toggle-text,
+.quiz__layout:not(.is-nav-open) .quiz__nav-search,
 .quiz__layout:not(.is-nav-open) .quiz__nav-tools,
 .quiz__layout:not(.is-nav-open) .quiz__nav-host {
+	display: none;
+}
+
+/* --- Fulltextové vyhledávání v přehledu otázek --- */
+
+.quiz__nav-search {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.quiz__nav-search-field {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.quiz__nav-search-icon {
+	position: absolute;
+	left: 12px;
+	font-size: 0.85rem;
+	opacity: 0.65;
+	pointer-events: none;
+}
+
+.quiz__nav-search-input {
+	width: 100%;
+	padding: 9px 34px;
+	border: 1px solid var(--quiz-border);
+	border-radius: 8px;
+	background: var(--quiz-surface-soft);
+	color: var(--quiz-text);
+	font-family: inherit;
+	font-size: 0.86rem;
+}
+
+.quiz__nav-search-input::placeholder {
+	color: var(--quiz-muted);
+}
+
+.quiz__nav-search-input:focus {
+	outline: 2px solid var(--quiz-accent);
+	outline-offset: 1px;
+}
+
+/* Nativní "x" u type=search je nahrazeno vlastním tlačítkem níže. */
+.quiz__nav-search-input::-webkit-search-cancel-button {
+	display: none;
+}
+
+.quiz__nav-search-clear {
+	position: absolute;
+	right: 6px;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: transparent;
+	color: var(--quiz-muted);
+	font-size: 1.1rem;
+	line-height: 1;
+}
+
+.quiz__nav-search-clear:hover {
+	background: var(--quiz-surface-hover);
+	color: var(--quiz-text);
+	opacity: 1;
+}
+
+.quiz__nav-search-empty {
+	padding: 2px 2px 0;
+	color: var(--quiz-muted);
+	font-size: 0.8rem;
+}
+
+.quiz__nav-search-empty[hidden] {
 	display: none;
 }
 

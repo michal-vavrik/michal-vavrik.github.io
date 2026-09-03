@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>NV 194</title>
 		<link rel="stylesheet" type="text/css" href="css/main.css?v=header-scroll-1">
-		<link rel="stylesheet" type="text/css" href="css/nv194.css?v=mobile-action-order-1">
+		<link rel="stylesheet" type="text/css" href="css/nv194.css?v=nav-search-1">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=hide-locked-menu-2">
 		<link rel="stylesheet" type="text/css" href="css/i18n.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -81,7 +81,7 @@
 			</div>
 		</div>
 
-		<script src="js/i18n.js?v=nav-labels-1"></script>
+		<script src="js/i18n.js?v=nav-search-1"></script>
 		<script src="js/lang-switcher.js"></script>
 		<script src="js/auth-ui.js?v=nav-labels-1"></script>
 		<script src="js/menu.js"></script>
@@ -98,6 +98,15 @@
 						<span class="quiz__nav-toggle-icon" aria-hidden="true">☰</span>
 						<span class="quiz__nav-toggle-text" data-i18n="nv194.nav.toggle">Přehled otázek</span>
 					</button>
+
+					<div class="quiz__nav-search" id="quiz-nav-search-wrap">
+						<div class="quiz__nav-search-field">
+							<span class="quiz__nav-search-icon" aria-hidden="true">🔍</span>
+							<input type="search" class="quiz__nav-search-input" id="quiz-nav-search" data-i18n-placeholder="nv194.nav.searchPlaceholder" placeholder="Hledat v otázkách a odpovědích…" data-i18n-aria-label="nv194.nav.searchLabel" aria-label="Hledat otázku" autocomplete="off">
+							<button type="button" class="quiz__nav-search-clear" id="quiz-nav-search-clear" data-i18n-aria-label="nv194.nav.searchClear" aria-label="Vymazat hledání" hidden>&times;</button>
+						</div>
+						<p class="quiz__nav-search-empty" id="quiz-nav-search-empty" data-i18n="nv194.nav.searchNoResults" hidden>Žádné otázky neodpovídají hledanému výrazu.</p>
+					</div>
 
 					<div class="quiz__nav-tools" id="quiz-nav-tools">
 						<button type="button" class="quiz__nav-tool" id="quiz-nav-expand" data-i18n="nv194.nav.expandAll">Rozbalit vše</button>
@@ -181,10 +190,10 @@
 		<script src="js/nv194-quiz.js?v=paragraph-modes-1"></script>
 		<script src="js/nv194-images.js"></script>
 		<script src="js/nv194-nav-tree.js"></script>
-		<script src="js/nv194-nav-view.js?v=i18n-1"></script>
+		<script src="js/nv194-nav-view.js?v=nav-search-1"></script>
 		<script src="js/nv194-question-view.js?v=i18n-1"></script>
 		<script src="js/nv194-result-view.js?v=i18n-1"></script>
-		<script src="js/nv194-page.js?v=i18n-2"></script>
+		<script src="js/nv194-page.js?v=nav-search-1"></script>
 
 	</body>
 </html>
