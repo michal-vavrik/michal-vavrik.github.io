@@ -109,12 +109,12 @@ c) nemusí pořizovat žádný protokol o zkoušce
 správně: [b]
 
 19. Osoby znalé jsou osoby, které splňují kvalifikaci podle těchto paragrafů nařízení vlády č. 194/2022 Sb. 
-a) § 6 (,,elektrotechnik"), § 7 (,,vedoucí elektrotechnik"), § 8 (,,revizní technik") 
+a) § 6 („elektrotechnik"), § 7 („vedoucí elektrotechnik"), § 8 („revizní technik") 
 b) § 4 (osoba poučená) 
 c) § 3 
 správně: [a]
 
-20. ,,Vedoucí elektrotechnik" (§ 7) musí před získáním této kvalifikace dokončit praxi na elektrických zařízeních 
+20. „Vedoucí elektrotechnik" (§ 7) musí před získáním této kvalifikace dokončit praxi na elektrických zařízeních 
 a) bez ohledu na napětí minimálně 6 měsíců 
 b) do 1 000 V, bez nebezpečí výbuchu min. 2 roky, s výbuchem min. 3 roky 
 c) nad 1 000 V, v objektech s nebezpečím výbuchu minimálně v délce 4 roky 
@@ -126,7 +126,7 @@ b) dvoučlenná zkušební komise, jejímž předsedou musí být revizní techn
 c) tříčlenná zkušební komise, jejímž předsedou musí být revizní technik
 správně: [c]
 
-22. O úspěšném složení zkoušky obdrží přezkoušená osoba s kvalifikací ,,elektrotechnik" nebo „vedoucí elektrotechnik" 
+22. O úspěšném složení zkoušky obdrží přezkoušená osoba s kvalifikací „elektrotechnik" nebo „vedoucí elektrotechnik" 
 a) doklad o úspěšném složení zkoušky 
 b) osvědčení o úspěšném složení zkoušky 
 c) certifikát o úspěšném složení zkoušky 
@@ -265,8 +265,8 @@ c) nesmí provádět práce pod napětím
 správně: [b]
 
 45. Podle nařízení vlády č. 194/2022 Sb. jsou za osoby znalé považovány tyto osoby 
-a) ,,elektrotechnik" = osoba znalá pro samostatnou činnost 
-b) ,,vedoucí elektrotechnik" = osoba znalá pro řízení činnosti 
+a) „elektrotechnik" = osoba znalá pro samostatnou činnost 
+b) „vedoucí elektrotechnik" = osoba znalá pro řízení činnosti 
 c) revizní technik 
 správně: [a, b, c]
 
