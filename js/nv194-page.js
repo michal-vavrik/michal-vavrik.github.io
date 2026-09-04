@@ -54,6 +54,10 @@
 	var doneSummaryHost = document.getElementById('quiz-result-host');
 	var newTestBtn = document.getElementById('quiz-new-test');
 	var demoModeBtn = document.querySelector('[data-mode="' + DEMO_MODE + '"]');
+	var chaptersToggle = document.getElementById('quiz-chapters-toggle');
+	var chaptersPanel = document.getElementById('quiz-chapters-panel');
+	var chapterListEl = document.getElementById('quiz-chapter-list');
+	var chapterStartBtn = document.getElementById('quiz-chapter-start');
 
 	var answerState = window.NV194AnswerState;
 
@@ -61,7 +65,69 @@
 		return window.SiteAuth && window.SiteAuth.role() === window.SiteAuth.ROLES.FULL;
 	}
 
+	function questionCountLabel(count) {
+		var key;
+		if (count === 1) {
+			key = 'nv194.mode.chapters.count.one';
+		} else if (count >= 2 && count <= 4) {
+			key = 'nv194.mode.chapters.count.few';
+		} else {
+			key = 'nv194.mode.chapters.count.many';
+		}
+		return i18n.t(key, { count: count });
+	}
+
+	function collectSelectedChapterIndexes() {
+		if (!chapterListEl) {
+			return [];
+		}
+		var checked = chapterListEl.querySelectorAll('input[type="checkbox"]:checked');
+		return Array.prototype.map.call(checked, function (input) {
+			return parseInt(input.value, 10);
+		});
+	}
+
+	// Zachová zaškrtnuté kapitoly při překreslení (např. po změně jazyka).
+	function renderChapterOptions() {
+		if (!chapterListEl) {
+			return;
+		}
+		var counts = {};
+		questions.forEach(function (question) {
+			counts[question.chapterIndex] = (counts[question.chapterIndex] || 0) + 1;
+		});
+		var previouslySelected = {};
+		collectSelectedChapterIndexes().forEach(function (chapterIndex) {
+			previouslySelected[chapterIndex] = true;
+		});
+
+		chapterListEl.textContent = '';
+		chapters.forEach(function (chapter) {
+			var count = counts[chapter.index] || 0;
+			var option = document.createElement('label');
+			option.className = 'quiz__chapter-option';
+
+			var input = document.createElement('input');
+			input.type = 'checkbox';
+			input.className = 'quiz__chapter-checkbox';
+			input.value = String(chapter.index);
+			if (previouslySelected[chapter.index]) {
+				input.checked = true;
+			}
+
+			var text = document.createElement('span');
+			text.className = 'quiz__chapter-text';
+			text.textContent = (chapter.index + 1) + '. ' + chapter.title +
+				' (' + questionCountLabel(count) + ')';
+
+			option.appendChild(input);
+			option.appendChild(text);
+			chapterListEl.appendChild(option);
+		});
+	}
+
 	var questions = [];
+	var chapters = [];
 	var questionsById = {};
 	var browseStore = answerState.createStore();
 
@@ -389,6 +455,34 @@
 		showTestQuestion();
 	});
 
+	if (chaptersToggle) {
+		chaptersToggle.addEventListener('click', function () {
+			var willOpen = chaptersPanel.hidden;
+			chaptersPanel.hidden = !willOpen;
+			chaptersToggle.setAttribute('aria-expanded', String(willOpen));
+		});
+	}
+
+	if (chapterStartBtn) {
+		chapterStartBtn.addEventListener('click', function () {
+			var chapterIndexes = collectSelectedChapterIndexes();
+			if (chapterIndexes.length === 0) {
+				setStatus(i18n.t('nv194.mode.chapters.none'), true);
+				return;
+			}
+			try {
+				test = window.NV194Quiz.createTest(questions, window.NV194Quiz.MODES.CHAPTERS, {
+					chapterIndexes: chapterIndexes
+				});
+			} catch (error) {
+				setStatus(error.message, true);
+				return;
+			}
+			setStatus('');
+			showTestQuestion();
+		});
+	}
+
 	navToggle.addEventListener('click', function () {
 		setNavOpen(!layoutEl.classList.contains('is-nav-open'));
 	});
@@ -447,6 +541,8 @@
 			});
 
 			navView.render(window.NV194NavTree.build(questions, result.chapters));
+			chapters = result.chapters;
+			renderChapterOptions();
 			demoModeBtn.hidden = !canUseDemoMode();
 			layoutEl.hidden = false;
 			setNavOpen(!isNarrowScreen());
@@ -474,6 +570,7 @@
 	document.addEventListener('site:langchange', function () {
 		if (questions.length > 0) {
 			navView.retranslate();
+			renderChapterOptions();
 		}
 		if (context.kind === CONTEXT.TEST || context.kind === CONTEXT.BROWSE) {
 			renderActive();

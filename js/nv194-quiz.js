@@ -11,6 +11,7 @@ window.NV194Quiz = (function () {
 		PARAGRAPH_6: 'paragraph6',
 		PARAGRAPH_7: 'paragraph7',
 		ALL: 'all',
+		CHAPTERS: 'chapters',
 		/* DOČASNÉ: zkušební režim pro rychlé ověření celého průchodu testem. */
 		DEMO_3: 'demo3'
 	};
@@ -25,6 +26,7 @@ window.NV194Quiz = (function () {
 		paragraph6: 'Test na §6',
 		paragraph7: 'Test na §7',
 		all: 'Všechny otázky postupně',
+		chapters: 'Test z vybraných kapitol',
 		/* DOČASNÉ */
 		demo3: 'Zkušební test (3 otázky)'
 	};
@@ -95,6 +97,21 @@ window.NV194Quiz = (function () {
 
 		if (mode === MODES.ALL) {
 			return questions.slice();
+		}
+
+		if (mode === MODES.CHAPTERS) {
+			var chapterIndexes = options.chapterIndexes;
+			if (!chapterIndexes || chapterIndexes.length === 0) {
+				throw new Error('Nebyla vybrána žádná kapitola.');
+			}
+			var wanted = {};
+			chapterIndexes.forEach(function (chapterIndex) {
+				wanted[chapterIndex] = true;
+			});
+			/* Zachovává pořadí ze zdroje - otázky jsou už seřazené podle kapitol. */
+			return questions.filter(function (question) {
+				return wanted[question.chapterIndex] === true;
+			});
 		}
 
 		/* DOČASNÉ */

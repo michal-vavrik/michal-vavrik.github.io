@@ -5,7 +5,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>NV 194</title>
 		<link rel="stylesheet" type="text/css" href="css/main.css?v=header-scroll-1">
-		<link rel="stylesheet" type="text/css" href="css/nv194.css?v=nav-search-1">
+		<link rel="stylesheet" type="text/css" href="css/nv194.css?v=chapter-modes-1">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=hide-locked-menu-2">
 		<link rel="stylesheet" type="text/css" href="css/i18n.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -81,7 +81,7 @@
 			</div>
 		</div>
 
-		<script src="js/i18n.js?v=nav-search-1"></script>
+		<script src="js/i18n.js?v=chapter-modes-1"></script>
 		<script src="js/lang-switcher.js"></script>
 		<script src="js/auth-ui.js?v=nav-labels-1"></script>
 		<script src="js/menu.js"></script>
@@ -134,6 +134,17 @@
 								<span class="quiz__mode-name" data-i18n="nv194.mode.all.name">Všechny otázky postupně</span>
 								<span class="quiz__mode-hint" data-i18n="nv194.mode.all.hint">Celá sada v pořadí podle kapitol</span>
 							</button>
+							<div class="quiz__mode-chapters">
+								<button type="button" class="quiz__mode-btn quiz__chapters-toggle" id="quiz-chapters-toggle" aria-expanded="false" aria-controls="quiz-chapters-panel">
+									<span class="quiz__mode-name" data-i18n="nv194.mode.chapters.name">Test z vybraných kapitol</span>
+									<span class="quiz__mode-hint" data-i18n="nv194.mode.chapters.hint">Otázky z jedné nebo více vybraných kapitol v pořadí</span>
+								</button>
+								<div class="quiz__chapters-panel" id="quiz-chapters-panel" hidden>
+									<p class="quiz__chapters-label" data-i18n="nv194.mode.chapters.select">Vyberte kapitoly, ze kterých chcete být testováni:</p>
+									<div class="quiz__chapters-list" id="quiz-chapter-list"></div>
+									<button type="button" class="quiz__btn quiz__btn--primary quiz__chapters-start" id="quiz-chapter-start" data-i18n="nv194.mode.chapters.start">Spustit test z kapitol</button>
+								</div>
+							</div>
 							<!-- DOČASNÉ: zkušební režim pro ověření celého průchodu, později bude odstraněn. -->
 							<button type="button" class="quiz__mode-btn quiz__mode-btn--temporary" data-mode="demo3" hidden>
 								<span class="quiz__mode-name" data-i18n="nv194.mode.demo.name">Zkušební test (3 otázky)</span>
@@ -187,13 +198,13 @@
 		<script src="js/nv194-parser.js"></script>
 		<script src="js/nv194-evaluation.js?v=i18n-1"></script>
 		<script src="js/nv194-answer-state.js"></script>
-		<script src="js/nv194-quiz.js?v=paragraph-modes-1"></script>
+		<script src="js/nv194-quiz.js?v=chapter-modes-1"></script>
 		<script src="js/nv194-images.js"></script>
 		<script src="js/nv194-nav-tree.js"></script>
 		<script src="js/nv194-nav-view.js?v=nav-search-1"></script>
 		<script src="js/nv194-question-view.js?v=i18n-1"></script>
 		<script src="js/nv194-result-view.js?v=i18n-1"></script>
-		<script src="js/nv194-page.js?v=nav-search-1"></script>
+		<script src="js/nv194-page.js?v=chapter-modes-1"></script>
 
 	</body>
 </html>

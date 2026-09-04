@@ -467,6 +467,71 @@
 	border-color: rgba(250, 204, 21, 0.8);
 }
 
+.quiz__mode-chapters {
+	grid-column: 1 / -1;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.quiz__chapters-toggle {
+	width: 100%;
+	cursor: pointer;
+}
+
+.quiz__chapters-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 18px 20px;
+	border: 1px solid var(--quiz-border);
+	border-radius: var(--quiz-radius);
+	background: var(--quiz-surface);
+}
+
+.quiz__chapters-label {
+	margin: 0;
+	color: var(--quiz-muted);
+	font-size: 0.9rem;
+}
+
+.quiz__chapters-list {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 6px 18px;
+	max-height: 320px;
+	overflow-y: auto;
+	padding-right: 6px;
+}
+
+.quiz__chapter-option {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	padding: 4px 6px;
+	border-radius: 8px;
+	cursor: pointer;
+	font-size: 0.9rem;
+	line-height: 1.35;
+}
+
+.quiz__chapter-option:hover {
+	background: rgba(99, 102, 241, 0.16);
+}
+
+.quiz__chapter-checkbox {
+	margin-top: 3px;
+	flex: none;
+}
+
+.quiz__chapter-text {
+	color: var(--quiz-text);
+}
+
+.quiz__chapters-start {
+	align-self: flex-start;
+}
+
 /* --- Průběh testu --- */
 
 .quiz__progress {

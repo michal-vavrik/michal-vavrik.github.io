@@ -45,6 +45,45 @@ window.NV194ResultTests = (function () {
 		runner.equal('režim všech otázek zachovává celý zdroj', Quiz.selectQuestions(questions, Quiz.MODES.ALL).length, 100);
 	}
 
+	/** Zdroj se třemi kapitolami po daném počtu otázek (vždy správně a). */
+	function buildChapteredSource(sizes) {
+		var lines = [];
+		var id = 1;
+		sizes.forEach(function (size, chapterIndex) {
+			lines.push('# Kapitola ' + (chapterIndex + 1), '');
+			for (var i = 0; i < size; i++) {
+				lines.push(id + '. Otázka ' + id);
+				lines.push('a) první');
+				lines.push('b) druhá');
+				lines.push('c) třetí');
+				lines.push('správně: [a]');
+				lines.push('');
+				id++;
+			}
+		});
+		return lines.join('\n');
+	}
+
+	function chapterModeSelection(runner) {
+		var result = parser.parseNV194(buildChapteredSource([3, 5, 2]));
+		var questions = result.questions;
+
+		var selected = Quiz.selectQuestions(questions, Quiz.MODES.CHAPTERS, { chapterIndexes: [0, 2] });
+		runner.equal('kapitolový režim vybírá jen zvolené kapitoly', selected.length, 5);
+		runner.equal('kapitolový režim zachovává pořadí ze zdroje',
+			selected.map(function (q) { return q.id; }).join(','), '1,2,3,9,10');
+		runner.equal('kapitolový režim bere jen povolené kapitoly',
+			selected.every(function (q) { return q.chapterIndex === 0 || q.chapterIndex === 2; }), true);
+
+		var threw = false;
+		try {
+			Quiz.selectQuestions(questions, Quiz.MODES.CHAPTERS, { chapterIndexes: [] });
+		} catch (error) {
+			threw = true;
+		}
+		runner.equal('prázdný výběr kapitol vyhodí chybu', threw, true);
+	}
+
 	/** Projde test a u každé otázky zvolí odpovědi podle předané funkce. */
 	function playThrough(test, choose) {
 		for (var at = 0; at < test.total; at++) {
@@ -155,6 +194,7 @@ window.NV194ResultTests = (function () {
 	function run() {
 		var runner = window.NV194TestRunner.create();
 		randomModeSelection(runner);
+		chapterModeSelection(runner);
 		exampleScenario(runner);
 		errorsVersusQuestions(runner);
 		edgeCases(runner);
