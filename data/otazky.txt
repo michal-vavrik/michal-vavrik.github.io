@@ -880,7 +880,7 @@ b) autotransformátor se vstupem na vyšší napětí než je výstup SELV
 c) elektrochemický zdroj (např. baterie) 
 správně: [a, c]
 
-147. Vodiče obvodů SELV se mají prostorově oddělovat od vodičů jiných obvodů. Využít žíly ve vícežilovém kabelu pro vedení vodičů SEL V společně s vodiči jiných obvodů s napětím vyšším, než je napětí napěťového pásma I 
+147. Vodiče obvodů SELV se mají prostorově oddělovat od vodičů jiných obvodů. Využít žíly ve vícežilovém kabelu pro vedení vodičů SELV společně s vodiči jiných obvodů s napětím vyšším, než je napětí napěťového pásma I 
 a) nelze 
 b) lze, ale vodiče SELV musejí být izolovány na nejvyšší použité napětí 
 c) lze pouze tehdy, pokud jsou obvody SELV napájeny střídavým napětím o hodnotě menší než 6V 
@@ -2958,7 +2958,7 @@ b) v normálním provozu
 c) při vzniku výjimečných poruch 
 správně: [a]
 
-481. Elektrické zařízení s úrovní ochrany De je vhodné pro výbušné atmosféry s prachem. Má „zvýšenou" úroveň ochrany a není zdrojem iniciace 
+481. Elektrické zařízení s úrovní ochrany Dc je vhodné pro výbušné atmosféry s prachem. Má „zvýšenou" úroveň ochrany a není zdrojem iniciace 
 a) v normálním provozu, ani při očekávaných poruchách 
 b) v normálním provozu 
 c) při vzniku výjimečných poruch 
