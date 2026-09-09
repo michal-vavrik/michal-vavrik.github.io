@@ -2128,7 +2128,7 @@ b) se musí otevírat směrem dovnitř do tohoto prostoru
 c) musí zůstat trvale otevřené 
 správně: [a]
 
-351. V stup ní dveře uliček v uzavřeném prostoru s omezeným přístupem musí mít minimální rozměry 
+351. Vstupní dveře uliček v uzavřeném prostoru s omezeným přístupem musí mít minimální rozměry 
 a) šířka 600 mm, výška 1 970 mm 
 b) šířka 700 mm, výška 2 000 mm 
 c) šířka 800 mm, výška 2 100 mm 
