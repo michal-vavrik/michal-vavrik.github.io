@@ -1711,7 +1711,7 @@ správně: [b, c]
 283. Ochranný vodič nesmí být 
 a) vybaven žádným spínacím přístrojem 
 b) jištěn proti přetížení 
-c) chráněn před mechanickým poškozením 5 m 
+c) chráněn před mechanickým poškozením 
 správně: [a, b]
 
 284. Nejmenší dovolená vzdálenost mezi měděnými a ocelovými zemniči je 
@@ -1986,8 +1986,8 @@ správně: [c]
 
 328. Nejvyšší přípustné napětí rozvodné soustavy v průmyslových provozovnách na kterémkoliv místě 
 a) nemá být dlouhodobě větší než 105 % jmenovitého napětí rozvodné soustavy 
-b) nemá být dlouhodobě větší než 110% jmenovitého napětí rozvodné soustavy 
-c) nemá být krátkodobě (např. při chodu naprázdno) větší než 11 O% jmenovitého napětí rozvodné soustavy 
+b) nemá být dlouhodobě větší než 110 % jmenovitého napětí rozvodné soustavy 
+c) nemá být krátkodobě (např. při chodu naprázdno) větší než 110 % jmenovitého napětí rozvodné soustavy 
 správně: [a, c]
 
 329. Elektrický silový rozvod musí být navržen, dimenzován a provozován tak, aby napětí na svorkách spotřebiče 
