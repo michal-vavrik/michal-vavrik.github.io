@@ -7,12 +7,16 @@
 		<link rel="stylesheet" type="text/css" href="css/main.css?v=header-scroll-1">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=hide-locked-menu-2">
 		<link rel="stylesheet" type="text/css" href="css/i18n.css">
+		<link rel="stylesheet" type="text/css" href="css/cv.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
 		<script src="js/auth.js"></script>
 	</head>
 	
 	<body class="subpage">
+		<!-- Ukazatel postupu čtení stránky. -->
+		<div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
 				<!-- Menu elements-->
 		<nav class="menu">
 			<a class="menu__link" href="index.html" data-i18n="nav.home">Home</a>
@@ -80,10 +84,163 @@
 			</div>
 		</div>
 
+		<main class="cv">
+			<header class="cv-hero reveal">
+				<div class="cv-hero__photo">
+					<span class="cv-hero__photo-ring" aria-hidden="true"></span>
+					<img class="cv-hero__photo-img" src="img/cv/michal-vavrik.png" alt="Michal Vavrík" width="140" height="140">
+				</div>
+				<div class="cv-hero__info">
+					<h1 class="cv-hero__name">Michal Vavrík</h1>
+					<p class="cv-hero__role" data-i18n="cv.hero.role">Technický specialista automatizace</p>
+					<p class="cv-hero__meta">
+						<span class="cv-hero__company">B&amp;R Industrial Automation</span>
+						<span class="cv-hero__sep" aria-hidden="true">·</span>
+						<span class="cv-hero__location" data-i18n="cv.hero.location">Brno, Česko</span>
+					</p>
+					<p class="cv-hero__summary" data-i18n="cv.hero.summary">Technický specialista automatizace s více než 6 lety praxe ve firmě B&amp;R Industrial Automation.</p>
+
+					<div class="cv-hero__stats">
+						<div class="cv-stat">
+							<span class="cv-stat__number"><span class="cv-stat__value" id="cv-stat-years" data-count-to="6">0</span>+</span>
+							<span class="cv-stat__label" data-i18n="cv.stats.years">let praxe</span>
+						</div>
+						<div class="cv-stat">
+							<span class="cv-stat__number"><span class="cv-stat__value" id="cv-stat-skills" data-count-to="14">0</span></span>
+							<span class="cv-stat__label" data-i18n="cv.stats.skills">technologií a nástrojů</span>
+						</div>
+						<div class="cv-stat">
+							<span class="cv-stat__number"><span class="cv-stat__value" id="cv-stat-languages" data-count-to="2">0</span></span>
+							<span class="cv-stat__label" data-i18n="cv.stats.languages">jazyky</span>
+						</div>
+					</div>
+
+					<div class="cv-hero__actions">
+						<a class="cv-hero__contact" href="mailto:michal.vavrik1@gmail.com" data-i18n-aria-label="cv.actions.email">
+							<i class="fa fa-envelope" aria-hidden="true"></i> michal.vavrik1@gmail.com
+						</a>
+						<a class="cv-hero__contact" href="https://www.linkedin.com/in/michal-vavr%C3%ADk-a318221a2" target="_blank" rel="noopener" data-i18n-aria-label="cv.actions.linkedin">
+							<i class="fa fa-linkedin" aria-hidden="true"></i> LinkedIn
+						</a>
+						<button type="button" class="cv-hero__print" id="cv-print">
+							<i class="fa fa-print" aria-hidden="true"></i> <span data-i18n="cv.actions.print">Vytisknout CV</span>
+						</button>
+					</div>
+				</div>
+			</header>
+
+			<section class="cv-section cv-section--experience reveal">
+				<h2 class="cv-section__title" data-i18n="cv.section.experience">Zkušenosti</h2>
+				<div class="cv-timeline">
+					<article class="cv-timeline__item reveal">
+						<div class="cv-timeline__dot" aria-hidden="true"></div>
+						<div class="cv-timeline__content">
+							<div class="cv-timeline__head">
+								<h3 class="cv-timeline__role" data-i18n="cv.hero.role">Technický specialista automatizace</h3>
+								<span class="cv-timeline__period">
+									<span data-i18n="cv.experience.period">Září 2020 – současnost</span>
+									<span class="cv-timeline__duration" id="cv-experience-duration"></span>
+								</span>
+							</div>
+							<p class="cv-timeline__company">
+								B&amp;R Industrial Automation · <span data-i18n="cv.hero.location">Brno, Česko</span>
+							</p>
+							<ul class="cv-timeline__list">
+								<li data-i18n="cv.experience.bullet1">Návrh a programování automatizačních systémů</li>
+								<li data-i18n="cv.experience.bullet2">Konfigurace a integrace řídicích systémů, pohonů a dalších zařízení</li>
+								<li data-i18n="cv.experience.bullet3">Vývoj a ladění automatizačního softwaru</li>
+								<li data-i18n="cv.experience.bullet4">Uvádění strojů do provozu</li>
+								<li data-i18n="cv.experience.bullet5">Řešení technických problémů</li>
+								<li data-i18n="cv.experience.bullet6">Tvorba technické dokumentace</li>
+								<li data-i18n="cv.experience.bullet7">Spolupráce se zákazníky a dalšími členy vývojového týmu</li>
+							</ul>
+						</div>
+					</article>
+				</div>
+			</section>
+
+			<section class="cv-section cv-section--education reveal">
+				<h2 class="cv-section__title" data-i18n="cv.section.education">Vzdělání</h2>
+				<div class="cv-timeline">
+					<article class="cv-timeline__item reveal">
+						<div class="cv-timeline__dot" aria-hidden="true"></div>
+						<div class="cv-timeline__content">
+							<div class="cv-timeline__head">
+								<h3 class="cv-timeline__role" data-i18n="cv.education.degree">Ing., Automatizace a informatika</h3>
+								<span class="cv-timeline__period" data-i18n="cv.education.period">2015–2020</span>
+							</div>
+							<p class="cv-timeline__company" data-i18n="cv.education.school">Vysoké učení technické v Brně</p>
+						</div>
+					</article>
+				</div>
+			</section>
+
+			<section class="cv-section cv-section--skills reveal">
+				<h2 class="cv-section__title" data-i18n="cv.section.skills">Dovednosti</h2>
+				<div class="cv-skills">
+					<div class="cv-skills__group reveal">
+						<h3 class="cv-skills__group-title" data-i18n="cv.skills.group.programming">Programování a web</h3>
+						<ul class="cv-skills__tags">
+							<li>C</li>
+							<li>Python</li>
+							<li data-i18n="cv.skill.scripting">Skripty</li>
+							<li>HTML</li>
+							<li>CSS</li>
+						</ul>
+					</div>
+					<div class="cv-skills__group reveal">
+						<h3 class="cv-skills__group-title" data-i18n="cv.skills.group.automation">Automatizace a PLC</h3>
+						<ul class="cv-skills__tags">
+							<li>PLC</li>
+							<li data-i18n="cv.skill.plcProgramming">Programování PLC</li>
+							<li>Automation Studio</li>
+							<li data-i18n="cv.skill.automation">Automatizace</li>
+						</ul>
+					</div>
+					<div class="cv-skills__group reveal">
+						<h3 class="cv-skills__group-title" data-i18n="cv.skills.group.engineering">Inženýrství a CAD</h3>
+						<ul class="cv-skills__tags">
+							<li data-i18n="cv.skill.engineering">Inženýrství</li>
+							<li>SolidWorks</li>
+							<li>iPhysics</li>
+							<li data-i18n="cv.skill.visualization3d">3D vizualizace</li>
+						</ul>
+					</div>
+					<div class="cv-skills__group reveal">
+						<h3 class="cv-skills__group-title" data-i18n="cv.skills.group.methodology">Metodologie</h3>
+						<ul class="cv-skills__tags">
+							<li data-i18n="cv.skill.agile">Agilní metodologie</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+
+			<section class="cv-section cv-section--languages reveal">
+				<h2 class="cv-section__title" data-i18n="cv.section.languages">Jazyky</h2>
+				<div class="cv-languages">
+					<div class="cv-language reveal">
+						<div class="cv-language__head">
+							<span class="cv-language__name" data-i18n="cv.language.cs.name">Čeština</span>
+							<span class="cv-language__level" data-i18n="cv.language.cs.level">Rodilý mluvčí</span>
+						</div>
+						<div class="cv-language__bar"><span class="cv-language__bar-fill" style="--bar-width: 100%;"></span></div>
+					</div>
+					<div class="cv-language reveal">
+						<div class="cv-language__head">
+							<span class="cv-language__name" data-i18n="cv.language.en.name">Angličtina</span>
+							<span class="cv-language__level" data-i18n="cv.language.en.level">Středně pokročilá (B1)</span>
+						</div>
+						<div class="cv-language__bar"><span class="cv-language__bar-fill" style="--bar-width: 55%;"></span></div>
+					</div>
+				</div>
+			</section>
+		</main>
+
 		<script src="js/i18n.js?v=nav-search-1"></script>
 		<script src="js/lang-switcher.js"></script>
 		<script src="js/auth-ui.js?v=nav-labels-1"></script>
 		<script src="js/menu.js"></script>
+		<script src="js/cv.js"></script>
 
 	</body>
 </html>

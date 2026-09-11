@@ -1,0 +1,611 @@
+@charset "utf-8";
+
+/* Styly stránky CV. */
+
+.cv {
+	position: relative;
+	z-index: 1;
+	max-width: 880px;
+	margin: 0 auto;
+	padding: 104px 24px 72px;
+	color: #e8edf5;
+	font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	line-height: 1.6;
+}
+
+/* --- Hero --- */
+
+.cv-hero {
+	position: relative;
+	display: flex;
+	align-items: flex-start;
+	gap: 28px;
+	padding: 28px;
+	margin-bottom: 40px;
+	border: 1px solid rgba(255, 255, 255, 0.11);
+	border-radius: 20px;
+	background: rgba(9, 13, 24, 0.62);
+	overflow: hidden;
+	isolation: isolate;
+}
+
+/* Jemná zář, která sleduje kurzor myši (nastavuje ji js/cv.js). */
+.cv-hero::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+	background: radial-gradient(circle at var(--spot-x, 50%) var(--spot-y, 30%), rgba(165, 180, 252, 0.16), transparent 45%);
+	opacity: 0;
+	transition: opacity 0.4s ease;
+	pointer-events: none;
+}
+
+.cv-hero:hover::after {
+	opacity: 1;
+}
+
+.cv-hero__photo {
+	position: relative;
+	flex: 0 0 auto;
+	width: 140px;
+	height: 140px;
+}
+
+/* Rotující barevný prstenec za fotkou. */
+.cv-hero__photo-ring {
+	position: absolute;
+	inset: -6px;
+	border-radius: 50%;
+	background: conic-gradient(from 0deg, #818cf8, #38bdf8, #34d399, #c084fc, #818cf8);
+	animation: cv-ring-spin 7s linear infinite;
+	filter: blur(0.3px);
+}
+
+@keyframes cv-ring-spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.cv-hero__photo-img {
+	position: relative;
+	z-index: 1;
+	display: block;
+	width: 140px;
+	height: 140px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 4px solid #0b0f1c;
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+	transition: transform 0.15s ease-out;
+	will-change: transform;
+}
+
+.cv-hero__info {
+	position: relative;
+	z-index: 1;
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.cv-hero__name {
+	font-size: clamp(1.8rem, 4vw, 2.6rem);
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	margin: 0 0 4px;
+}
+
+.cv-hero__role {
+	font-size: 1.1rem;
+	color: #a5b4fc;
+	font-weight: 600;
+	margin: 0 0 8px;
+}
+
+.cv-hero__meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	color: #93a3ba;
+	font-size: 0.95rem;
+	margin: 0 0 16px;
+}
+
+.cv-hero__sep {
+	opacity: 0.6;
+}
+
+.cv-hero__summary {
+	color: #cbd5e1;
+	margin: 0 0 20px;
+	max-width: 60ch;
+}
+
+/* --- Statistiky (animované počítadlo) --- */
+
+.cv-hero__stats {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 28px;
+	margin: 0 0 22px;
+	padding: 16px 0;
+	border-top: 1px solid rgba(255, 255, 255, 0.09);
+	border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.cv-stat {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 90px;
+}
+
+.cv-stat__number {
+	font-size: 1.9rem;
+	font-weight: 700;
+	line-height: 1;
+	background: linear-gradient(90deg, #a5b4fc, #38bdf8, #34d399);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}
+
+.cv-stat__label {
+	font-size: 0.78rem;
+	color: #93a3ba;
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+}
+
+.cv-hero__actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.cv-hero__contact,
+.cv-hero__print {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 9px 16px;
+	border-radius: 999px;
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	background: rgba(255, 255, 255, 0.04);
+	color: #e8edf5;
+	font-size: 0.9rem;
+	text-decoration: none;
+	cursor: pointer;
+	font-family: inherit;
+	transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.cv-hero__contact:hover,
+.cv-hero__print:hover {
+	background: rgba(99, 102, 241, 0.18);
+	border-color: rgba(165, 180, 252, 0.5);
+	color: #a5b4fc;
+	transform: translateY(-2px);
+}
+
+/* --- Sekce --- */
+
+.cv-section {
+	margin-bottom: 36px;
+}
+
+.cv-section__title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	font-size: 1.35rem;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	margin: 0 0 18px;
+}
+
+.cv-section__title::before {
+	content: "";
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: var(--cv-accent, #818cf8);
+	box-shadow: 0 0 10px 2px var(--cv-accent, #818cf8);
+	animation: cv-dot-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes cv-dot-pulse {
+	0%, 100% {
+		box-shadow: 0 0 6px 1px var(--cv-accent, #818cf8);
+	}
+	50% {
+		box-shadow: 0 0 14px 4px var(--cv-accent, #818cf8);
+	}
+}
+
+.cv-section--experience {
+	--cv-accent: #818cf8;
+}
+
+.cv-section--education {
+	--cv-accent: #c084fc;
+}
+
+.cv-section--skills {
+	--cv-accent: #38bdf8;
+}
+
+.cv-section--languages {
+	--cv-accent: #34d399;
+}
+
+/* --- Časová osa (zkušenosti, vzdělání) --- */
+
+.cv-timeline {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+}
+
+.cv-timeline__item {
+	position: relative;
+	display: flex;
+	gap: 16px;
+	padding: 20px 22px;
+	border: 1px solid rgba(255, 255, 255, 0.11);
+	border-radius: 16px;
+	background: rgba(9, 13, 24, 0.62);
+	transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cv-timeline__item:hover {
+	transform: translateY(-4px);
+	border-color: rgba(165, 180, 252, 0.35);
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+}
+
+.cv-timeline__dot {
+	flex: 0 0 auto;
+	width: 12px;
+	height: 12px;
+	margin-top: 6px;
+	border-radius: 50%;
+	background: var(--cv-accent, #818cf8);
+	box-shadow: 0 0 0 4px rgba(129, 140, 248, 0.18);
+}
+
+.cv-timeline__content {
+	min-width: 0;
+	flex: 1 1 auto;
+}
+
+.cv-timeline__head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px 16px;
+	margin-bottom: 4px;
+}
+
+.cv-timeline__role {
+	font-size: 1.1rem;
+	font-weight: 600;
+	margin: 0;
+	color: #f1f5f9;
+}
+
+.cv-timeline__period {
+	flex: 0 0 auto;
+	font-size: 0.85rem;
+	color: #93a3ba;
+	white-space: nowrap;
+}
+
+.cv-timeline__duration {
+	color: #a5b4fc;
+}
+
+.cv-timeline__company {
+	color: #93a3ba;
+	font-size: 0.95rem;
+	margin: 0 0 12px;
+}
+
+.cv-timeline__list {
+	margin: 0;
+	padding-left: 20px;
+	color: #cbd5e1;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.cv-timeline__list li::marker {
+	color: var(--cv-accent, #818cf8);
+}
+
+/* --- Dovednosti --- */
+
+.cv-skills {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 16px;
+}
+
+.cv-skills__group {
+	padding: 18px 20px;
+	border: 1px solid rgba(255, 255, 255, 0.11);
+	border-radius: 16px;
+	background: rgba(9, 13, 24, 0.62);
+	transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cv-skills__group:hover {
+	transform: translateY(-4px);
+	border-color: rgba(56, 189, 248, 0.35);
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+}
+
+.cv-skills__group-title {
+	font-size: 0.8rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: #93a3ba;
+	margin: 0 0 12px;
+}
+
+.cv-skills__tags {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+}
+
+.cv-skills__tags li {
+	padding: 6px 14px;
+	border-radius: 999px;
+	background: rgba(56, 189, 248, 0.14);
+	border: 1px solid rgba(56, 189, 248, 0.3);
+	color: #bae6fd;
+	font-size: 0.88rem;
+	transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cv-skills__tags li:hover {
+	transform: translateY(-2px) scale(1.05);
+	background: rgba(56, 189, 248, 0.28);
+	box-shadow: 0 6px 16px rgba(56, 189, 248, 0.25);
+}
+
+/* --- Jazyky --- */
+
+.cv-languages {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.cv-language {
+	padding: 16px 20px;
+	border: 1px solid rgba(255, 255, 255, 0.11);
+	border-radius: 16px;
+	background: rgba(9, 13, 24, 0.62);
+	transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cv-language:hover {
+	transform: translateY(-4px);
+	border-color: rgba(52, 211, 153, 0.35);
+	box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+}
+
+.cv-language__head {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 12px;
+	margin-bottom: 10px;
+}
+
+.cv-language__name {
+	font-weight: 600;
+	color: #f1f5f9;
+}
+
+.cv-language__level {
+	font-size: 0.85rem;
+	color: #93a3ba;
+}
+
+.cv-language__bar {
+	height: 8px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.08);
+	overflow: hidden;
+}
+
+.cv-language__bar-fill {
+	display: block;
+	width: 0;
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, #34d399, #38bdf8);
+	transition: width 1.3s cubic-bezier(0.16, 1, 0.3, 1) 0.15s;
+}
+
+.cv-language.reveal--visible .cv-language__bar-fill {
+	width: var(--bar-width, 0%);
+}
+
+/* --- Postupné zobrazování při scrollování --- */
+
+.reveal {
+	opacity: 0;
+	transform: translateY(28px);
+	transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal--visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+/* --- Ukazatel postupu čtení --- */
+
+.scroll-progress {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 0%;
+	height: 3px;
+	z-index: 1000;
+	background: linear-gradient(90deg, #818cf8, #38bdf8, #34d399, #c084fc);
+	box-shadow: 0 0 10px rgba(129, 140, 248, 0.6);
+	transition: width 0.1s ease-out;
+}
+
+/* --- Redukce animací dle preferencí návštěvníka --- */
+
+@media (prefers-reduced-motion: reduce) {
+	.cv-hero__photo-ring {
+		animation: none;
+	}
+
+	.cv-section__title::before {
+		animation: none;
+	}
+
+	.reveal {
+		transition: none;
+		opacity: 1;
+		transform: none;
+	}
+
+	.cv-language__bar-fill {
+		transition: none;
+	}
+
+	.cv-hero__photo-img {
+		transition: none;
+	}
+}
+
+/* --- Responzivita --- */
+
+@media (max-width: 640px) {
+	.cv {
+		padding: 92px 16px 56px;
+	}
+
+	.cv-hero {
+		flex-direction: column;
+		align-items: center;
+		text-align: center;
+		padding: 24px 20px;
+	}
+
+	.cv-hero__meta,
+	.cv-hero__actions,
+	.cv-hero__stats {
+		justify-content: center;
+	}
+
+	.cv-hero__summary {
+		max-width: none;
+	}
+
+	.cv-timeline__item {
+		padding: 18px;
+	}
+
+	.cv-timeline__head {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+}
+
+/* --- Tisk --- */
+
+@media print {
+	.menu,
+	.menu__toggler,
+	.header-controls,
+	.auth-modal,
+	.scroll-progress,
+	.cv-hero__print {
+		display: none !important;
+	}
+
+	.cv-hero__photo-ring {
+		animation: none;
+	}
+
+	.cv-section__title::before {
+		animation: none;
+	}
+
+	.reveal {
+		opacity: 1 !important;
+		transform: none !important;
+	}
+
+	.cv-language__bar-fill {
+		width: var(--bar-width, 0%) !important;
+	}
+
+	body.subpage {
+		background: #fff !important;
+		animation: none !important;
+	}
+
+	body.subpage::before {
+		display: none !important;
+	}
+
+	.cv {
+		color: #111;
+		padding: 24px 0;
+	}
+
+	.cv-hero,
+	.cv-timeline__item,
+	.cv-skills__group,
+	.cv-language {
+		background: #fff !important;
+		border-color: #ddd !important;
+		box-shadow: none !important;
+	}
+
+	.cv-hero__name,
+	.cv-timeline__role,
+	.cv-language__name {
+		color: #111 !important;
+	}
+
+	.cv-hero__summary,
+	.cv-timeline__company,
+	.cv-timeline__list,
+	.cv-hero__meta,
+	.cv-language__level {
+		color: #333 !important;
+	}
+
+	.cv-hero__contact {
+		color: #1e293b !important;
+		background: #f1f5f9 !important;
+		border-color: #cbd5e1 !important;
+	}
+
+	.cv-skills__tags li {
+		color: #0369a1 !important;
+		background: #e0f2fe !important;
+		border-color: #bae6fd !important;
+	}
+}

@@ -17,6 +17,7 @@
 
 	var ROLE_LABEL_KEYS = {};
 	ROLE_LABEL_KEYS[auth.ROLES.NV194] = 'auth.role.nv194';
+	ROLE_LABEL_KEYS[auth.ROLES.CV] = 'auth.role.cv';
 	ROLE_LABEL_KEYS[auth.ROLES.FULL] = 'auth.role.full';
 
 	/* Jméno stránky NV 194 je jednotné v obou jazycích, ostatní se překládají stejně jako v nabídce. */
