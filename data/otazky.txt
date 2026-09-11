@@ -321,7 +321,7 @@ c) nosit oděv vhodný pro místo a podmínky, kde pracují
 správně: [c]
 
 54. Ke každému elektrickému zařízení musí být k dispozici 
-a) aktuálnídokumentace 
+a) aktuální dokumentace 
 b) záznamy o stavu zařízení 
 c) záruční list, a to i po ukončení záruční doby 
 správně: [a, b]

@@ -135,21 +135,13 @@
 								<span class="quiz__mode-hint" data-i18n="nv194.mode.all.hint">Celá sada v pořadí podle kapitol</span>
 							</button>
 							<div class="quiz__mode-chapters">
-								<button type="button" class="quiz__mode-btn quiz__chapters-toggle" id="quiz-chapters-toggle" aria-expanded="false" aria-controls="quiz-chapters-panel">
-									<span class="quiz__mode-name" data-i18n="nv194.mode.chapters.name">Test z vybraných kapitol</span>
-									<span class="quiz__mode-hint" data-i18n="nv194.mode.chapters.hint">Otázky z jedné nebo více vybraných kapitol v pořadí</span>
-								</button>
-								<div class="quiz__chapters-panel" id="quiz-chapters-panel" hidden>
+								<div class="quiz__chapters-panel" id="quiz-chapters-panel">
+									<h3 class="quiz__chapters-title" data-i18n="nv194.mode.chapters.name">Test z vybraných kapitol</h3>
 									<p class="quiz__chapters-label" data-i18n="nv194.mode.chapters.select">Vyberte kapitoly, ze kterých chcete být testováni:</p>
 									<div class="quiz__chapters-list" id="quiz-chapter-list"></div>
 									<button type="button" class="quiz__btn quiz__btn--primary quiz__chapters-start" id="quiz-chapter-start" data-i18n="nv194.mode.chapters.start">Spustit test z kapitol</button>
 								</div>
 							</div>
-							<!-- DOČASNÉ: zkušební režim pro ověření celého průchodu, později bude odstraněn. -->
-							<button type="button" class="quiz__mode-btn quiz__mode-btn--temporary" data-mode="demo3" hidden>
-								<span class="quiz__mode-name" data-i18n="nv194.mode.demo.name">Zkušební test (3 otázky)</span>
-								<span class="quiz__mode-hint" data-i18n="nv194.mode.demo.hint">Rychlé vyzkoušení celého průběhu</span>
-							</button>
 						</div>
 						<p class="quiz__lead" data-i18n="nv194.start.lead">Nebo si otevřete libovolnou otázku z přehledu vlevo.</p>
 					</section>

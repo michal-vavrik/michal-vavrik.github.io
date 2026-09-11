@@ -11,24 +11,17 @@ window.NV194Quiz = (function () {
 		PARAGRAPH_6: 'paragraph6',
 		PARAGRAPH_7: 'paragraph7',
 		ALL: 'all',
-		CHAPTERS: 'chapters',
-		/* DOČASNÉ: zkušební režim pro rychlé ověření celého průchodu testem. */
-		DEMO_3: 'demo3'
+		CHAPTERS: 'chapters'
 	};
 
 	var PARAGRAPH_6_SIZE = 40;
 	var PARAGRAPH_7_SIZE = 60;
 
-	/* DOČASNÉ: velikost zkušebního režimu. */
-	var DEMO_MODE_SIZE = 3;
-
 	var MODE_LABELS = {
 		paragraph6: 'Test na §6',
 		paragraph7: 'Test na §7',
 		all: 'Všechny otázky postupně',
-		chapters: 'Test z vybraných kapitol',
-		/* DOČASNÉ */
-		demo3: 'Zkušební test (3 otázky)'
+		chapters: 'Test z vybraných kapitol'
 	};
 
 	/* Fisher-Yates, pracuje nad kopií vstupu. */
@@ -42,40 +35,6 @@ window.NV194Quiz = (function () {
 			result[j] = swap;
 		}
 		return result;
-	}
-
-	/**
-	 * DOČASNÉ: výběr tří otázek pro rychlé vyzkoušení celého průchodu testem.
-	 *
-	 * Vybere jednu otázku s jednou správnou odpovědí, jednu s více správnými
-	 * odpověďmi a jednu s obrázkem, aby byly pokryté všechny varianty zobrazení
-	 * i vyhodnocení. Celá funkce půjde odstranit spolu s režimem DEMO_3.
-	 */
-	function selectDemoQuestions(questions, random) {
-		var pool = shuffle(questions, random);
-		var chosen = [];
-
-		function take(predicate) {
-			for (var i = 0; i < pool.length; i++) {
-				if (chosen.indexOf(pool[i]) === -1 && predicate(pool[i])) {
-					chosen.push(pool[i]);
-					return;
-				}
-			}
-		}
-
-		take(function (question) { return question.correctCount === 1 && !question.hasImages; });
-		take(function (question) { return question.correctCount > 1 && !question.hasImages; });
-		take(function (question) { return question.hasImages; });
-
-		// Doplnění, pokud by některá varianta ve zdrojových datech chyběla.
-		for (var i = 0; i < pool.length && chosen.length < DEMO_MODE_SIZE; i++) {
-			if (chosen.indexOf(pool[i]) === -1) {
-				chosen.push(pool[i]);
-			}
-		}
-
-		return chosen.slice(0, DEMO_MODE_SIZE);
 	}
 
 	/**
@@ -112,11 +71,6 @@ window.NV194Quiz = (function () {
 			return questions.filter(function (question) {
 				return wanted[question.chapterIndex] === true;
 			});
-		}
-
-		/* DOČASNÉ */
-		if (mode === MODES.DEMO_3) {
-			return selectDemoQuestions(questions, options.random);
 		}
 
 		throw new Error('Neznámý režim testu: ' + mode);
@@ -351,7 +305,6 @@ window.NV194Quiz = (function () {
 		MODE_LABELS: MODE_LABELS,
 		PARAGRAPH_6_SIZE: PARAGRAPH_6_SIZE,
 		PARAGRAPH_7_SIZE: PARAGRAPH_7_SIZE,
-		DEMO_MODE_SIZE: DEMO_MODE_SIZE,
 		selectQuestions: selectQuestions,
 		createTest: createTest
 	};

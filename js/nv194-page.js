@@ -22,7 +22,6 @@
 	i18n.applyStatic();
 
 	var CONTEXT = { NONE: 'none', TEST: 'test', BROWSE: 'browse' };
-	var DEMO_MODE = 'demo3';
 
 	var statusEl = document.getElementById('quiz-status');
 	var layoutEl = document.getElementById('quiz-layout');
@@ -53,17 +52,10 @@
 
 	var doneSummaryHost = document.getElementById('quiz-result-host');
 	var newTestBtn = document.getElementById('quiz-new-test');
-	var demoModeBtn = document.querySelector('[data-mode="' + DEMO_MODE + '"]');
-	var chaptersToggle = document.getElementById('quiz-chapters-toggle');
-	var chaptersPanel = document.getElementById('quiz-chapters-panel');
 	var chapterListEl = document.getElementById('quiz-chapter-list');
 	var chapterStartBtn = document.getElementById('quiz-chapter-start');
 
 	var answerState = window.NV194AnswerState;
-
-	function canUseDemoMode() {
-		return window.SiteAuth && window.SiteAuth.role() === window.SiteAuth.ROLES.FULL;
-	}
 
 	function questionCountLabel(count) {
 		var key;
@@ -441,10 +433,6 @@
 			return;
 		}
 		var mode = button.getAttribute('data-mode');
-		if (mode === DEMO_MODE && !canUseDemoMode()) {
-			setStatus(i18n.t('nv194.mode.demo.restricted'), true);
-			return;
-		}
 		try {
 			test = window.NV194Quiz.createTest(questions, mode);
 		} catch (error) {
@@ -454,14 +442,6 @@
 		setStatus('');
 		showTestQuestion();
 	});
-
-	if (chaptersToggle) {
-		chaptersToggle.addEventListener('click', function () {
-			var willOpen = chaptersPanel.hidden;
-			chaptersPanel.hidden = !willOpen;
-			chaptersToggle.setAttribute('aria-expanded', String(willOpen));
-		});
-	}
 
 	if (chapterStartBtn) {
 		chapterStartBtn.addEventListener('click', function () {
@@ -543,7 +523,6 @@
 			navView.render(window.NV194NavTree.build(questions, result.chapters));
 			chapters = result.chapters;
 			renderChapterOptions();
-			demoModeBtn.hidden = !canUseDemoMode();
 			layoutEl.hidden = false;
 			setNavOpen(!isNarrowScreen());
 
