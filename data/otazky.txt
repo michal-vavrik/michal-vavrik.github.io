@@ -935,7 +935,7 @@ c) zajišťuje pouze ochranu při poruše
 správně: [b]
 
 156. Obvody FELV jsou takové obvody, 
-a) které užívají napětí maximálně AC SOV nebo DC 120V, avšak nesplňují všechny požadavky pro obvody SELV nebo PELV 
+a) které užívají napětí maximálně AC 50 V nebo DC 120 V, avšak nesplňují všechny požadavky pro obvody SELV nebo PELV 
 b) jejichž střídavé napětí není nižší než 200 V 
 c) jejichž stejnosměrné napětí překračuje hodnotu 250 V 
 správně: [a]
@@ -1140,7 +1140,7 @@ b) nedovolené přetížení elektromotorů
 c) paralelní oblouky (při poškození izolace mezi fází a nulovým vodičem) 
 správně: [a, c]
 
-190. Obloukové ochrany (AFDD) je doporuče'no instalovat v koncových obvodech 
+190. Obloukové ochrany (AFDD) je doporučeno instalovat v koncových obvodech 
 a) v objektech s ložnicemi 
 b) v místech se zvýšeným výskytem vody 
 c) v místech s hořlavými stavebními materiály 
@@ -1191,8 +1191,8 @@ c) mají být z materiálu odolného proti korozi
 správně: [c]
 
 198. Pro zásobování elektrických stanic vodou z vnějšku stanice je zapotřebí 
-a) použít pouze kovové potrubí . , 
-b) zamezit užití kovových potrubí (použijí se místo nich nekovove matenaly) 
+a) použít pouze kovové potrubí 
+b) zamezit užití kovových potrubí (použijí se místo nich nekovove materiály) 
 c) použít vždy kovové potrubí o průměru minimálně 100 mm
 správně: [b]
 
@@ -1450,10 +1450,10 @@ b) nulový nebo střední bod. Pokud není k dispozici, musí se uzemnit jeden v
 c) výhradně střední bod (uzel) 
 správně: [b]
 
-241. Pokud je při ochraně automatickým odpojením od zdroje v síti TT použit nadproudový ochranný přístroj (pojistka, jistič), musí být splněna tato podmínka 
-a) Zs x ljm s 50 V 
-b) Zs x I. s U0 
-c) Zs x la s 50 V Zs je impedance poruchové smyčky (zahrnuje i odpory zemniče instalace a zdroje) I. je proud vyvolávající automatickou funkci nadproudového přístroje v daném čase lim je jmenovitý proud nadproudového ochranného přístroje U0 je jmenovité střídavé nebo stejnosměrné napětí vodiče vedení proti zemi 
+241. Pokud je při ochraně automatickým odpojením od zdroje v síti TT použit nadproudový ochranný přístroj (pojistka, jistič), musí být splněna tato podmínka (Zs je impedance poruchové smyčky (zahrnuje i odpory zemniče instalace a zdroje), Ia je proud vyvolávající automatickou funkci nadproudového přístroje v daném čase, Ijm je jmenovitý proud nadproudového ochranného přístroje, U0 je jmenovité střídavé nebo stejnosměrné napětí vodiče vedení proti zemi)
+a) Zs x Ijm ≤ 50 V 
+b) Zs x Ia ≤ U0 
+c) Zs x Ia ≤ 50 V 
 správně: [b]
 
 242. Při ochraně automatickým odpojením od zdroje je pro koncové obvody do 32A u sítí TT pro U0 = 230 V st v normě stanovena tato maximální doba odpojení 
@@ -1570,7 +1570,7 @@ b) [obr. 6.png]
 c) [obr. 7.png] 
 správně: [c]
 
-261. Zařízení, u něhož byla v průběhu výstavby (montáže) doplněna přídavná izolace, nebo zesílená izolace, musí mít na povrchu a vnítřku krytu umístěnu značku 
+261. Zařízení, u něhož byla v průběhu výstavby (montáže) doplněna přídavná izolace, nebo zesílená izolace, musí mít na povrchu a vnitřku krytu umístěnu značku 
 a) [obr. 8.png] 
 b) [obr. 9.png] 
 c) [obr. 10.png] 
@@ -2238,7 +2238,7 @@ b) 1,5 mm2 Al
 c) 2,5 mm2 Al 
 správně: [a, c]
 
-369. Jaký typ proudových chráničů se nesmí P.oužívat u světelných obvodů? 
+369. Jaký typ proudových chráničů se nesmí používat u světelných obvodů? 
 a) Proudové chrániče typu A 
 b) Proudové chrániče typu B 
 c) Proudové chrániče typu AC 
@@ -2724,7 +2724,7 @@ b) jednoho vodiče barvy modré a jednoho vodiče barvy černé
 c) jednoho vodiče barvy černé a jednoho vodiče barvy červené 
 správně: [a]
 
-444. Jaké označení má kabel, který obsahuje tyto barvy vodičů: lx žlutá/zelená, lx světlemodrá, lx hnědá, lx černá a lx šedá 
+444. Jaké označení má kabel, který obsahuje tyto barvy vodičů: 1x žlutá/zelená, 1x světlemodrá, 1x hnědá, 1x černá a 1x šedá 
 a) 4C 
 b) 5C 
 c) 5D
@@ -3107,7 +3107,7 @@ správně: [a, b]
 # ČSN 33 2000-5-51 ed. 3+Z1+Z2 Výběr a stavba elektrických zařízení
 
 503. Vnější vlivy jsou podle normy ČSN 33 2000-5-51 ed. 3+Z1+Z2 označovány tak, že každý stupeň vnějšího vlivu je kódován 
-a) jedním písmenem velké abecedy a dvěma číslicemi (např. Al2) 
+a) jedním písmenem velké abecedy a dvěma číslicemi (např. A12) 
 b) dvěma písmeny velké abecedy a číslicí (např. AD4) 
 c) třemi číslicemi (např. 311) 
 správně: [b]
