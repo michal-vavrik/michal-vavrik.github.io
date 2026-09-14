@@ -43,6 +43,17 @@ window.NV194ResultTests = (function () {
 		runner.equal('§7 vybírá 60 otázek', paragraph7.length, 60);
 		runner.equal('§7 neobsahuje duplicitní otázky', new Set(paragraph7).size, 60);
 		runner.equal('režim všech otázek zachovává celý zdroj', Quiz.selectQuestions(questions, Quiz.MODES.ALL).length, 100);
+		var fromQuestion50 = Quiz.selectQuestions(questions, Quiz.MODES.ALL, { startQuestionId: 50 });
+		runner.equal('postupný režim začíná zadanou otázkou', fromQuestion50[0].id, 50);
+		runner.equal('postupný režim zahrnuje otázky až do konce', fromQuestion50.length, 51);
+
+		var threw = false;
+		try {
+			Quiz.selectQuestions(questions, Quiz.MODES.ALL, { startQuestionId: 101 });
+		} catch (error) {
+			threw = true;
+		}
+		runner.equal('neexistující počáteční otázka vyhodí chybu', threw, true);
 	}
 
 	/** Zdroj se třemi kapitolami po daném počtu otázek (vždy správně a). */

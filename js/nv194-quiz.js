@@ -42,7 +42,7 @@ window.NV194Quiz = (function () {
 	 *
 	 * @param {Array} questions všechny načtené otázky
 	 * @param {string} mode hodnota z MODES
-	 * @param {{size?: number, random?: function}} [options]
+	 * @param {{size?: number, random?: function, chapterIndexes?: Array, startQuestionId?: number}} [options]
 	 * @returns {Array}
 	 */
 	function selectQuestions(questions, mode, options) {
@@ -55,6 +55,15 @@ window.NV194Quiz = (function () {
 		}
 
 		if (mode === MODES.ALL) {
+			if (options.startQuestionId !== undefined) {
+				var startAt = questions.findIndex(function (question) {
+					return question.id === options.startQuestionId;
+				});
+				if (startAt === -1) {
+					throw new Error('Otázka č. ' + options.startQuestionId + ' neexistuje.');
+				}
+				return questions.slice(startAt);
+			}
 			return questions.slice();
 		}
 
@@ -95,7 +104,7 @@ window.NV194Quiz = (function () {
 	 *
 	 * @param {Array} questions všechny načtené otázky
 	 * @param {string} mode hodnota z MODES
-	 * @param {{size?: number, random?: function}} [options]
+	 * @param {{size?: number, random?: function, chapterIndexes?: Array, startQuestionId?: number}} [options]
 	 */
 	function createTest(questions, mode, options) {
 		var selected = selectQuestions(questions, mode, options);

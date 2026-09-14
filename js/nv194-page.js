@@ -54,6 +54,8 @@
 	var newTestBtn = document.getElementById('quiz-new-test');
 	var chapterListEl = document.getElementById('quiz-chapter-list');
 	var chapterStartBtn = document.getElementById('quiz-chapter-start');
+	var allStartInput = document.getElementById('quiz-all-start');
+	var allStartBtn = document.getElementById('quiz-all-start-button');
 
 	var answerState = window.NV194AnswerState;
 
@@ -458,6 +460,28 @@
 				setStatus(error.message, true);
 				return;
 			}
+			setStatus('');
+			showTestQuestion();
+		});
+	}
+
+	if (allStartBtn) {
+		allStartBtn.addEventListener('click', function () {
+			var value = allStartInput.value.trim();
+			if (!/^\d+$/.test(value) || Number(value) < 1 || !Number.isSafeInteger(Number(value))) {
+				setStatus(i18n.t('nv194.mode.all.invalidStart'), true);
+				allStartInput.focus();
+				return;
+			}
+			var startQuestionId = Number(value);
+			if (!questionsById[startQuestionId]) {
+				setStatus(i18n.t('nv194.mode.all.questionNotFound', { id: startQuestionId }), true);
+				allStartInput.focus();
+				return;
+			}
+			test = window.NV194Quiz.createTest(questions, window.NV194Quiz.MODES.ALL, {
+				startQuestionId: startQuestionId
+			});
 			setStatus('');
 			showTestQuestion();
 		});

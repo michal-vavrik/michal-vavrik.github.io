@@ -463,6 +463,40 @@
 	font-size: 0.84rem;
 }
 
+.quiz__mode-btn--all {
+	cursor: default;
+}
+
+.quiz__all-start-label {
+	margin-top: 6px;
+	color: #cbd6e6;
+	font-size: 0.88rem;
+}
+
+.quiz__all-start-controls {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.quiz__all-start-input {
+	width: 110px;
+	padding: 9px 10px;
+	border: 1px solid var(--quiz-border);
+	border-radius: 8px;
+	background: rgba(15, 23, 42, 0.7);
+	color: var(--quiz-text);
+	font: inherit;
+	font-variant-numeric: tabular-nums;
+}
+
+.quiz__all-start-input:focus {
+	border-color: var(--quiz-accent);
+	outline: 2px solid rgba(99, 102, 241, 0.35);
+	outline-offset: 1px;
+}
+
 .quiz__mode-chapters {
 	grid-column: 1 / -1;
 	display: flex;

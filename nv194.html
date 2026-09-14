@@ -130,10 +130,15 @@
 								<span class="quiz__mode-detail" data-i18n="nv194.mode.paragraph7.detail">60 náhodných otázek</span>
 								<span class="quiz__mode-hint" data-i18n="nv194.mode.hint.random">Náhodný výběr napříč všemi kapitolami</span>
 							</button>
-							<button type="button" class="quiz__mode-btn" data-mode="all">
+							<div class="quiz__mode-btn quiz__mode-btn--all">
 								<span class="quiz__mode-name" data-i18n="nv194.mode.all.name">Všechny otázky postupně</span>
 								<span class="quiz__mode-hint" data-i18n="nv194.mode.all.hint">Celá sada v pořadí podle kapitol</span>
-							</button>
+								<label class="quiz__all-start-label" for="quiz-all-start" data-i18n="nv194.mode.all.startLabel">Začít od otázky číslo</label>
+								<div class="quiz__all-start-controls">
+									<input type="number" class="quiz__all-start-input" id="quiz-all-start" min="1" step="1" value="1" inputmode="numeric" data-i18n-aria-label="nv194.mode.all.startLabel" aria-label="Začít od otázky číslo">
+									<button type="button" class="quiz__btn quiz__btn--primary" id="quiz-all-start-button" data-i18n="nv194.mode.all.start">Spustit postupné otázky</button>
+								</div>
+							</div>
 							<div class="quiz__mode-chapters">
 								<div class="quiz__chapters-panel" id="quiz-chapters-panel">
 									<h3 class="quiz__chapters-title" data-i18n="nv194.mode.chapters.name">Test z vybraných kapitol</h3>
