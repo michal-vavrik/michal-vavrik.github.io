@@ -32,6 +32,44 @@ window.I18n = (function () {
 			'nav.cv': 'CV',
 			'nav.games': 'Hry',
 			'nav.contact': 'Kontakt',
+			'nav.anime': 'Anime',
+
+			'anime.title': 'Anime list',
+			'anime.status.loading': 'Načítám anime data…',
+			'anime.status.loaded.one': 'Načten {count} anime titul.',
+			'anime.status.loaded.few': 'Načteny {count} anime tituly.',
+			'anime.status.loaded.many': 'Načteno {count} anime titulů.',
+			'anime.status.error': 'Nepodařilo se načíst anime data.',
+
+			'anime.search.placeholder': 'Hledej anime...',
+			'anime.search.ariaLabel': 'Hledat anime podle názvu',
+
+			'anime.edit.start': 'Upravit',
+			'anime.edit.save': 'Uložit',
+			'anime.edit.error': 'Některé hodnoty nejsou platné. Opravte zvýrazněná pole.',
+
+			'anime.reset.button': 'Obnovit původní data',
+			'anime.resetModal.title': 'Obnovit původní data?',
+			'anime.resetModal.message': 'Všechny provedené úpravy budou nenávratně smazány.',
+			'anime.resetModal.cancel': 'Zrušit',
+			'anime.resetModal.confirm': 'Obnovit',
+
+			'anime.export.button': 'Exportovat data',
+
+			'anime.import.button': 'Importovat data',
+			'anime.import.error': 'Nepodařilo se načíst soubor. Zkontrolujte, že jde o platný export dat.',
+
+			'anime.header.number': '#',
+			'anime.header.image': 'Obrázek',
+			'anime.header.nameEn': 'Název [EN]',
+			'anime.header.nameJa': 'Název [JA]',
+			'anime.header.genres': 'Kategorie',
+			'anime.header.description': 'Popis',
+			'anime.header.date': 'Datum',
+			'anime.header.state': 'Stav',
+			'anime.header.csfdRating': 'ČSFD hodnocení',
+			'anime.header.malRating': 'MAL hodnocení',
+			'anime.header.myRating': 'Moje hodnocení',
 
 			'auth.openButton.login': 'Přihlásit',
 			'auth.openButton.loggedIn': 'Přihlášen',
@@ -212,6 +250,44 @@ window.I18n = (function () {
 			'nav.cv': 'CV',
 			'nav.games': 'Games',
 			'nav.contact': 'Contact',
+			'nav.anime': 'Anime',
+
+			'anime.title': 'Anime list',
+			'anime.status.loading': 'Loading anime data…',
+			'anime.status.loaded.one': 'Loaded {count} anime title.',
+			'anime.status.loaded.few': 'Loaded {count} anime titles.',
+			'anime.status.loaded.many': 'Loaded {count} anime titles.',
+			'anime.status.error': 'Failed to load anime data.',
+
+			'anime.search.placeholder': 'Search anime...',
+			'anime.search.ariaLabel': 'Search anime by title',
+
+			'anime.edit.start': 'Edit',
+			'anime.edit.save': 'Save',
+			'anime.edit.error': 'Some values are invalid. Fix the highlighted fields.',
+
+			'anime.reset.button': 'Reset to original data',
+			'anime.resetModal.title': 'Reset to original data?',
+			'anime.resetModal.message': 'All your edits will be permanently deleted.',
+			'anime.resetModal.cancel': 'Cancel',
+			'anime.resetModal.confirm': 'Reset',
+
+			'anime.export.button': 'Export data',
+
+			'anime.import.button': 'Import data',
+			'anime.import.error': "Failed to load the file. Make sure it's a valid data export.",
+
+			'anime.header.number': '#',
+			'anime.header.image': 'Image',
+			'anime.header.nameEn': 'Title [EN]',
+			'anime.header.nameJa': 'Title [JA]',
+			'anime.header.genres': 'Genres',
+			'anime.header.description': 'Description',
+			'anime.header.date': 'Date',
+			'anime.header.state': 'State',
+			'anime.header.csfdRating': 'CSFD rating',
+			'anime.header.malRating': 'MAL rating',
+			'anime.header.myRating': 'My rating',
 
 			'auth.openButton.login': 'Log in',
 			'auth.openButton.loggedIn': 'Logged in',

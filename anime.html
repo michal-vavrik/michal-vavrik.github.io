@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Anime</title>
+		<link rel="stylesheet" type="text/css" href="css/main.css?v=header-scroll-1">
+		<link rel="stylesheet" type="text/css" href="css/auth.css?v=hide-locked-menu-2">
+		<link rel="stylesheet" type="text/css" href="css/i18n.css">
+		<link rel="stylesheet" type="text/css" href="css/anime.css?v=anime-import-1">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
+		<script src="js/auth.js"></script>
+	</head>
+
+	<body class="subpage">
+				<!-- Menu elements-->
+		<nav class="menu">
+			<a class="menu__link" href="index.html" data-i18n="nav.home">Home</a>
+			<a class="menu__link" href="personal.html" data-i18n="nav.personal">Personal</a>
+			<a class="menu__link" href="cv.html" data-i18n="nav.cv">CV</a>
+			<a class="menu__link" href="games.html" data-i18n="nav.games">Games</a>
+			<a class="menu__link" href="contact.html" data-i18n="nav.contact">Contact</a>
+			<a class="menu__link active" href="anime.html" data-i18n="nav.anime">Anime</a>
+			<a class="menu__link" href="nv194.html">NV 194</a>
+		</nav>
+		<div class="menu__toggler"><span></span></div>
+
+		<div class="header-controls">
+			<div class="lang-switcher" id="lang-switcher">
+				<button type="button" class="lang-switcher__toggle" id="lang-switcher-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-switcher-menu" data-i18n-aria-label="lang.switcher.label">
+					<span class="lang-switcher__code" id="lang-switcher-code">CS</span>
+					<span class="lang-switcher__caret" aria-hidden="true">▾</span>
+				</button>
+				<div class="lang-switcher__menu" id="lang-switcher-menu" role="menu" hidden>
+					<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="cs" data-i18n="lang.name.cs">Čeština</button>
+					<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="en" data-i18n="lang.name.en">English</button>
+				</div>
+			</div>
+
+			<button type="button" class="auth-btn" id="auth-btn" aria-haspopup="dialog" aria-controls="auth-modal">
+				<i class="fa fa-user auth-btn__icon" aria-hidden="true"></i>
+				<span class="auth-btn__label">Přihlásit</span>
+			</button>
+		</div>
+
+		<div class="auth-modal" id="auth-modal" hidden>
+			<div class="auth-modal__backdrop" data-auth-close></div>
+
+			<div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+				<button type="button" class="auth-modal__close" data-auth-close data-i18n-aria-label="auth.close">&times;</button>
+
+				<div class="auth-modal__icon" aria-hidden="true"><i class="fa fa-lock"></i></div>
+				<h2 class="auth-modal__title" id="auth-title" data-i18n="auth.title.login">Přihlášení</h2>
+				<p class="auth-modal__lead" data-i18n="auth.lead.login">Chráněné stránky jsou dostupné po zadání hesla.</p>
+
+				<p class="auth-modal__notice" id="auth-notice" hidden></p>
+
+				<div class="auth-panel" id="auth-login-panel">
+					<form id="auth-form" novalidate>
+						<label class="auth-form__label" for="auth-password" data-i18n="auth.form.label">Heslo</label>
+						<div class="auth-form__field">
+							<input type="password" id="auth-password" name="password" placeholder="Zadejte heslo" data-i18n-placeholder="auth.form.placeholder" autocomplete="current-password">
+							<button type="button" class="auth-form__reveal" id="auth-reveal" aria-pressed="false">Zobrazit</button>
+						</div>
+						<p class="auth-form__error" id="auth-error" role="alert" hidden></p>
+						<button type="submit" class="auth-modal__submit" data-i18n="auth.form.submit">Přihlásit se</button>
+					</form>
+				</div>
+
+				<div class="auth-panel" id="auth-status-panel" hidden>
+					<div class="auth-status__row">
+						<span class="auth-status__label" data-i18n="auth.status.role">Oprávnění:</span>
+						<span class="auth-status__value is-role" id="auth-status-role"></span>
+					</div>
+					<div class="auth-status__row">
+						<span class="auth-status__label" data-i18n="auth.status.pages">Dostupné stránky:</span>
+						<span class="auth-status__value" id="auth-status-pages"></span>
+					</div>
+					<button type="button" class="auth-modal__logout" id="auth-logout" data-i18n="auth.status.logout">Odhlásit se</button>
+				</div>
+			</div>
+		</div>
+
+		<script src="js/i18n.js?v=anime-import-1"></script>
+		<script src="js/lang-switcher.js"></script>
+		<script src="js/auth-ui.js?v=anime-init-1"></script>
+		<script src="js/menu.js"></script>
+
+		<main class="anime">
+			<h1 class="anime__title" data-i18n="anime.title">Anime list</h1>
+			<p class="anime__status" id="anime-status" data-i18n="anime.status.loading">Načítám anime data…</p>
+
+			<div class="anime__search">
+				<img class="anime__search-icon" src="img/anime/icons/Search.png" alt="" aria-hidden="true">
+				<input type="text" id="anime-search" class="anime__search-input" data-i18n-placeholder="anime.search.placeholder" data-i18n-aria-label="anime.search.ariaLabel" placeholder="Hledej anime..." autocomplete="off">
+			</div>
+
+			<div class="anime__list-wrap" id="anime-list-wrap" hidden>
+				<div class="anime__header" id="anime-header" role="row"></div>
+				<div class="anime__list" id="anime-list" role="list"></div>
+			</div>
+
+			<div class="anime__bottom-bar">
+				<p class="anime__edit-error" id="anime-edit-error" data-i18n="anime.edit.error" role="alert" hidden>Některé hodnoty nejsou platné. Opravte zvýrazněná pole.</p>
+				<p class="anime__edit-error" id="anime-import-error" data-i18n="anime.import.error" role="alert" hidden>Nepodařilo se načíst soubor. Zkontrolujte, že jde o platný export dat.</p>
+				<input type="file" id="anime-import-input" accept=".json,application/json" hidden>
+				<button type="button" id="anime-import-btn" class="anime__edit-btn anime__edit-btn--import" data-i18n="anime.import.button">Importovat data</button>
+				<button type="button" id="anime-export-btn" class="anime__edit-btn anime__edit-btn--export" data-i18n="anime.export.button">Exportovat data</button>
+				<button type="button" id="anime-reset-btn" class="anime__edit-btn anime__edit-btn--reset" data-i18n="anime.reset.button">Obnovit původní data</button>
+				<button type="button" id="anime-edit-toggle" class="anime__edit-btn" data-i18n="anime.edit.start" aria-pressed="false">Upravit</button>
+			</div>
+		</main>
+
+		<div class="auth-modal anime-reset-modal" id="anime-reset-modal" hidden>
+			<div class="auth-modal__backdrop" data-anime-reset-cancel></div>
+			<div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="anime-reset-title" aria-describedby="anime-reset-message">
+				<div class="auth-modal__icon" aria-hidden="true">↻</div>
+				<h2 class="auth-modal__title" id="anime-reset-title" data-i18n="anime.resetModal.title">Obnovit původní data?</h2>
+				<p class="auth-modal__lead" id="anime-reset-message" data-i18n="anime.resetModal.message">Všechny provedené úpravy budou nenávratně smazány.</p>
+				<div class="anime-reset-modal__actions">
+					<button type="button" class="auth-modal__logout" data-anime-reset-cancel data-i18n="anime.resetModal.cancel">Zrušit</button>
+					<button type="button" class="auth-modal__submit" id="anime-reset-confirm" data-i18n="anime.resetModal.confirm">Obnovit</button>
+				</div>
+			</div>
+		</div>
+
+		<script src="js/anime-data.js?v=anime-import-1"></script>
+		<script src="js/anime-columns.js?v=anime-edit-1"></script>
+		<script src="js/anime-row-view.js?v=anime-a11y-1"></script>
+		<script src="js/anime-view.js?v=anime-a11y-1"></script>
+		<script src="js/anime-page.js?v=anime-a11y-1"></script>
+
+	</body>
+</html>

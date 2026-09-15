@@ -1,0 +1,501 @@
+/*
+ * Styly stránky Anime.
+ * Rozšiřuje sdílený layout .subpage z main.css a i18n/auth komponenty.
+ * Barvy a rozměry vycházejí z původní Python aplikace
+ * (AnimeList.pyw - DEFAULT_GUI_COLOR, DEFAULT_GUI_SIZE a PROPERTY).
+ */
+
+.anime {
+	position: relative;
+	z-index: 1;
+	max-width: none;
+	margin: 0 auto;
+	padding: 100px 24px 60px;
+	color: #eee;
+}
+
+.anime__title {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 2rem;
+	font-weight: 600;
+	letter-spacing: 0.5px;
+	margin-bottom: 16px;
+	color: #fb0;
+}
+
+.anime__status {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 1rem;
+	color: rgba(255, 255, 255, 0.75);
+	background: rgba(0, 0, 0, 0.35);
+	padding: 12px 16px;
+	border-radius: 8px;
+	display: inline-block;
+	margin-bottom: 20px;
+}
+
+/*
+ * Vyhledávací pole. Odpovídá Self.SearchGB v Python aplikaci
+ * (MainWindow.CreateWidgets, řádky 1002-1020) - ikona + textové pole.
+ */
+.anime__search {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	max-width: 350px;
+	background: rgba(0, 0, 0, 0.35);
+	border-radius: 8px;
+	padding: 0 14px;
+	margin-bottom: 20px;
+}
+
+.anime__search-icon {
+	width: 18px;
+	height: 18px;
+	flex-shrink: 0;
+	opacity: 0.8;
+}
+
+.anime__search-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	background: transparent;
+	border: none;
+	color: #eee;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 1rem;
+	padding: 12px 0;
+	outline: none;
+}
+
+.anime__search-input::placeholder {
+	color: rgba(255, 255, 255, 0.5);
+}
+
+/*
+ * Kontejner seznamu. Horizontální scroll umožní zobrazit všechny sloupce
+ * i na užších obrazovkách; na menších rozlišeních se navíc zmenší hlavička,
+ * řádky a písmo (viz "Responzivita" níže).
+ */
+.anime__list-wrap {
+	overflow-x: auto;
+	background: transparent;
+	border-radius: 12px;
+}
+
+/*
+ * Hlavička sloupců. Odpovídá HeaderHBL v Python aplikaci
+ * (MainWindow.CreateWidgets, řádek 262).
+ * Šířky jednotlivých buněk určuje grid-template-columns nastavené v JS
+ * podle AnimeColumns.gridTemplate().
+ */
+.anime__header {
+	display: grid;
+	grid-template-columns: var(--anime-grid-columns);
+	min-width: max-content;
+	height: 40px;
+	background: transparent;
+	border-radius: 8px 8px 0 0;
+	overflow: hidden;
+}
+
+.anime__header-cell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #111;
+	color: #aa4;
+	font-family: "Bahnschrift SemiLight SemiConde", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 14px;
+	padding: 0 6px;
+	position: relative;
+	user-select: none;
+	border-right: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.anime__header-cell:last-child {
+	border-right: none;
+}
+
+.anime__header-cell--sortable {
+	cursor: pointer;
+	justify-content: flex-start;
+	padding-left: 10px;
+}
+
+.anime__header-sort {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: contain;
+	flex-shrink: 0;
+	margin-right: 5px;
+}
+
+.anime__header-label {
+	display: inline-block;
+	text-align: center;
+	line-height: 1.15;
+	flex: 1;
+}
+
+.anime__header-cell--rating {
+	justify-content: flex-start;
+	padding-left: 10px;
+}
+
+.anime__header-rating-icon {
+	display: block;
+	height: 50px;
+	width: auto;
+	object-fit: contain;
+	flex: 1;
+	max-width: 100%;
+}
+
+/* MyRating má menší ikonu než CSFD/MAL (viz Python řádky 300-303). */
+.anime__header-cell--rating-MyRating .anime__header-rating-icon {
+	height: 20px;
+}
+
+/*
+ * Seznam řádků. Odpovídá ContentVBL v Python aplikaci (řádek 265-267);
+ * mezera mezi řádky 3px viz `Self.ContentVBL.setSpacing(3 * int(gSizeRatio))`.
+ */
+.anime__list {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	min-width: max-content;
+	padding-top: 3px;
+}
+
+/*
+ * Jeden řádek anime. Odpovídá AnimeGB v Python aplikaci (řádek 665).
+ * Šířky sloupců sdílí s hlavičkou přes CSS proměnnou --anime-grid-columns.
+ */
+.anime-row {
+	display: grid;
+	grid-template-columns: var(--anime-grid-columns);
+	background: #222;
+	color: #aa6;
+	border-radius: 30px;
+	min-height: 150px;
+	overflow: hidden;
+	font-family: "Bahnschrift SemiLight SemiConde", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 14px;
+}
+
+/* Zebra stripe podle indexu v seznamu (Python AnimeGB __init__ ř. 770-771). */
+.anime-row--even {
+	background: #1c1c1c;
+}
+
+/*
+ * `.anime-row` nastavuje `display: grid`, což bez tohoto pravidla přebije
+ * výchozí UA styl `[hidden] { display: none }` (autorské pravidlo má
+ * přednost před UA pravidlem i při stejné specificitě) - řádek by tak
+ * zůstal viditelný i po nastavení `row.hidden = true` při hledání.
+ */
+.anime-row[hidden] {
+	display: none;
+}
+
+.anime-row__cell {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	padding: 5px 8px;
+	white-space: pre-line;
+	word-break: break-word;
+	line-height: 1.3;
+}
+
+.anime-row__cell--Image {
+	padding: 5px;
+}
+
+.anime-row__image {
+	display: block;
+	max-height: 150px;
+	width: auto;
+	max-width: 100%;
+	/*
+	 * Python vytváří zaoblený obrázek přes QPainter.drawRoundedRect
+	 * s x-radius 39 a y-radius 30 (Radius=30, int(Radius*1.3)=39).
+	 * V CSS použijeme border-radius v procentech, aby se poměr blížil originálu.
+	 */
+	border-radius: 39px / 30px;
+}
+
+.anime-row__cell--Description {
+	text-align: left;
+	justify-content: flex-start;
+}
+
+/*
+ * NameEn/NameJa odkazují na ČSFD/MAL (Python AnimeList.pyw ř. 742-747,
+ * `style="color: #aa6; text-decoration: none"`).
+ */
+.anime-row__link {
+	color: inherit;
+	text-decoration: none;
+}
+
+.anime-row__link:hover,
+.anime-row__link:focus-visible {
+	text-decoration: underline;
+}
+
+/*
+ * Barevné odstupňování hodnocení (Python FormatRating(), AnimeList.pyw ř. 777-790).
+ * Základní velikost písma hodnocení je 20px, nejvyšší tier navíc tučně a 25px.
+ */
+.anime-row__cell--rating {
+	font-size: 20px;
+}
+
+.anime-row__rating--lt50 { color: gray; }
+.anime-row__rating--lt70 { color: #aa6; }
+.anime-row__rating--lt80 { color: #cc4; }
+.anime-row__rating--lt90 { color: #fb0; }
+.anime-row__rating--lt95 { color: #f80; }
+
+.anime-row__rating--ge95 {
+	color: #f40;
+	font-weight: bold;
+	font-size: 25px;
+}
+
+/*
+ * Editovatelný sloupec v edit módu (Python QTextEdit, AnimeList.pyw ř. 755-757).
+ */
+.anime-row__edit-input {
+	width: 100%;
+	min-height: 40px;
+	resize: vertical;
+	background: rgba(255, 255, 255, 0.08);
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	border-radius: 6px;
+	color: #eee;
+	font: inherit;
+	padding: 4px 6px;
+}
+
+/*
+ * Neplatná hodnota po kliknutí na ULOŽIT (Krok 13, bez Python vzoru -
+ * Python žádnou validaci vstupu nedělá).
+ */
+.anime-row__edit-input--invalid {
+	border-color: #f44;
+	background: rgba(255, 68, 68, 0.15);
+}
+
+/*
+ * Chybová hláška pod tlačítkem, zobrazí se při neplatné hodnotě.
+ */
+.anime__edit-error {
+	color: #f66;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 0.9rem;
+	margin: 0 16px 0 0;
+	align-self: center;
+}
+
+/*
+ * Spodní lišta s tlačítkem UPRAVIT/ULOŽIT. Odpovídá Self.BottomBar.EditPB
+ * v Python aplikaci (MainWindow.CreateWidgets, ř. 1059-1061).
+ */
+.anime__bottom-bar {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 16px;
+}
+
+.anime__edit-btn {
+	min-height: 44px;
+	padding: 12px 28px;
+	border-radius: 10px;
+	border: none;
+	background: #fb0;
+	color: #111;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 1rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.15s ease;
+}
+
+.anime__edit-btn:hover {
+	background: #e0a800;
+}
+
+/*
+ * Tlačítko obnovy původních dat (Krok 15, bez Python vzoru - web-only
+ * reset localStorage úprav zavedených v Kroku 14).
+ */
+.anime__edit-btn--reset {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	color: #e8edf5;
+	margin-right: 12px;
+}
+
+.anime__edit-btn--reset:hover {
+	background: rgba(248, 113, 113, 0.2);
+	border-color: rgba(248, 113, 113, 0.55);
+}
+
+/*
+ * Tlačítko exportu dat do souboru (Krok 16, bez Python vzoru - web nemá
+ * přístup k souborovému systému jako Python WriteDataToTheFile()).
+ */
+.anime__edit-btn--export {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	color: #e8edf5;
+	margin-right: 12px;
+}
+
+.anime__edit-btn--export:hover {
+	background: rgba(96, 165, 250, 0.2);
+	border-color: rgba(96, 165, 250, 0.55);
+}
+
+/*
+ * Tlačítko importu dat ze souboru (Krok 17, bez Python vzoru - Python
+ * žádný import ze souboru nemá, GetData() vždy čte jen pevně daný DATA_PATH).
+ */
+.anime__edit-btn--import {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	color: #e8edf5;
+	margin-right: 12px;
+}
+
+.anime__edit-btn--import:hover {
+	background: rgba(74, 222, 128, 0.2);
+	border-color: rgba(74, 222, 128, 0.55);
+}
+
+/*
+ * Potvrzovací modal obnovy dat - vychází ze sdílené `.auth-modal` (viz
+ * css/auth.css), stejný vzor jako `.quiz-reset-modal` v css/nv194.css.
+ */
+.anime-reset-modal {
+	z-index: 1200;
+}
+
+.anime-reset-modal__actions {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.anime-reset-modal__actions .auth-modal__submit,
+.anime-reset-modal__actions .auth-modal__logout {
+	margin-top: 0;
+}
+
+/*
+ * --- Responzivita ---
+ * Python aplikace na menších rozlišeních vše proporčně zmenšuje pomocí
+ * gSizeRatio (AnimeList.pyw, ř. 1245: screen_width / 1920). Web nemá
+ * jedno fixní gSizeRatio pro celou session, takže totéž chování simulujeme
+ * přes breakpointy - hlavička, řádky a písmo se na užších obrazovkách
+ * zmenší ve stejném duchu (sloupce zůstávají všechny dostupné přes
+ * horizontální scroll, stejně jako v .anime__list-wrap výše).
+ */
+@media (max-width: 900px) {
+	.anime {
+		padding: 84px 16px 48px;
+	}
+
+	.anime__title {
+		font-size: 1.6rem;
+	}
+
+	.anime__search {
+		max-width: none;
+	}
+
+	.anime__header {
+		height: 34px;
+	}
+
+	.anime__header-cell {
+		font-size: 12px;
+	}
+
+	.anime-row {
+		min-height: 110px;
+		font-size: 12px;
+	}
+
+	.anime-row__image {
+		max-height: 110px;
+	}
+
+	.anime__header-rating-icon {
+		height: 40px;
+	}
+
+	.anime__header-cell--rating-MyRating .anime__header-rating-icon {
+		height: 16px;
+	}
+
+	.anime-row__cell--rating {
+		font-size: 16px;
+	}
+
+	.anime-row__rating--ge95 {
+		font-size: 20px;
+	}
+}
+
+@media (max-width: 600px) {
+	.anime {
+		padding: 76px 10px 40px;
+	}
+
+	.anime__header {
+		height: 30px;
+	}
+
+	.anime__header-cell {
+		font-size: 11px;
+		padding: 0 4px;
+	}
+
+	.anime__header-cell--sortable {
+		padding-left: 8px;
+	}
+
+	.anime-row {
+		min-height: 84px;
+		font-size: 11px;
+	}
+
+	.anime-row__image {
+		max-height: 84px;
+	}
+
+	.anime__header-rating-icon {
+		height: 30px;
+	}
+
+	.anime__header-cell--rating-MyRating .anime__header-rating-icon {
+		height: 14px;
+	}
+
+	.anime-row__cell--rating {
+		font-size: 13px;
+	}
+
+	.anime-row__rating--ge95 {
+		font-size: 16px;
+	}
+}

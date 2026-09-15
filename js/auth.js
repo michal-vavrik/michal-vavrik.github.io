@@ -61,7 +61,8 @@ window.SiteAuth = (function () {
 		'personal.html': [ROLES.FULL],
 		'cv.html': [ROLES.CV, ROLES.FULL],
 		'games.html': [ROLES.FULL],
-		'contact.html': [ROLES.FULL]
+		'contact.html': [ROLES.FULL],
+		'anime.html': [ROLES.FULL]
 	};
 
 	/* --- SHA-256 ---

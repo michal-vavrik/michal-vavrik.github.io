@@ -27,6 +27,7 @@
 		'cv.html': 'nav.cv',
 		'games.html': 'nav.games',
 		'contact.html': 'nav.contact',
+		'anime.html': 'nav.anime',
 		'nv194.html': null
 	};
 	var PAGE_LABEL_FALLBACK = {
