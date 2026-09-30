@@ -26,6 +26,10 @@
 		'personal.html': 'nav.personal',
 		'cv.html': 'nav.cv',
 		'games.html': 'nav.games',
+		'snake.html': 'snake.title',
+		'tetris.html': 'games.tetris.name',
+		'memory.html': 'games.memory.name',
+		'2048.html': 'games.g2048.name',
 		'contact.html': 'nav.contact',
 		'anime.html': 'nav.anime',
 		'nv194.html': null

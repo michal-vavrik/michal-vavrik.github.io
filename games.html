@@ -7,6 +7,7 @@
 		<link rel="stylesheet" type="text/css" href="css/main.css?v=header-scroll-1">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=hide-locked-menu-2">
 		<link rel="stylesheet" type="text/css" href="css/i18n.css">
+		<link rel="stylesheet" type="text/css" href="css/games.css">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
 		<script src="js/auth.js"></script>
@@ -81,9 +82,40 @@
 			</div>
 		</div>
 
-		<script src="js/i18n.js?v=nav-search-1"></script>
+		<main class="games">
+			<h1 class="games__title" data-i18n="games.title">Hry</h1>
+			<p class="games__lead" data-i18n="games.lead">Malé hříčky naprogramované přímo pro tenhle web. Vyberte si dlaždici a pusťte se do hraní rovnou v prohlížeči.</p>
+
+			<div class="games__grid">
+				<a class="games__tile" href="snake.html">
+					<span class="games__icon" aria-hidden="true"><i class="fa fa-gamepad"></i></span>
+					<span class="games__name" data-i18n="games.snake.name">Snake</span>
+					<span class="games__desc" data-i18n="games.snake.desc">Klasický had – sbírejte jídlo, rosťte a nenarazte do sebe ani do stěny.</span>
+				</a>
+
+				<a class="games__tile" href="tetris.html">
+					<span class="games__icon" aria-hidden="true"><i class="fa fa-th-large"></i></span>
+					<span class="games__name" data-i18n="games.tetris.name">Tetris</span>
+					<span class="games__desc" data-i18n="games.tetris.desc">Skládání padajících kostek do plných řad.</span>
+				</a>
+
+				<a class="games__tile" href="memory.html">
+					<span class="games__icon" aria-hidden="true"><i class="fa fa-clone"></i></span>
+					<span class="games__name" data-i18n="games.memory.name">Pexeso</span>
+					<span class="games__desc" data-i18n="games.memory.desc">Hledání dvojic bez časového limitu – trénink paměti.</span>
+				</a>
+
+				<a class="games__tile" href="2048.html">
+					<span class="games__icon" aria-hidden="true"><i class="fa fa-calculator"></i></span>
+					<span class="games__name" data-i18n="games.g2048.name">2048</span>
+					<span class="games__desc" data-i18n="games.g2048.desc">Spojování čísel posouváním dlaždic po mřížce.</span>
+				</a>
+			</div>
+		</main>
+
+		<script src="js/i18n.js?v=more-games-1"></script>
 		<script src="js/lang-switcher.js"></script>
-		<script src="js/auth-ui.js?v=nav-labels-1"></script>
+		<script src="js/auth-ui.js?v=more-games-1"></script>
 		<script src="js/menu.js"></script>
 
 	</body>
