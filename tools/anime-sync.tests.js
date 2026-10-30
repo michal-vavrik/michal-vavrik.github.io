@@ -259,8 +259,20 @@ window.AnimeSyncTests = (function () {
 
 		runner.equal('parseMalRating: procenta', [Sync.parseMalRating(malAnimePage('8.01')), Sync.parseMalRating(malAnimePage('7.5'))],
 			['80%', '75%']);
-		runner.equal('parseMalRating: bez čísla je chyba',
-			errorSummary(thrown(function () { Sync.parseMalRating('<div class="score-label score-na">N/A</div>'); })),
+		runner.equal('parseMalRating: zaokrouhlení jako Python round() a maximum',
+			[Sync.parseMalRating(malAnimePage('7.65')), Sync.parseMalRating(malAnimePage('7.75')), Sync.parseMalRating(malAnimePage('10.00'))],
+			['76%', '78%', '100%']);
+		runner.equal('parseMalRating: skóre ve <span> před <div> se přeskočí',
+			Sync.parseMalRating('<span itemprop="ratingValue" class="score-label score-9">9.10</span>' + malAnimePage('8.49')), '85%');
+		runner.equal('parseMalRating: anime bez skóre (N/A) má ?%, ne číslo z dalšího prvku',
+			Sync.parseMalRating('<div class="score-label score-na">N/A</div><div>Members <strong>169</strong></div>'), '?%');
+		['abc', '1.2.3', '', '<b>8.0</b>'].forEach(function (score) {
+			runner.equal('parseMalRating: nečekaný tvar ' + JSON.stringify(score) + ' je chyba',
+				errorSummary(thrown(function () { Sync.parseMalRating(malAnimePage(score)); })),
+				{ code: 'parse-error', detail: 'mal-rating' });
+		});
+		runner.equal('parseMalRating: bez skóre na stránce je chyba',
+			errorSummary(thrown(function () { Sync.parseMalRating('<html><body>Members <strong>169</strong></body></html>'); })),
 			{ code: 'parse-error', detail: 'mal-rating' });
 	}
 
@@ -479,6 +491,24 @@ window.AnimeSyncTests = (function () {
 				return withFetch(function () { return reply('{"ok": true}', 200); }, function () {
 					return summarizeError(Client.saveCsfdRatings({ 1: '85%' })).then(function (error) {
 						runner.equal('saveCsfdRatings: neplatná odpověď', error, { code: 'unexpected-response', detail: 'csfd-ratings', status: 0 });
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply(JSON.stringify({ ok: true, changed: 2, missing: [] }), 200); }, function (stub) {
+					return Client.saveMalRatings({ 1: '76%', 2: '?%' }).then(function (saved) {
+						runner.equal('saveMalRatings: výsledek', saved, { changed: 2, missing: [] });
+						runner.equal('saveMalRatings: požadavek', [
+							stub.calls[0].url, stub.calls[0].init.method, stub.calls[0].init.headers['Content-Type'],
+							stub.calls[0].init.headers['X-Anime-Proxy'], JSON.parse(stub.calls[0].init.body)
+						], [base + '/mal-ratings', 'POST', 'application/json', '1', { ratings: { 1: '76%', 2: '?%' } }]);
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply('nic', 200); }, function () {
+					return summarizeError(Client.saveMalRatings({ 1: '76%' })).then(function (error) {
+						runner.equal('saveMalRatings: neplatná odpověď', error, { code: 'unexpected-response', detail: 'mal-ratings', status: 0 });
 					});
 				});
 			},
@@ -851,8 +881,8 @@ window.AnimeSyncTests = (function () {
 	function ratingItems(count) {
 		var items = [];
 		for (var index = 1; index <= count; index += 1) {
-			items.push({ Number: String(index), FavoriteName: 'Fav ' + index, CsfdID: String(100 + index), NameEn: 'Anime ' + index,
-				State: index === 2 ? 'DROPPED' : 'DONE', CsfdRating: '50%' });
+			items.push({ Number: String(index), FavoriteName: 'Fav ' + index, CsfdID: String(100 + index), MalID: String(200 + index),
+				NameEn: 'Anime ' + index, State: index === 2 ? 'DROPPED' : 'DONE', CsfdRating: '50%', MalRating: '60%' });
 		}
 		return items;
 	}
@@ -865,12 +895,25 @@ window.AnimeSyncTests = (function () {
 		return csfdFilmPage({ names: [], rating: rating });
 	}
 
+	function malUrl(id) {
+		return 'https://myanimelist.net/anime/' + id;
+	}
+
 	/**
 	 * Spustí aktualizaci ČSFD hodnocení s atrapou pomocníka a dat.
 	 * @param {Object} setup - routes (adresa -> text | Error), items, health, healthError, healthGate,
 	 *     missing (čísla, která v souboru nejsou), writeError, storedItems (jsou uložené úpravy v prohlížeči)
 	 */
 	function runCsfdUpdate(setup) {
+		return runRatingsUpdate(setup, { update: Sync.updateCsfd, save: 'saveCsfdRatings', field: 'CsfdRating', version: 2 });
+	}
+
+	/** Totéž pro MAL hodnocení (pomocník verze 3, zápis přes saveMalRatings). */
+	function runMalUpdate(setup) {
+		return runRatingsUpdate(setup, { update: Sync.updateMal, save: 'saveMalRatings', field: 'MalRating', version: 3 });
+	}
+
+	function runRatingsUpdate(setup, kind) {
 		var events = [];
 		var calls = [];
 		var saves = [];
@@ -882,7 +925,7 @@ window.AnimeSyncTests = (function () {
 				if (setup.healthError) {
 					return Promise.reject(setup.healthError);
 				}
-				var ready = setup.health || { version: 2, cookieConfigured: false, maxImageNumber: 0, dataFile: true };
+				var ready = setup.health || { version: kind.version, cookieConfigured: false, maxImageNumber: 0, dataFile: true };
 				return setup.healthGate ? setup.healthGate.then(function () { return ready; }) : Promise.resolve(ready);
 			},
 			fetchPage: function (url) {
@@ -896,28 +939,34 @@ window.AnimeSyncTests = (function () {
 				}
 				return Promise.resolve({ text: route, status: 200, finalUrl: url });
 			},
-			saveCsfdRatings: function (ratings) {
-				writes.push(JSON.parse(JSON.stringify(ratings)));
-				events.push('write');
-				if (setup.writeError) {
-					return Promise.reject(setup.writeError);
-				}
-				return Promise.resolve({ changed: 0, missing: setup.missing || [] });
+			saveCsfdRatings: function () {
+				return Promise.reject(makeError('test-wrong-save', 'saveCsfdRatings'));
+			},
+			saveMalRatings: function () {
+				return Promise.reject(makeError('test-wrong-save', 'saveMalRatings'));
 			}
+		};
+		proxy[kind.save] = function (ratings) {
+			writes.push(JSON.parse(JSON.stringify(ratings)));
+			events.push('write');
+			if (setup.writeError) {
+				return Promise.reject(setup.writeError);
+			}
+			return Promise.resolve({ changed: 0, missing: setup.missing || [] });
 		};
 		var data = {
 			getItems: function () {
 				return items;
 			},
 			save: function (all) {
-				saves.push(all.map(function (item) { return item.CsfdRating; }));
+				saves.push(all.map(function (item) { return item[kind.field]; }));
 				events.push('save');
 			},
 			hasStoredItems: function () {
 				return Boolean(setup.storedItems);
 			}
 		};
-		return Sync.updateCsfd({
+		return kind.update({
 			proxy: proxy,
 			data: data,
 			onProgress: function (percent) { events.push('progress:' + percent.toFixed(2)); }
@@ -928,8 +977,8 @@ window.AnimeSyncTests = (function () {
 		});
 	}
 
-	function ratingsOf(items) {
-		return items.map(function (item) { return item.CsfdRating; });
+	function ratingsOf(items, field) {
+		return items.map(function (item) { return item[field || 'CsfdRating']; });
 	}
 
 	function savedState(error) {
@@ -1130,6 +1179,115 @@ window.AnimeSyncTests = (function () {
 
 	/* ---------------------------------- spuštění ---------------------------------- */
 
+	function malFlows(runner) {
+		return sequence([
+			function () {
+				var items = ratingItems(4);
+				items[1].MalID = '0';
+				items[1].MalRating = '?%';
+				var routes = {};
+				routes[malUrl(201)] = malAnimePage('7.65');
+				routes[malUrl(203)] = '<div class="score-label score-na">N/A</div><div>Members <strong>169</strong></div>';
+				routes[malUrl(204)] = malAnimePage('6.0');
+				return runMalUpdate({ routes: routes, items: items }).then(function (run) {
+					runner.equal('MAL: bez chyby', run.error && run.error.message, null);
+					runner.equal('MAL: MalID 0 se nestahuje, ostatní v pořadí dat', run.calls, [malUrl(201), malUrl(203), malUrl(204)]);
+					runner.equal('MAL: průběh jako Python a jeden zápis do souboru na konci', run.events,
+						['health', 'progress:0.00', 'progress:25.00', 'progress:50.00', 'progress:75.00', 'write']);
+					runner.equal('MAL: nové hodnoty (MalID 0 i N/A mají ?%)', ratingsOf(run.items, 'MalRating'), ['76%', '?%', '?%', '60%']);
+					runner.equal('MAL: ČSFD hodnocení zůstane', ratingsOf(run.items), ['50%', '50%', '50%', '50%']);
+					runner.equal('MAL: do souboru jdou všechna zjištěná hodnocení', run.writes, [{ 1: '76%', 2: '?%', 3: '?%', 4: '60%' }]);
+					runner.equal('MAL: bez uložených úprav se do prohlížeče neukládá', run.saves, []);
+					runner.equal('MAL: výsledek', run.result,
+						{ total: 4, updated: 4, changed: 2, failures: [], savedTo: 'file', notInFile: [] });
+				});
+			},
+			function () {
+				var items = ratingItems(4);
+				items[0].NameEn = '';
+				items[2].MalID = 'abc';
+				var routes = {};
+				routes[malUrl(201)] = makeError('upstream-http', '404', 404);
+				routes[malUrl(202)] = '<html>jiná stránka</html>';
+				routes[malUrl(204)] = malAnimePage('8.01');
+				return runMalUpdate({ routes: routes, items: items, storedItems: true }).then(function (run) {
+					runner.equal('MAL přeskočení: bez chyby', run.error && run.error.message, null);
+					runner.equal('MAL přeskočení: nečíselné ID bez dotazu', run.calls, [malUrl(201), malUrl(202), malUrl(204)]);
+					runner.equal('MAL přeskočení: seznam selhaných', run.result && run.result.failures, [
+						{ name: 'Fav 1', number: '1', code: 'upstream-http', detail: '404' },
+						{ name: 'Anime 2', number: '2', code: 'parse-error', detail: 'mal-rating' },
+						{ name: 'Anime 3', number: '3', code: 'bad-mal-id', detail: 'abc' }
+					]);
+					runner.equal('MAL přeskočení: do souboru jen zjištěná, s uloženými úpravami i do prohlížeče',
+						[run.writes, run.saves], [[{ 4: '80%' }], [['60%', '60%', '60%', '80%']]]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[malUrl(201)] = malAnimePage('9.0');
+				routes[malUrl(202)] = malAnimePage('8.0');
+				return runMalUpdate({ routes: routes, items: ratingItems(2), missing: ['2'] }).then(function (run) {
+					runner.equal('MAL anime mimo soubor: vypíšou se', run.result && run.result.notInFile, [{ name: 'Anime 2', number: '2' }]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[malUrl(201)] = malAnimePage('9.0');
+				routes[malUrl(202)] = makeError('redirect-blocked', 'zscaler');
+				return runMalUpdate({ routes: routes }).then(function (run) {
+					runner.equal('MAL neopravitelná chyba: zastaví a hotové zapíše',
+						[errorSummary(run.error), run.error && run.error.favorite, run.writes, savedState(run.error)],
+						[{ code: 'redirect-blocked', detail: 'zscaler' }, 'Anime 2', [{ 1: '90%' }], ['file', 1, []]]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[malUrl(201)] = malAnimePage('9.0');
+				return runMalUpdate({ routes: routes, items: ratingItems(1), writeError: makeError('data-write-failed', 'PermissionError', 500) })
+					.then(function (run) {
+						runner.equal('MAL zápis do souboru selže: hodnocení zůstanou v prohlížeči',
+							[errorSummary(run.error), run.saves, savedState(run.error)],
+							[{ code: 'data-save-failed', detail: 'data-write-failed PermissionError' }, [['90%']], ['browser', 1, []]]);
+					});
+			},
+			function () {
+				// Pomocník verze 2 umí jen ČSFD hodnocení, MAL by zápis odmítl s 404.
+				var health = { version: 2, cookieConfigured: true, maxImageNumber: 0, dataFile: true };
+				return runMalUpdate({ routes: {}, health: health }).then(function (run) {
+					runner.equal('MAL pomocník verze 2: odmítne se dřív, než se cokoli stáhne', [errorSummary(run.error), run.calls, run.writes],
+						[{ code: 'helper-outdated', detail: '' }, [], []]);
+				});
+			},
+			function () {
+				var health = { version: 3, cookieConfigured: true, maxImageNumber: 0, dataFile: false };
+				return runMalUpdate({ routes: {}, health: health }).then(function (run) {
+					runner.equal('MAL pomocník bez souboru s daty: odmítne se', [errorSummary(run.error), run.calls],
+						[{ code: 'data-file-missing', detail: '' }, []]);
+				});
+			},
+			function () {
+				// MAL, ČSFD i Seznam sdílejí zámek.
+				var release;
+				var gate = new Promise(function (resolve) { release = resolve; });
+				var routes = {};
+				routes[malUrl(201)] = malAnimePage('5.0');
+				var first = runMalUpdate({ routes: routes, items: ratingItems(1), healthGate: gate });
+				return Promise.resolve().then(function () {
+					return Promise.all([runCsfdUpdate({ routes: {}, items: ratingItems(1) }), runMalUpdate({ routes: routes, items: ratingItems(1) })]);
+				}).then(function (others) {
+					runner.equal('MAL běží: ČSFD i druhé MAL se odmítnou', others.map(function (other) { return errorSummary(other.error); }),
+						[{ code: 'already-running', detail: '' }, { code: 'already-running', detail: '' }]);
+					release();
+					return first;
+				}).then(function (firstRun) {
+					runner.equal('MAL běží: původní doběhne a zapíše', [firstRun.result && firstRun.result.updated, firstRun.writes], [1, [{ 1: '50%' }]]);
+				});
+			}
+		]);
+	}
+
+	/* ---------------------------------- spuštění ---------------------------------- */
+
 	/** @returns {Promise<Object>} souhrn ve tvaru NV194TestRunner.summarize() */
 	function run() {
 		var runner = window.NV194TestRunner.create();
@@ -1142,7 +1300,8 @@ window.AnimeSyncTests = (function () {
 			['datová vrstva', dataLayer],
 			['klient pomocníka', proxyClient],
 			['tok aktualizace', flows],
-			['tok ČSFD hodnocení', csfdFlows]
+			['tok ČSFD hodnocení', csfdFlows],
+			['tok MAL hodnocení', malFlows]
 		];
 		return sequence(groups.map(function (group) {
 			return function () {

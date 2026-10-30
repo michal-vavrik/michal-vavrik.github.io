@@ -183,14 +183,15 @@ window.AnimeProxy = (function () {
 	}
 
 	/**
-	 * Nechá pomocníka zapsat ČSFD hodnocení do data/anime.json (mirror Python
-	 * `UpdateCSFD()` + `WriteDataToTheFile()`). Mění se jen `CsfdRating`
-	 * anime, která v souboru jsou; čísla ostatních vrátí v `missing`.
+	 * Nechá pomocníka zapsat hodnocení do data/anime.json (mirror Python
+	 * `UpdateCSFD()`/`UpdateMAL()` + `WriteDataToTheFile()`). Mění se jen
+	 * hodnocení anime, která v souboru jsou; čísla ostatních vrátí v `missing`.
+	 * @param {string} path - '/csfd-ratings' (CsfdRating) nebo '/mal-ratings' (MalRating)
 	 * @param {Object<string, string>} ratings Number -> hodnocení ("85%", "?%")
 	 * @returns {Promise<{changed: number, missing: Array<string>}>}
 	 */
-	function saveCsfdRatings(ratings) {
-		return call('/csfd-ratings', {
+	function saveRatings(path, ratings) {
+		return call(path, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ ratings: ratings })
@@ -205,10 +206,20 @@ window.AnimeProxy = (function () {
 				payload = null;
 			}
 			if (!payload || payload.ok !== true || !Array.isArray(payload.missing)) {
-				throw createError('unexpected-response', 'csfd-ratings');
+				throw createError('unexpected-response', path.slice(1));
 			}
 			return { changed: Number(payload.changed) || 0, missing: payload.missing.map(String) };
 		});
+	}
+
+	/** ČSFD hodnocení do data/anime.json (pole CsfdRating), viz saveRatings(). */
+	function saveCsfdRatings(ratings) {
+		return saveRatings('/csfd-ratings', ratings);
+	}
+
+	/** MAL hodnocení do data/anime.json (pole MalRating, pomocník od verze 3), viz saveRatings(). */
+	function saveMalRatings(ratings) {
+		return saveRatings('/mal-ratings', ratings);
 	}
 
 	return {
@@ -218,6 +229,7 @@ window.AnimeProxy = (function () {
 		health: health,
 		fetchPage: fetchPage,
 		saveImage: saveImage,
-		saveCsfdRatings: saveCsfdRatings
+		saveCsfdRatings: saveCsfdRatings,
+		saveMalRatings: saveMalRatings
 	};
 })();

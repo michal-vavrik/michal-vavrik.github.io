@@ -22,8 +22,9 @@ prohlížeče. Hry jsou dostupné v češtině a angličtině.
 [Anime](./anime.html) (po přihlášení s plným přístupem) zobrazuje seznam z
 `data/anime.json`. Tlačítko **Aktualizovat** otevře stejné volby jako desktopový
 skript `AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, Seznam
-a Všechno. Zatím jsou hotové volby **Seznam** a **ČSFD hodnocení**, ostatní jsou
-označené „Připravujeme“. Obě volby potřebují pomocný program (viz níže).
+a Všechno. Zatím jsou hotové volby **Seznam**, **ČSFD hodnocení** a **MAL
+hodnocení**, ostatní jsou označené „Připravujeme“. Všechny potřebují pomocný
+program (viz níže).
 
 ### Aktualizovat → Seznam
 
@@ -43,7 +44,8 @@ python tools/anime_proxy.py
 Poslouchá jen na `127.0.0.1:8787`. Parametry: `--port`, `--allow-origin ORIGIN`
 (další adresa stránky; výchozí jsou GitHub Pages a `http://127.0.0.1:8765`,
 `http://localhost:8765`), `--images-dir` (výchozí `img/anime`), `--data-file`
-(výchozí `data/anime.json` vedle složky `tools`) a `--check`. Při
+(soubor, do kterého se zapisují ČSFD a MAL hodnocení; výchozí `data/anime.json`
+vedle složky `tools`) a `--check`. Při
 jiném portu nastavte v konzoli prohlížeče
 `localStorage.setItem('anime-proxy-url', 'http://127.0.0.1:PORT')`.
 
@@ -111,11 +113,25 @@ než tato změna zápis neumí; stránka pak požádá o jeho restart.
 - Když zápis do souboru selže (soubor chybí, je poškozený nebo zamčený), hodnocení
   zůstanou uložená v prohlížeči a do souboru se dostanou přes Exportovat data.
 
+### Aktualizovat → MAL hodnocení
+
+Funguje stejně jako ČSFD hodnocení (funkce `UpdateMAL` ze skriptu): projde všechna
+anime, načte jejich stránku na MyAnimeList podle `MalID`, převede skóre na procenta
+(`7.65` → `76%`, zaokrouhlení jako `round` v Pythonu) a po zjištění všech je pomocný
+program najednou zapíše do `data/anime.json`, kde změní jen `MalRating`. Přeskočení
+anime při chybě, výpis anime mimo soubor i chování při chybě zápisu jsou stejné
+jako u ČSFD. MyAnimeList nepotřebuje cookie.
+
+- Anime s `MalID` `0` (na MyAnimeList není) dostane `?%` bez stahování, jako ve
+  skriptu.
+- Anime, které na MyAnimeList zatím skóre nemá („N/A“), dostane `?%`.
+- Potřebuje pomocný program verze 3; se starší verzí stránka požádá o jeho restart.
+
 ### Uložení a publikace dat
 
 Anime přidaná Seznamem se hned uloží do localStorage prohlížeče a jejich obrázky jako
-`img/anime/N.jpg` (ČSFD hodnocení zapisuje pomocný program rovnou do souboru, viz
-výše). Do repozitáře se data dostanou takto:
+`img/anime/N.jpg` (ČSFD a MAL hodnocení zapisuje pomocný program rovnou do souboru,
+viz výše). Do repozitáře se data dostanou takto:
 
 1. **Exportovat data** stáhne `AnimeData.json` (stejný tvar jako `data/anime.json`).
 2. Soubor uložte jako `data/anime.json`.
@@ -130,7 +146,7 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
 
 - Anime se přidá a uloží až celé hotové, obrázek se stahuje jako poslední krok.
   Chyba běh zastaví a zobrazí se (včetně názvu anime); už přidaná anime zůstanou.
-- Seznam ukládá data do prohlížeče, ne do souboru na disku (viz výše). ČSFD
+- Seznam ukládá data do prohlížeče, ne do souboru na disku (viz výše). ČSFD a MAL
   hodnocení zapisuje do `data/anime.json` pomocný program.
 - Nová anime přijdou na konec aktuálního pořadí. Číslo je největší dosud použité
   číslo (v datech i v `img/anime`) zvýšené o 1.
@@ -139,9 +155,12 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
   MAL rovnou přesměruje na stránku anime, použije se tato stránka.
 - Bez nových anime se zobrazí „Žádné nové anime.“. Chybějící sekce oblíbených na
   sledujserialy.io (typicky chybná cookie) je chyba.
-- ČSFD hodnocení: skript při chybě jednoho anime spadne celý a nic neuloží, stránka
-  ho přeskočí (viz výše). Text hodnocení se stejně jako ve skriptu ukládá bez mezer
-  (`85%`, `?%`); hodnocení jiného tvaru se nezapíše.
+- ČSFD a MAL hodnocení: skript při chybě jednoho anime spadne celý a nic neuloží,
+  stránka ho přeskočí (viz výše). Text hodnocení se stejně jako ve skriptu ukládá bez
+  mezer (`85%`, `?%`); hodnocení jiného tvaru se nezapíše.
+- MAL hodnocení anime bez skóre („N/A“) je `?%` (při aktualizaci hodnocení i při
+  přidání Seznamem). Skript v tomto případě omylem vezme číslo z dalšího prvku
+  stránky (počet členů) a zapíše nesmysl jako `1690%`.
 
 ### Řešení potíží
 

@@ -1,6 +1,6 @@
 /**
  * Aktualizace anime listu ze sledujserialy.io (Aktualizovat -> Seznam)
- * a ČSFD hodnocení (Aktualizovat -> ČSFD hodnocení).
+ * a ČSFD a MAL hodnocení (Aktualizovat -> ČSFD hodnocení, MAL hodnocení).
  *
  * Mirror Python AnimeList.pyw: UpdateAnimeList() (ř. 520-537), GetFavorites()
  * (ř. 1295), GetNewFavorites() (ř. 1333), GetNewFavoriteData() (ř. 1347),
@@ -25,6 +25,9 @@
  *    anime, ID a název se vezmou z adresy (Python by spadl na IndexError).
  *  - Hledání na MyAnimeList bez výsledků (kód 404 a stránka "No titles that
  *    matched") je chyba mal-not-found; Python by spadl na IndexError.
+ *  - Anime bez skóre na MyAnimeList (stránka ukazuje "N/A") dostane MAL
+ *    hodnocení "?%"; regulární výraz skriptu by místo skóre vzal první další
+ *    číslo na stránce (např. počet členů).
  *
  * ČSFD hodnocení mirror Python UpdateCSFD() (ř. 442-450) a GetCsfdData()
  * s SelectData == 1. Po zjištění všech hodnocení je pomocník zapíše do
@@ -38,6 +41,11 @@
  *  - Nečíselné CsfdID se přeskočí bez dotazu na ČSFD.
  *  - Jsou-li v prohlížeči uložené úpravy (přebíjí data/anime.json), uloží se
  *    hodnocení i tam. Když zápis do souboru selže, zůstanou jen v prohlížeči.
+ *
+ * MAL hodnocení mirror Python UpdateMAL() (ř. 481-489) a GetMalRating()
+ * (ř. 1503) a probíhá stejně jako ČSFD (mění jen MalRating, stejné odchylky).
+ * MalID "0" dá "?%" bez dotazu jako ve skriptu, jiné nečíselné MalID se
+ * přeskočí; anime bez skóre ("N/A") dostane "?%" (viz výše).
  */
 window.AnimeSync = (function () {
 	'use strict';
@@ -59,11 +67,12 @@ window.AnimeSync = (function () {
 	// MyAnimeList odpovídá na hledání bez výsledků kódem 404 a touto stránkou.
 	var MAL_NO_RESULTS = /No titles that matched/;
 
-	// Tvar ČSFD hodnocení v data/anime.json; stejně ho kontroluje pomocník.
-	var CSFD_RATING_FORMAT = /^(?:[0-9]{1,3}|\?)%$/;
+	// Tvar ČSFD i MAL hodnocení v data/anime.json; stejně ho kontroluje pomocník.
+	var RATING_FORMAT = /^(?:[0-9]{1,3}|\?)%$/;
 
-	// Nejstarší verze pomocníka, která umí zapsat ČSFD hodnocení do data/anime.json.
+	// Nejstarší verze pomocníka, která umí zapsat hodnocení do data/anime.json.
 	var CSFD_MIN_HELPER_VERSION = 2;
+	var MAL_MIN_HELPER_VERSION = 3;
 
 	// Python GetNewFavoriteData() (ř. 1357) - prázdná položka, jejíž pořadí klíčů
 	// určuje pořadí v exportovaných datech.
@@ -271,7 +280,7 @@ window.AnimeSync = (function () {
 	 */
 	function parseCsfdRating(html) {
 		var rating = csfdRawRating(csfdMainBlock(html)).replace(/ /g, '');
-		if (!CSFD_RATING_FORMAT.test(rating)) {
+		if (!RATING_FORMAT.test(rating)) {
 			throw parseError('csfd-rating');
 		}
 		return rating;
@@ -356,14 +365,22 @@ window.AnimeSync = (function () {
 		return { id: id, name: semicolonsToCommas(name).replace(/_/g, ' ') };
 	}
 
-	/** Hodnocení z MAL v procentech (Python GetMalRating(), ř. 1511-1512). */
+	/**
+	 * Hodnocení z MAL v procentech (Python GetMalRating(), ř. 1511-1512),
+	 * např. "80%". Anime bez skóre ("N/A") dostane "?%" (bez Python vzoru, viz
+	 * záhlaví); hodnota jiného tvaru je chyba, aby se nezapsal nesmysl.
+	 */
 	function parseMalRating(html) {
-		var match = /<div class="score-label[\s\S]*?>([0-9.]+)</.exec(html);
-		var score = match ? Number(match[1]) : NaN;
-		if (isNaN(score)) {
+		var match = /<div class="score-label[^>]*>([^<]*)</.exec(html);
+		var score = match ? match[1].trim() : '';
+		if (score === 'N/A') {
+			return '?%';
+		}
+		var rating = /^[0-9.]+$/.test(score) ? roundHalfEven(Number(score) * 10.0) + '%' : '';
+		if (!RATING_FORMAT.test(rating)) {
 			throw parseError('mal-rating');
 		}
-		return roundHalfEven(score * 10.0) + '%';
+		return rating;
 	}
 
 	/* ------------------------- nová položka ----------------------------- */
@@ -450,14 +467,48 @@ window.AnimeSync = (function () {
 
 	function noop() {}
 
-	// Chyby jednoho anime při aktualizaci ČSFD hodnocení, po kterých má smysl
-	// pokračovat dalším (stránka seriálu zmizela, změnila se, ČSFD jednou
-	// neodpovědělo). Ostatní chyby (pomocník neběží, síť požadavky blokuje...)
+	// Chyby jednoho anime při aktualizaci ČSFD nebo MAL hodnocení, po kterých má
+	// smysl pokračovat dalším (stránka anime zmizela, změnila se, web jednou
+	// neodpověděl). Ostatní chyby (pomocník neběží, síť požadavky blokuje...)
 	// by selhaly u všech anime, proto běh zastaví.
-	var CSFD_SKIPPABLE = ['parse-error', 'upstream-http', 'timeout', 'network-error', 'invalid-encoding',
-		'bad-encoding', 'unsupported-encoding', 'too-large', 'too-many-redirects', 'bad-csfd-id'];
+	var RATING_SKIPPABLE = ['parse-error', 'upstream-http', 'timeout', 'network-error', 'invalid-encoding',
+		'bad-encoding', 'unsupported-encoding', 'too-large', 'too-many-redirects', 'bad-csfd-id', 'bad-mal-id'];
 
-	/** Zamkne aktualizace, aby nikdy neběžely dvě najednou (sdílí Seznam i ČSFD). */
+	// Zdroje hodnocení pro runRatingsUpdate(): pole v datech, potřebná verze
+	// pomocníka, zjištění hodnocení jednoho anime a zápis do data/anime.json.
+	var CSFD_RATINGS = {
+		field: 'CsfdRating',
+		minHelperVersion: CSFD_MIN_HELPER_VERSION,
+		fetchRating: function (proxy, item) {
+			var csfdId = String(item.CsfdID);
+			if (!/^[0-9]+$/.test(csfdId)) {
+				throw syncError('bad-csfd-id', csfdId);
+			}
+			return proxy.fetchPage(CSFD_FILM_URL + csfdId).then(function (page) {
+				return parseCsfdRating(page.text);
+			});
+		},
+		save: function (proxy, ratings) {
+			return proxy.saveCsfdRatings(ratings);
+		}
+	};
+
+	var MAL_RATINGS = {
+		field: 'MalRating',
+		minHelperVersion: MAL_MIN_HELPER_VERSION,
+		fetchRating: function (proxy, item) {
+			var malId = String(item.MalID);
+			if (malId !== '0' && !/^[0-9]+$/.test(malId)) {
+				throw syncError('bad-mal-id', malId);
+			}
+			return getMalRating(proxy, malId);
+		},
+		save: function (proxy, ratings) {
+			return proxy.saveMalRatings(ratings);
+		}
+	};
+
+	/** Zamkne aktualizace, aby nikdy neběžely dvě najednou (sdílí Seznam, ČSFD i MAL). */
 	function exclusive(run) {
 		if (running) {
 			return Promise.reject(syncError('already-running', ''));
@@ -588,11 +639,23 @@ window.AnimeSync = (function () {
 	 */
 	function updateCsfd(deps) {
 		return exclusive(function () {
-			return runCsfdUpdate(deps);
+			return runRatingsUpdate(deps, CSFD_RATINGS);
 		});
 	}
 
-	function runCsfdUpdate(deps) {
+	/**
+	 * Znovu stáhne MAL hodnocení všech anime, jedno po druhém (Python
+	 * UpdateMAL(), ř. 481-489), a nechá je pomocníka zapsat do data/anime.json.
+	 * Parametry, výsledek i chyby jako updateCsfd(); deps.proxy potřebuje
+	 * saveMalRatings místo saveCsfdRatings a pomocníka verze 3.
+	 */
+	function updateMal(deps) {
+		return exclusive(function () {
+			return runRatingsUpdate(deps, MAL_RATINGS);
+		});
+	}
+
+	function runRatingsUpdate(deps, source) {
 		var proxy = deps.proxy;
 		var data = deps.data;
 		var onProgress = deps.onProgress || noop;
@@ -615,25 +678,19 @@ window.AnimeSync = (function () {
 		}
 
 		function updateItem(item) {
-			var csfdId = String(item.CsfdID);
 			return Promise.resolve().then(function () {
-				if (!/^[0-9]+$/.test(csfdId)) {
-					throw syncError('bad-csfd-id', csfdId);
-				}
-				return proxy.fetchPage(CSFD_FILM_URL + csfdId);
-			}).then(function (page) {
-				return parseCsfdRating(page.text);
+				return source.fetchRating(proxy, item);
 			}).then(function (rating) {
-				if (item.CsfdRating !== rating) {
+				if (item[source.field] !== rating) {
 					changed += 1;
 				}
-				item.CsfdRating = rating;
+				item[source.field] = rating;
 				ratings[String(item.Number)] = rating;
 				names[String(item.Number)] = itemName(item);
 				updated += 1;
 			}, function (error) {
 				error.favorite = itemName(item);
-				if (CSFD_SKIPPABLE.indexOf(error.code) === -1) {
+				if (RATING_SKIPPABLE.indexOf(error.code) === -1) {
 					throw error;
 				}
 				failures.push({ name: itemName(item), number: String(item.Number), code: error.code, detail: error.detail || '' });
@@ -647,7 +704,7 @@ window.AnimeSync = (function () {
 			if (updated === 0) {
 				return Promise.resolve({ savedTo: null, notInFile: [] });
 			}
-			return proxy.saveCsfdRatings(ratings).then(function (result) {
+			return source.save(proxy, ratings).then(function (result) {
 				if (data.hasStoredItems()) {
 					data.save(data.getItems());
 				}
@@ -670,7 +727,7 @@ window.AnimeSync = (function () {
 		}
 
 		return proxy.health().then(function (health) {
-			if (!(health.version >= CSFD_MIN_HELPER_VERSION)) {
+			if (!(health.version >= source.minHelperVersion)) {
 				throw syncError('helper-outdated', '');
 			}
 			if (!health.dataFile) {
@@ -720,6 +777,7 @@ window.AnimeSync = (function () {
 		nextNumber: nextNumber,
 		buildNewItem: buildNewItem,
 		updateList: updateList,
-		updateCsfd: updateCsfd
+		updateCsfd: updateCsfd,
+		updateMal: updateMal
 	};
 })();

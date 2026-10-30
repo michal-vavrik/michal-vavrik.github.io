@@ -168,6 +168,7 @@ class GuardTests(ProxyTestCase):
         self.assertEqual(self.request("GET", "/images")[0], 405)
         self.assertEqual(self.request("POST", "/health")[0], 405)
         self.assertEqual(self.request("GET", "/csfd-ratings")[0], 405)
+        self.assertEqual(self.request("GET", "/mal-ratings")[0], 405)
 
 
 class FetchTests(ProxyTestCase):
@@ -537,7 +538,7 @@ class ConfigReloadTests(ProxyTestCase):
 
 
 class DataFileTests(ProxyTestCase):
-    """POST /csfd-ratings zapisuje ČSFD hodnocení do souboru s daty."""
+    """POST /csfd-ratings a /mal-ratings zapisují hodnocení do souboru s daty."""
 
     ITEMS = {
         "1": {"Number": "1", "FavoriteName": "Naruto Šippúden", "NameJa": "ナルト", "CsfdRating": "80%", "MalRating": "82%"},
@@ -565,11 +566,11 @@ class DataFileTests(ProxyTestCase):
         with open(self.data_path, "rb") as handle:
             return handle.read()
 
-    def post_ratings(self, payload, **kwargs):
+    def post_ratings(self, payload, path="/csfd-ratings", **kwargs):
         body = payload if isinstance(payload, bytes) else json.dumps(payload).encode("utf-8")
         headers = {"Content-Type": "application/json"}
         headers.update(kwargs.pop("headers", {}))
-        return self.request("POST", "/csfd-ratings", headers=headers, body=body, **kwargs)
+        return self.request("POST", path, headers=headers, body=body, **kwargs)
 
     def test_health_reports_data_file(self):
         self.assertTrue(json.loads(self.request("GET", "/health")[2])["dataFile"])
@@ -656,6 +657,41 @@ class DataFileTests(ProxyTestCase):
 
     def test_default_data_file_is_the_site_data(self):
         self.assertEqual(proxy.DEFAULT_DATA_FILE, os.path.join(os.path.dirname(proxy.HERE), "data", "anime.json"))
+
+    def test_mal_ratings_change_only_mal_rating(self):
+        status, _, body = self.post_ratings({"ratings": {"1": "82%", "2": "?%", "99": "60%"}}, path="/mal-ratings")
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 1, "missing": ["99"]}))
+        expected = json.loads(json.dumps(self.ITEMS))
+        expected["2"]["MalRating"] = "?%"
+        self.assertEqual(self.read_data(), self.dumps(expected).encode("utf-8"))
+        self.assertEqual(os.listdir(self.tmp), ["anime.json"])
+        self.assertEqual(self.transport.calls, [])
+
+    def test_mal_ratings_unchanged_do_not_touch_the_file(self):
+        os.utime(self.data_path, ns=(10 ** 9, 10 ** 9))
+        status, _, body = self.post_ratings({"ratings": {"1": "82%", "2": "79%"}}, path="/mal-ratings")
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 0, "missing": []}))
+        self.assertEqual(os.stat(self.data_path).st_mtime_ns, 10 ** 9)
+
+    def test_mal_ratings_are_validated_like_csfd(self):
+        before = self.read_data()
+        for ratings in ({"1": "8.2"}, {"1": 82}, {"x": "82%"}):
+            with self.subTest(ratings=ratings):
+                status, headers, _ = self.post_ratings({"ratings": ratings}, path="/mal-ratings")
+                self.assertEqual((status, headers["x-proxy-error"]), (400, "bad-request"))
+        self.assertEqual(self.post_ratings(b"{}", path="/mal-ratings", headers={"Content-Type": "text/plain"})[0], 415)
+        self.assertEqual(self.read_data(), before)
+        os.remove(self.data_path)
+        status, headers, _ = self.post_ratings({"ratings": {"1": "81%"}}, path="/mal-ratings")
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-missing"))
+
+    def test_mal_ratings_need_the_api_header_and_origin(self):
+        before = self.read_data()
+        status, _, _ = self.post_ratings({"ratings": {"1": "50%"}}, path="/mal-ratings", headers={proxy.REQUEST_HEADER: None})
+        self.assertEqual(status, 403)
+        status, _, _ = self.post_ratings({"ratings": {"1": "50%"}}, path="/mal-ratings", headers={"Origin": "https://evil.example"})
+        self.assertEqual(status, 403)
+        self.assertEqual(self.read_data(), before)
 
 
 class CheckTests(unittest.TestCase):

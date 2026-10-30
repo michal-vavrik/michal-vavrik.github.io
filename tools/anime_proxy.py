@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-r"""Lokální pomocník pro stránku anime.html (Aktualizovat -> Seznam, ČSFD hodnocení).
+r"""Lokální pomocník pro stránku anime.html (Aktualizovat -> Seznam, ČSFD a MAL hodnocení).
 
 Stránka běžící na GitHub Pages si sama nemůže stáhnout sledujserialy.io, ČSFD ani
 MyAnimeList (CORS, přihlašovací cookie) a nemůže zapisovat soubory. Tento malý
@@ -13,6 +13,7 @@ server proto běží na vašem počítači (jen na 127.0.0.1) a umí:
   POST /csfd-ratings    {"ratings": {"1": "77%", ...}}
                         zapíše ČSFD hodnocení do data/anime.json (mění jen
                         CsfdRating, formát jako Python WriteDataToTheFile())
+  POST /mal-ratings     totéž pro MAL hodnocení (mění jen MalRating)
 
 Spuštění:      python tools\anime_proxy.py
 Diagnostika:   python tools\anime_proxy.py --check
@@ -48,8 +49,8 @@ import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urljoin, urlsplit
 
-# Verze 2 přidala POST /csfd-ratings; stránka starší pomocník odmítne.
-VERSION = 2
+# Verze 2 přidala POST /csfd-ratings, verze 3 POST /mal-ratings; stránka starší pomocník odmítne.
+VERSION = 3
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_IMAGES_DIR = os.path.join(os.path.dirname(HERE), "img", "anime")
 DEFAULT_DATA_FILE = os.path.join(os.path.dirname(HERE), "data", "anime.json")
@@ -72,10 +73,17 @@ MAX_BYTES = 5 * 1024 * 1024
 MAX_REDIRECTS = 5
 MAX_REQUEST_BODY = 4096
 MAX_RATINGS_BODY = 256 * 1024
+# Odmítnuté tělo požadavku do této velikosti se před odpovědí dočte (viz Handler._discard_body).
+MAX_DISCARD_BODY = 1024 * 1024
 MAX_RATINGS = 10000
 MAX_IMAGE_NUMBER = 999999
 # Hodnocení jako v data/anime.json: "85%", nebo "?%" bez hodnocení.
-CSFD_RATING = re.compile(r"(?:[0-9]{1,3}|\?)%")
+RATING = re.compile(r"(?:[0-9]{1,3}|\?)%")
+# Adresa zápisu hodnocení -> pole v data/anime.json a název do výpisu.
+RATING_ROUTES = {
+    "/csfd-ratings": ("CsfdRating", "ČSFD"),
+    "/mal-ratings": ("MalRating", "MAL"),
+}
 REDIRECT_STATUSES = (301, 302, 303, 307, 308)
 EXPOSED_HEADERS = "X-Upstream-Status, X-Final-Url, X-Proxy-Error, X-Proxy-Detail"
 TARGET_SAFE = "/%+:;,@$!*'()~-._"
@@ -369,13 +377,14 @@ def _replace_file(path, data):
             pass
 
 
-def update_csfd_ratings(path, ratings):
-    """Přepíše CsfdRating anime v souboru s daty (Python UpdateCSFD() + WriteDataToTheFile()).
+def update_ratings(path, field, ratings):
+    """Přepíše hodnocení anime v souboru s daty (Python UpdateCSFD()/UpdateMAL() + WriteDataToTheFile()).
 
-    `ratings` mapuje Number na hodnocení. Soubor se zapíše jako
-    `json.dump(..., indent=4, ensure_ascii=False)` se zachovanými konci řádků,
-    takže se v diffu ukážou jen změněná hodnocení; beze změny se nezapisuje.
-    Vrací (počet změněných hodnocení, čísla anime, která v souboru nejsou).
+    `field` je "CsfdRating" nebo "MalRating", `ratings` mapuje Number na hodnocení.
+    Soubor se zapíše jako `json.dump(..., indent=4, ensure_ascii=False)` se
+    zachovanými konci řádků, takže se v diffu ukážou jen změněná hodnocení; beze
+    změny se nezapisuje. Vrací (počet změněných hodnocení, čísla anime, která
+    v souboru nejsou).
     """
     with _data_lock:
         try:
@@ -399,8 +408,8 @@ def update_csfd_ratings(path, ratings):
             item = data.get(number)
             if not isinstance(item, dict):
                 missing.append(number)
-            elif item.get("CsfdRating") != rating:
-                item["CsfdRating"] = rating
+            elif item.get(field) != rating:
+                item[field] = rating
                 changed += 1
 
         if changed:
@@ -467,26 +476,53 @@ class Handler(BaseHTTPRequestHandler):
             extra["X-Proxy-Detail"] = detail
         self._send(error.status, json.dumps({"error": error.code, "detail": detail}).encode("utf-8"), extra=extra)
 
+    def _discard_body(self):
+        # Zavření spojení s nepřečtenými daty pošle (hlavně na Windows) RST a klient
+        # pak místo chybové odpovědi dostane přerušené spojení.
+        if self._body_read:
+            return
+        self._body_read = True
+        try:
+            remaining = int(self.headers.get("Content-Length") or "0")
+        except ValueError:
+            return
+        if not 0 < remaining <= MAX_DISCARD_BODY:
+            return
+        try:
+            self.connection.settimeout(5)
+            while remaining > 0:
+                chunk = self.rfile.read(min(remaining, 65536))
+                if not chunk:
+                    break
+                remaining -= len(chunk)
+        except OSError:
+            pass
+
     def _handle(self, routes):
+        self._body_read = False
         try:
             self._guard()
             parts = urlsplit(self.path)
             route = routes.get(parts.path)
             if route is None:
-                known = parts.path in ("/health", "/fetch", "/images", "/csfd-ratings")
+                known = parts.path in ("/health", "/fetch", "/images") or parts.path in RATING_ROUTES
                 raise ProxyError("method-not-allowed" if known else "not-found", 405 if known else 404)
             route(parts)
         except ProxyError as error:
+            self._discard_body()
             self._send_error(error)
         except Exception:
             # Žádné podrobnosti ven - mohly by obsahovat hlavičky s cookie.
+            self._discard_body()
             self._send_error(ProxyError("internal-error", 500))
 
     def do_GET(self):
         self._handle({"/health": self._health, "/fetch": self._fetch})
 
     def do_POST(self):
-        self._handle({"/images": self._images, "/csfd-ratings": self._csfd_ratings})
+        routes = {"/images": self._images}
+        routes.update(dict.fromkeys(RATING_ROUTES, self._ratings))
+        self._handle(routes)
 
     def do_OPTIONS(self):
         try:
@@ -534,6 +570,7 @@ class Handler(BaseHTTPRequestHandler):
             raise ProxyError("bad-request", 411, "length")
         if not 0 < length <= limit:
             raise ProxyError("bad-request", 413, "length")
+        self._body_read = True
         try:
             payload = json.loads(self.rfile.read(length).decode("utf-8"))
         except (ValueError, UnicodeDecodeError):
@@ -557,17 +594,18 @@ class Handler(BaseHTTPRequestHandler):
         save_image(self.server.images_dir, number, data)
         self._send_json(201, {"ok": True, "number": number, "bytes": len(data)})
 
-    def _csfd_ratings(self, _parts):
+    def _ratings(self, parts):
+        field, label = RATING_ROUTES[parts.path]
         ratings = self._read_json_body(MAX_RATINGS_BODY).get("ratings")
         if not isinstance(ratings, dict) or len(ratings) > MAX_RATINGS:
             raise ProxyError("bad-request", 400, "ratings")
         for number, rating in ratings.items():
-            if not re.fullmatch(r"[0-9]{1,6}", number) or not isinstance(rating, str) or not CSFD_RATING.fullmatch(rating):
+            if not re.fullmatch(r"[0-9]{1,6}", number) or not isinstance(rating, str) or not RATING.fullmatch(rating):
                 raise ProxyError("bad-request", 400, "rating")
         if not self.server.data_path:
             raise ProxyError("data-file-missing", 500)
-        changed, missing = update_csfd_ratings(self.server.data_path, ratings)
-        print("ČSFD hodnocení zapsána do %s (změněno %d)" % (self.server.data_path, changed), file=sys.stderr)
+        changed, missing = update_ratings(self.server.data_path, field, ratings)
+        print("%s hodnocení zapsána do %s (změněno %d)" % (label, self.server.data_path, changed), file=sys.stderr)
         self._send_json(200, {"ok": True, "changed": changed, "missing": missing})
 
 
@@ -658,13 +696,13 @@ def main(argv=None):
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(errors="replace")
         sys.stderr.reconfigure(errors="replace")
-    parser = argparse.ArgumentParser(description="Lokální pomocník pro anime.html (Aktualizovat -> Seznam, ČSFD hodnocení).")
+    parser = argparse.ArgumentParser(description="Lokální pomocník pro anime.html (Aktualizovat -> Seznam, ČSFD a MAL hodnocení).")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT, help="port na 127.0.0.1 (výchozí %d)" % DEFAULT_PORT)
     parser.add_argument("--allow-origin", action="append", default=[], type=_origin, metavar="ORIGIN",
                         help="další povolená origin stránky (lze opakovat)")
     parser.add_argument("--images-dir", default=DEFAULT_IMAGES_DIR, help="složka pro obrázky (výchozí img/anime)")
     parser.add_argument("--data-file", default=DEFAULT_DATA_FILE,
-                        help="soubor s daty pro ČSFD hodnocení (výchozí data/anime.json)")
+                        help="soubor s daty pro ČSFD a MAL hodnocení (výchozí data/anime.json)")
     parser.add_argument("--check", action="store_true", help="ověří dostupnost zdrojů a skončí")
     args = parser.parse_args(argv)
 
@@ -683,7 +721,7 @@ def main(argv=None):
         parser.exit(2, "Nelze spustit na portu %d (%s) - běží pomocník už jednou?\n" % (args.port, error.strerror or type(error).__name__))
     print("Anime pomocník běží na http://127.0.0.1:%d (Ctrl+C ukončí)" % server.server_address[1])
     print("Obrázky se ukládají do %s" % args.images_dir)
-    print("ČSFD hodnocení se zapisují do %s%s" % (args.data_file, "" if os.path.isfile(args.data_file) else " (SOUBOR CHYBÍ)"))
+    print("ČSFD a MAL hodnocení se zapisují do %s%s" % (args.data_file, "" if os.path.isfile(args.data_file) else " (SOUBOR CHYBÍ)"))
     print("Cookie sledujserialy.io: " + ("nastavena" if config.cookie else "CHYBÍ (viz README)"))
     try:
         server.serve_forever()

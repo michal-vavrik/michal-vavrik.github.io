@@ -50,6 +50,7 @@ FAVORITES_URL = "https://sledujserialy.io/ucet/"
 IMAGE_ORIGIN = "https://serialy.sx"
 CSFD_SEARCH_PREFIX = "https://www.csfd.cz/hledat/"
 CSFD_FILM_PREFIX = "https://www.csfd.cz/film/"
+MAL_ANIME_PREFIX = "https://myanimelist.net/anime/"
 
 SHOW_A = {
     "name": "New Show A", "slug": "new-show-a", "image": "/upload/serial/new-show-a.jpg",
@@ -383,12 +384,12 @@ class UpdateListTests(SiteBrowserCase):
         expect(toggle).to_have_attribute("aria-expanded", "true")
         expect(menu.locator("button")).to_have_text(
             ["Zhlédnuté epizody", "ČSFD hodnocení", "MAL hodnocení", "Seznam", "Všechno"])
-        # Zapojené jsou zatím Seznam a ČSFD hodnocení.
-        for name in ("watched", "mal", "all"):
+        # Zapojené jsou zatím Seznam, ČSFD a MAL hodnocení.
+        for name in ("watched", "all"):
             button = page.locator("#anime-update-%s-btn" % name)
             expect(button).to_be_disabled()
             expect(button).to_have_attribute("title", "Připravujeme")
-        for name in ("csfd", "list"):
+        for name in ("csfd", "mal", "list"):
             expect(page.locator("#anime-update-%s-btn" % name)).to_be_enabled()
 
         page.keyboard.press("Escape")
@@ -831,6 +832,131 @@ class UpdateListTests(SiteBrowserCase):
         self.assertIn("0.00% Updating CSFD ratings", page.evaluate("() => window.__infoLog"))
         expect(page.locator("#anime-update-error")).to_have_text(
             "The CSFD rating could not be retrieved for 1 anime; the previous value was kept: Known 9002 EN.")
+
+    # ----------------------------- MAL hodnocení -----------------------------
+
+    def run_mal_update(self, page):
+        page.locator("#anime-update-toggle").click()
+        page.locator("#anime-update-mal-btn").click()
+
+    def serve_mal(self, mal_id, score):
+        self.web.serve(MAL_ANIME_PREFIX + mal_id, mal_anime_page(score))
+
+    def mal_cells(self, page):
+        return page.locator("#anime-list .anime-row .anime-row__cell--MalRating").all_inner_texts()
+
+    def test_mal_update_writes_ratings_to_data_file(self):
+        seed = json.loads(json.dumps(SEED_DATA))
+        seed["9002"]["MalID"] = "0"
+        seed["9002"]["MalRating"] = "?%"
+        self.write_data_file(seed)
+        self.serve_mal("9001", "7.65")
+        # Anime bez skóre na MAL (Python by tu vzal číslo z dalšího prvku stránky).
+        self.web.serve(MAL_ANIME_PREFIX + "9004",
+                       '<div class="score-label score-na">N/A</div><div>Members <strong>169</strong></div>')
+        # MAL přihlášení nepotřebuje, pomocník bez cookie stačí.
+        page = self.open_page(self.start_helper(proxy.Config()), stored=False)
+        page.evaluate(INFO_LOG_SCRIPT)
+
+        self.run_mal_update(page)
+        expect(page.locator("#anime-update-menu")).to_be_hidden()
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+
+        # Texty průběhu jako ve skriptu AnimeList.pyw (UpdateMAL a UpdateMALDone).
+        info_log = []
+        for text in page.evaluate("() => window.__infoLog"):
+            if not info_log or info_log[-1] != text:
+                info_log.append(text)
+        self.assertEqual(info_log, ["0.00% Aktualizuji MAL hodnocení", "33.33% Aktualizuji MAL hodnocení",
+                                    "66.67% Aktualizuji MAL hodnocení", "100.00% Hotovo", ""])
+        # MalID "0" (anime na MAL není) se nestahuje, jako GetMalRating().
+        self.assertEqual(self.web.urls, [MAL_ANIME_PREFIX + "9001", MAL_ANIME_PREFIX + "9004"])
+
+        self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004"])
+        self.assertEqual(self.mal_cells(page), ["76%", "?%", "?%"])
+        self.assertEqual(self.csfd_cells(page), ["70%", "70%", "70%"])
+        expect(page.locator("#anime-update-error")).to_be_hidden()
+
+        # Pomocník zapsal jen MalRating, ve formátu Python skriptu; prohlížeč si nic neuložil.
+        expected = json.loads(json.dumps(seed))
+        expected["9001"]["MalRating"] = "76%"
+        expected["9004"]["MalRating"] = "?%"
+        self.assertEqual(self.read_data_file(), self.python_json(expected))
+        self.assertFalse(self.has_stored_items(page))
+
+        page.reload()
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        self.assertEqual(self.mal_cells(page), ["76%", "?%", "?%"])
+        self.assertEqual(self.unexpected_console_errors(), [])
+
+    def test_mal_update_skips_failing_anime_and_lists_them(self):
+        self.serve_mal("9001", "8.49")
+        self.web.serve(MAL_ANIME_PREFIX + "9002", "<html>404 Not Found</html>", status=404)
+        self.serve_mal("9004", "6.0")
+        page = self.open_page(self.start_helper())
+
+        self.run_mal_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "MAL hodnocení se nepodařilo zjistit u 1 anime, zůstalo původní: Known 9002 EN.")
+        self.assertEqual(self.mal_cells(page), ["85%", "71%", "60%"])
+        expected = json.loads(json.dumps(SEED_DATA))
+        expected["9001"]["MalRating"] = "85%"
+        expected["9004"]["MalRating"] = "60%"
+        self.assertEqual(self.read_data_file(), self.python_json(expected))
+        # Uložené úpravy v prohlížeči přebíjí soubor, proto se hodnocení uložila i tam.
+        self.assertEqual(self.stored_items(page), expected)
+        self.assertTrue(any("MAL rating not updated" in text for kind, text in self.console if kind == "warning"))
+
+        # Další aktualizace souhrn smaže.
+        self.serve_mal("9002", "5.55")
+        self.run_mal_update(page)
+        expect(page.locator("#anime-update-error")).to_be_hidden()
+        self.expect_unlocked(page)
+        self.assertEqual(self.mal_cells(page), ["85%", "56%", "60%"])
+
+    def test_mal_update_requires_helper_version_3(self):
+        # Pomocník verze 2 umí zapsat jen ČSFD hodnocení.
+        with mock.patch.object(proxy, "VERSION", 2):
+            page = self.open_page(self.start_helper(), stored=False)
+            self.run_mal_update(page)
+            expect(page.locator("#anime-update-error")).to_have_text(
+                "Pomocný program je zastaralý a neumí zapsat hodnocení do data/anime.json. "
+                "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
+        self.expect_unlocked(page)
+        self.assertEqual(self.web.urls, [])
+        self.assertEqual(self.read_data_file(), self.python_json(SEED_DATA))
+
+    def test_mal_update_stops_on_blocked_redirect_and_keeps_finished_ratings(self):
+        self.serve_mal("9001", "9.0")
+        self.web.redirect(MAL_ANIME_PREFIX + "9002", "https://blocked.example/notification")
+        page = self.open_page(self.start_helper(), stored=False)
+
+        self.run_mal_update(page)
+        error = page.locator("#anime-update-error")
+        expect(error).to_contain_text("Anime: Known 9002 EN.")
+        expect(error).to_contain_text("Hodnocení zjištěná před chybou se zapsala do data/anime.json (1).")
+        self.expect_unlocked(page)
+        self.assertEqual(self.mal_cells(page), ["90%", "71%", "71%"])
+        expected = json.loads(json.dumps(SEED_DATA))
+        expected["9001"]["MalRating"] = "90%"
+        self.assertEqual(self.read_data_file(), self.python_json(expected))
+
+    def test_mal_update_in_english(self):
+        self.serve_mal("9001", "8.0")
+        self.web.serve(MAL_ANIME_PREFIX + "9002", "<html>404 Not Found</html>", status=404)
+        self.serve_mal("9004", "6.6")
+        page = self.open_page(self.start_helper(), lang="en")
+        page.evaluate(INFO_LOG_SCRIPT)
+
+        self.run_mal_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Done")
+        self.expect_unlocked(page)
+        self.assertIn("0.00% Updating MAL ratings", page.evaluate("() => window.__infoLog"))
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "The MAL rating could not be retrieved for 1 anime; the previous value was kept: Known 9002 EN.")
 
 
 class BrowserUnitTests(SiteBrowserCase):
