@@ -1,5 +1,6 @@
 /**
- * Automatické testy aktualizace anime listu (Aktualizovat -> Seznam a ČSFD hodnocení):
+ * Automatické testy aktualizace anime listu (Aktualizovat -> Seznam, ČSFD
+ * hodnocení, MAL hodnocení a Zhlédnuté epizody):
  * js/anime-sync.js, js/anime-proxy.js a addItem() v js/anime-data.js.
  *
  * Vzorové stránky sledujserialy.io, ČSFD a MyAnimeList jsou zjednodušené, ale
@@ -25,6 +26,20 @@ window.AnimeSyncTests = (function () {
 				+ '</h2><span>' + state + '</span></a></div>';
 		});
 		return '<html><body><div id="favorites">' + blocks.join('') + '</div><div id="planned"></div></body></html>';
+	}
+
+	/**
+	 * Stránka seriálu na sledujserialy.io s řadami a ikonou jejich stavu.
+	 * @param {Array<Array<string>>} seasons - [[číslo řady, 'Videné' | 'Označiť'], ...]
+	 * @param {boolean} [apostrophes] - atributy v apostrofech místo uvozovek
+	 */
+	function serialPage(seasons, apostrophes) {
+		var q = apostrophes ? "'" : '"';
+		var blocks = seasons.map(function (entry) {
+			return '<div class=' + q + 'season' + q + ' data-season=' + q + entry[0] + q + '><h3>Séria ' + entry[0] + '</h3>'
+				+ '<a href=' + q + '#' + q + '><i title=' + q + entry[1] + q + ' class=' + q + 'fa fa-eye' + q + '></i></a></div>';
+		});
+		return '<html><body><div class="seasons">' + blocks.join('') + '</div></body></html>';
 	}
 
 	function csfdSearchPage(filmId) {
@@ -179,6 +194,32 @@ window.AnimeSyncTests = (function () {
 		var fresh = Sync.getNewFavorites([{ Name: 'A' }, { Name: 'B' }, { Name: 'Owari no Seraph: Nagoja kessen hen' }, { Name: 'C' }],
 			[{ FavoriteName: 'A' }, { FavoriteName: 'C' }]);
 		runner.equal('getNewFavorites: vynechá známá anime a výjimky', fresh.map(function (item) { return item.Name; }), ['B']);
+
+		runner.equal('parseSerialSeasons: řady a jejich stav', Sync.parseSerialSeasons(serialPage([['1', 'Videné'], ['2', 'Označiť']])),
+			[{ season: '1', state: 'Videné' }, { season: '2', state: 'Označiť' }]);
+		runner.equal('parseSerialSeasons: varianta s apostrofy', Sync.parseSerialSeasons(serialPage([['3', 'Označiť']], true)),
+			[{ season: '3', state: 'Označiť' }]);
+		runner.equal('parseSerialSeasons: stránka bez řad', Sync.parseSerialSeasons('<html><body>Nic</body></html>'), []);
+
+		function check(seasons, season, episode) {
+			return Sync.checkIfReallyNotFinished(seasons.map(function (entry) {
+				return { season: entry[0], state: entry[1] };
+			}), season, episode);
+		}
+		runner.equal('checkIfReallyNotFinished: všechny řady zhlédnuté = dokončeno', check([['1', 'Videné'], ['2', 'Videné']], '02', '07'),
+			{ finished: true, season: '02', episode: '07' });
+		runner.equal('checkIfReallyNotFinished: bez řad = dokončeno (jako Python)', check([], '01', '03'),
+			{ finished: true, season: '01', episode: '03' });
+		runner.equal('checkIfReallyNotFinished: nezhlédnutá řada z odkazu, epizoda zůstane', check([['1', 'Videné'], ['2', 'Označiť']], '02', '07'),
+			{ finished: false, season: '02', episode: '07' });
+		runner.equal('checkIfReallyNotFinished: jiná řada -> nula na začátku a epizoda --',
+			check([['1', 'Videné'], ['2', 'Označiť'], ['3', 'Označiť']], '01', '12'), { finished: false, season: '02', episode: '--' });
+		runner.equal('checkIfReallyNotFinished: řada 10 a víc bez nuly', check([['12', 'Označiť']], '03', '05'),
+			{ finished: false, season: '12', episode: '--' });
+		runner.equal('checkIfReallyNotFinished: rozhoduje první nezhlédnutá řada', check([['1', 'Označiť'], ['2', 'Označiť']], '02', '01'),
+			{ finished: false, season: '01', episode: '--' });
+		runner.equal('checkIfReallyNotFinished: nula se přidá i k řadě s nulou (jako Python)', check([['05', 'Označiť']], '01', '01'),
+			{ finished: false, season: '005', episode: '--' });
 	}
 
 	/* ---------------------------------- ČSFD ---------------------------------- */
@@ -509,6 +550,24 @@ window.AnimeSyncTests = (function () {
 				return withFetch(function () { return reply('nic', 200); }, function () {
 					return summarizeError(Client.saveMalRatings({ 1: '76%' })).then(function (error) {
 						runner.equal('saveMalRatings: neplatná odpověď', error, { code: 'unexpected-response', detail: 'mal-ratings', status: 0 });
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply(JSON.stringify({ ok: true, changed: 1, missing: ['7'] }), 200); }, function (stub) {
+					return Client.saveWatchedStates({ 1: 'DONE', 7: 'S02E--' }).then(function (saved) {
+						runner.equal('saveWatchedStates: výsledek', saved, { changed: 1, missing: ['7'] });
+						runner.equal('saveWatchedStates: požadavek', [
+							stub.calls[0].url, stub.calls[0].init.method, stub.calls[0].init.headers['Content-Type'],
+							stub.calls[0].init.headers['X-Anime-Proxy'], JSON.parse(stub.calls[0].init.body)
+						], [base + '/watched-states', 'POST', 'application/json', '1', { states: { 1: 'DONE', 7: 'S02E--' } }]);
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply('{"ok": true}', 200); }, function () {
+					return summarizeError(Client.saveWatchedStates({ 1: 'DONE' })).then(function (error) {
+						runner.equal('saveWatchedStates: neplatná odpověď', error, { code: 'unexpected-response', detail: 'watched-states', status: 0 });
 					});
 				});
 			},
@@ -905,15 +964,20 @@ window.AnimeSyncTests = (function () {
 	 *     missing (čísla, která v souboru nejsou), writeError, storedItems (jsou uložené úpravy v prohlížeči)
 	 */
 	function runCsfdUpdate(setup) {
-		return runRatingsUpdate(setup, { update: Sync.updateCsfd, save: 'saveCsfdRatings', field: 'CsfdRating', version: 2 });
+		return runFieldUpdate(setup, { update: Sync.updateCsfd, save: 'saveCsfdRatings', field: 'CsfdRating', version: 2 });
 	}
 
 	/** Totéž pro MAL hodnocení (pomocník verze 3, zápis přes saveMalRatings). */
 	function runMalUpdate(setup) {
-		return runRatingsUpdate(setup, { update: Sync.updateMal, save: 'saveMalRatings', field: 'MalRating', version: 3 });
+		return runFieldUpdate(setup, { update: Sync.updateMal, save: 'saveMalRatings', field: 'MalRating', version: 3 });
 	}
 
-	function runRatingsUpdate(setup, kind) {
+	/** Totéž pro zhlédnuté epizody (pomocník verze 4 s cookie, zápis přes saveWatchedStates). */
+	function runWatchedUpdate(setup) {
+		return runFieldUpdate(setup, { update: Sync.updateWatched, save: 'saveWatchedStates', field: 'State', version: 4, cookie: true });
+	}
+
+	function runFieldUpdate(setup, kind) {
 		var events = [];
 		var calls = [];
 		var saves = [];
@@ -925,7 +989,7 @@ window.AnimeSyncTests = (function () {
 				if (setup.healthError) {
 					return Promise.reject(setup.healthError);
 				}
-				var ready = setup.health || { version: kind.version, cookieConfigured: false, maxImageNumber: 0, dataFile: true };
+				var ready = setup.health || { version: kind.version, cookieConfigured: Boolean(kind.cookie), maxImageNumber: 0, dataFile: true };
 				return setup.healthGate ? setup.healthGate.then(function () { return ready; }) : Promise.resolve(ready);
 			},
 			fetchPage: function (url) {
@@ -944,10 +1008,13 @@ window.AnimeSyncTests = (function () {
 			},
 			saveMalRatings: function () {
 				return Promise.reject(makeError('test-wrong-save', 'saveMalRatings'));
+			},
+			saveWatchedStates: function () {
+				return Promise.reject(makeError('test-wrong-save', 'saveWatchedStates'));
 			}
 		};
-		proxy[kind.save] = function (ratings) {
-			writes.push(JSON.parse(JSON.stringify(ratings)));
+		proxy[kind.save] = function (values) {
+			writes.push(JSON.parse(JSON.stringify(values)));
 			events.push('write');
 			if (setup.writeError) {
 				return Promise.reject(setup.writeError);
@@ -1177,7 +1244,7 @@ window.AnimeSyncTests = (function () {
 		]);
 	}
 
-	/* ---------------------------------- spuštění ---------------------------------- */
+	/* ------------------------- tok MAL hodnocení ------------------------- */
 
 	function malFlows(runner) {
 		return sequence([
@@ -1286,6 +1353,217 @@ window.AnimeSyncTests = (function () {
 		]);
 	}
 
+	/* ------------------------- tok zhlédnutých epizod ------------------------- */
+
+	function watchedItem(number, favoriteName, state) {
+		return { Number: String(number), FavoriteName: favoriteName, NameEn: 'Anime ' + number, State: state,
+			CsfdRating: '50%', MalRating: '60%' };
+	}
+
+	function watchedFavorite(name, slug, season, episode, finished) {
+		return { name: name, slug: slug, season: season, episode: episode, image: '/u/' + slug + '.jpg', finished: finished };
+	}
+
+	function serialUrl(slug) {
+		return 'https://sledujserialy.io/serial/' + slug;
+	}
+
+	function statesOf(items) {
+		return items.map(function (item) { return item.State; });
+	}
+
+	function watchedFlows(runner) {
+		return sequence([
+			function () {
+				var items = [
+					watchedItem(1, 'Fin', 'S01E03'),
+					watchedItem(2, 'Cont', 'DONE'),
+					watchedItem(3, 'Gone', 'S02E01'),
+					watchedItem(4, 'Fin', 'DROPPED'),
+					watchedItem(5, 'Next', 'S01E12'),
+					watchedItem(6, 'Next', 'DONE'),
+					watchedItem(7, 'AllSeen', 'DONE'),
+					watchedItem(8, 'NoSeasons', 'S01E01'),
+					watchedItem(9, 'AllSeen', 'S01E01')
+				];
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = favoritesPage([
+					watchedFavorite('Fin', 'fin', '01', '24', true),
+					watchedFavorite('Cont', 'cont', '02', '05', false),
+					watchedFavorite('Cont', 'cont-copy', '01', '01', true),
+					watchedFavorite('Next', 'next', '01', '12', false),
+					watchedFavorite('AllSeen', 'all-seen', '03', '02', false),
+					watchedFavorite('NoSeasons', 'no-seasons', '01', '01', false),
+					watchedFavorite('Unused', 'unused', '01', '01', false)
+				]);
+				routes[serialUrl('cont')] = serialPage([['1', 'Videné'], ['2', 'Označiť']]);
+				routes[serialUrl('next')] = serialPage([['1', 'Videné'], ['2', 'Označiť'], ['3', 'Označiť']]);
+				routes[serialUrl('all-seen')] = serialPage([['1', 'Videné'], ['2', 'Videné'], ['3', 'Videné']], true);
+				routes[serialUrl('no-seasons')] = '<html><body>Seriál bez řad</body></html>';
+				return runWatchedUpdate({ routes: routes, items: items }).then(function (run) {
+					runner.equal('Zhlédnuté: bez chyby', run.error && run.error.message, null);
+					// Python přepíše oblíbený výsledkem kontroly: "Cont" bere první shodu, druhé "Next" se ptá znovu
+					// (zůstal nedokončený, teď s řadou 02 a epizodou --), druhé "AllSeen" už ne (je dokončený).
+					runner.equal('Zhlédnuté: oblíbené, pak stránky nedokončených seriálů jako Python', run.calls,
+						[Sync.FAVORITES_URL, serialUrl('cont'), serialUrl('next'), serialUrl('next'), serialUrl('all-seen'), serialUrl('no-seasons')]);
+					runner.equal('Zhlédnuté: průběh jako Python (100 * (index + 1) / počet) a jeden zápis na konci', run.events,
+						['health', 'progress:11.11', 'progress:22.22', 'progress:33.33', 'progress:44.44', 'progress:55.56',
+							'progress:66.67', 'progress:77.78', 'progress:88.89', 'progress:100.00', 'write']);
+					runner.equal('Zhlédnuté: nové stavy (mimo oblíbené a DROPPED beze změny)', statesOf(run.items),
+						['DONE', 'S02E05', 'S02E01', 'DROPPED', 'S02E--', 'S02E--', 'DONE', 'DONE', 'DONE']);
+					runner.equal('Zhlédnuté: hodnocení zůstanou', run.items.map(function (item) { return item.CsfdRating + item.MalRating; }),
+						['50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%']);
+					runner.equal('Zhlédnuté: do souboru jdou jen zjištěné stavy', run.writes,
+						[{ 1: 'DONE', 2: 'S02E05', 5: 'S02E--', 6: 'S02E--', 7: 'DONE', 8: 'DONE', 9: 'DONE' }]);
+					runner.equal('Zhlédnuté: bez uložených úprav se do prohlížeče neukládá', run.saves, []);
+					runner.equal('Zhlédnuté: výsledek', run.result,
+						{ total: 9, updated: 7, changed: 6, failures: [], savedTo: 'file', notInFile: [] });
+				});
+			},
+			function () {
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = favoritesPage([watchedFavorite('A', 'a', '01', '24', true), watchedFavorite('B', 'b', '01', '24', true)]);
+				return runWatchedUpdate({ routes: routes, items: [watchedItem(1, 'A', 'S01E01'), watchedItem(2, 'B', 'S01E01')],
+					missing: ['2'], storedItems: true }).then(function (run) {
+					runner.equal('Zhlédnuté s uloženými úpravami: zapíše soubor i prohlížeč', [run.events.slice(-2), run.writes, run.saves],
+						[['write', 'save'], [{ 1: 'DONE', 2: 'DONE' }], [['DONE', 'DONE']]]);
+					runner.equal('Zhlédnuté anime mimo soubor: vypíšou se', run.result && run.result.notInFile, [{ name: 'Anime 2', number: '2' }]);
+				});
+			},
+			function () {
+				var items = [1, 2, 3, 4, 5, 6, 7].map(function (number) {
+					return watchedItem(number, 'F' + number, 'S01E01');
+				});
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = favoritesPage([
+					watchedFavorite('F1', 'f1', '01', '02', false),
+					watchedFavorite('F2', 'f2', '01', '02', false),
+					watchedFavorite('F3', 'bad slug', '01', '02', false),
+					watchedFavorite('F4', '%2E%2E', '01', '02', false),
+					watchedFavorite('F5', 'f5', '01', '1234567', false),
+					watchedFavorite('F6', 'f6', '01', '02', false),
+					watchedFavorite('F7', 'f7', '01', '02', false)
+				]);
+				routes[serialUrl('f1')] = makeError('upstream-http', '404', 404);
+				// Pomocník nestáhne stránku, na kterou web přesměroval (jiná cesta než /serial/...).
+				routes[serialUrl('f2')] = makeError('redirect-blocked', 'path-not-allowed');
+				routes[serialUrl('f5')] = serialPage([['1', 'Označiť']]);
+				routes[serialUrl('f6')] = makeError('timeout', '');
+				routes[serialUrl('f7')] = serialPage([['1', 'Označiť']]);
+				return runWatchedUpdate({ routes: routes, items: items }).then(function (run) {
+					runner.equal('Zhlédnuté přeskočení: bez chyby', run.error && run.error.message, null);
+					runner.equal('Zhlédnuté přeskočení: nepovolený název seriálu bez dotazu', run.calls,
+						[Sync.FAVORITES_URL, serialUrl('f1'), serialUrl('f2'), serialUrl('f5'), serialUrl('f6'), serialUrl('f7')]);
+					runner.equal('Zhlédnuté přeskočení: seznam selhaných', run.result && run.result.failures, [
+						{ name: 'Anime 1', number: '1', code: 'upstream-http', detail: '404' },
+						{ name: 'Anime 2', number: '2', code: 'redirect-blocked', detail: 'path-not-allowed' },
+						{ name: 'Anime 3', number: '3', code: 'bad-serial-name', detail: 'bad slug' },
+						{ name: 'Anime 4', number: '4', code: 'bad-serial-name', detail: '%2E%2E' },
+						{ name: 'Anime 5', number: '5', code: 'parse-error', detail: 'state' },
+						{ name: 'Anime 6', number: '6', code: 'timeout', detail: '' }
+					]);
+					runner.equal('Zhlédnuté přeskočení: selhaná anime si nechají původní stav', statesOf(run.items),
+						['S01E01', 'S01E01', 'S01E01', 'S01E01', 'S01E01', 'S01E01', 'S01E02']);
+					runner.equal('Zhlédnuté přeskočení: do souboru jen zjištěné', [run.writes, run.result && run.result.updated], [[{ 7: 'S01E02' }], 1]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = favoritesPage([
+					watchedFavorite('A', 'a', '01', '24', true),
+					watchedFavorite('B', 'b', '02', '03', false),
+					watchedFavorite('C', 'c', '01', '24', true)
+				]);
+				routes[serialUrl('b')] = makeError('cloudflare-challenge', '');
+				var items = [watchedItem(1, 'A', 'S01E01'), watchedItem(2, 'B', 'S01E01'), watchedItem(3, 'C', 'S01E01')];
+				return runWatchedUpdate({ routes: routes, items: items }).then(function (run) {
+					runner.equal('Zhlédnuté Cloudflare: zastaví hned', [errorSummary(run.error), run.error && run.error.favorite, run.calls],
+						[{ code: 'cloudflare-challenge', detail: '' }, 'Anime 2', [Sync.FAVORITES_URL, serialUrl('b')]]);
+					runner.equal('Zhlédnuté Cloudflare: hotové se zapíše do souboru', [statesOf(run.items), run.writes, savedState(run.error)],
+						[['DONE', 'S01E01', 'S01E01'], [{ 1: 'DONE' }], ['file', 1, []]]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = favoritesPage([watchedFavorite('A', 'a', '01', '02', false)]);
+				// Přesměrování mimo web (filtr firemní sítě) by se týkalo všech seriálů.
+				routes[serialUrl('a')] = makeError('redirect-blocked', 'gateway.zscaler.net');
+				return runWatchedUpdate({ routes: routes, items: [watchedItem(1, 'A', 'S01E01')] }).then(function (run) {
+					runner.equal('Zhlédnuté přesměrování mimo web: zastaví', [errorSummary(run.error), run.writes, savedState(run.error)],
+						[{ code: 'redirect-blocked', detail: 'gateway.zscaler.net' }, [], [null, 0, []]]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = makeError('cloudflare-challenge', '');
+				return runWatchedUpdate({ routes: routes, items: [watchedItem(1, 'A', 'S01E01')] }).then(function (run) {
+					runner.equal('Zhlédnuté oblíbené za výzvou Cloudflare: nic se nemění',
+						[errorSummary(run.error), run.error && run.error.favorite, run.calls, run.events, run.writes, statesOf(run.items)],
+						[{ code: 'cloudflare-challenge', detail: '' }, undefined, [Sync.FAVORITES_URL], ['health'], [], ['S01E01']]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = '<html><body>Přihlaste se</body></html>';
+				return runWatchedUpdate({ routes: routes, items: [watchedItem(1, 'A', 'S01E01')] }).then(function (run) {
+					runner.equal('Zhlédnuté bez sekce oblíbených (odhlášeno): chyba', [errorSummary(run.error), run.writes],
+						[{ code: 'no-favorites', detail: '' }, []]);
+				});
+			},
+			function () {
+				var health = { version: 4, cookieConfigured: false, maxImageNumber: 0, dataFile: true };
+				return runWatchedUpdate({ routes: {}, items: [watchedItem(1, 'A', 'S01E01')], health: health }).then(function (run) {
+					runner.equal('Zhlédnuté pomocník bez cookie: nic se nestahuje', [errorSummary(run.error), run.calls],
+						[{ code: 'cookie-missing', detail: '' }, []]);
+				});
+			},
+			function () {
+				// Pomocník verze 3 umí jen hodnocení, zápis zhlédnutých epizod by odmítl s 404.
+				var health = { version: 3, cookieConfigured: true, maxImageNumber: 0, dataFile: true };
+				return runWatchedUpdate({ routes: {}, items: [watchedItem(1, 'A', 'S01E01')], health: health }).then(function (run) {
+					runner.equal('Zhlédnuté pomocník verze 3: odmítne se dřív, než se cokoli stáhne', [errorSummary(run.error), run.calls],
+						[{ code: 'helper-outdated', detail: '' }, []]);
+				});
+			},
+			function () {
+				var health = { version: 4, cookieConfigured: true, maxImageNumber: 0, dataFile: false };
+				return runWatchedUpdate({ routes: {}, items: [watchedItem(1, 'A', 'S01E01')], health: health }).then(function (run) {
+					runner.equal('Zhlédnuté pomocník bez souboru s daty: odmítne se', [errorSummary(run.error), run.calls],
+						[{ code: 'data-file-missing', detail: '' }, []]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = favoritesPage([watchedFavorite('A', 'a', '01', '24', true)]);
+				return runWatchedUpdate({ routes: routes, items: [watchedItem(1, 'A', 'S01E01'), watchedItem(2, 'Z', 'S01E01')],
+					writeError: makeError('data-write-failed', 'PermissionError', 500) }).then(function (run) {
+					runner.equal('Zhlédnuté zápis do souboru selže: stavy zůstanou v prohlížeči',
+						[errorSummary(run.error), run.saves, savedState(run.error)],
+						[{ code: 'data-save-failed', detail: 'data-write-failed PermissionError' }, [['DONE', 'S01E01']], ['browser', 1, []]]);
+				});
+			},
+			function () {
+				// Zhlédnuté epizody sdílejí zámek s ostatními aktualizacemi.
+				var release;
+				var gate = new Promise(function (resolve) { release = resolve; });
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = favoritesPage([watchedFavorite('A', 'a', '01', '24', true)]);
+				var first = runWatchedUpdate({ routes: routes, items: [watchedItem(1, 'A', 'S01E01')], healthGate: gate });
+				return Promise.resolve().then(function () {
+					return Promise.all([runMalUpdate({ routes: {}, items: ratingItems(1) }),
+						runWatchedUpdate({ routes: routes, items: [watchedItem(1, 'A', 'S01E01')] })]);
+				}).then(function (others) {
+					runner.equal('Zhlédnuté běží: MAL i druhé zhlédnuté se odmítnou', others.map(function (other) { return errorSummary(other.error); }),
+						[{ code: 'already-running', detail: '' }, { code: 'already-running', detail: '' }]);
+					release();
+					return first;
+				}).then(function (firstRun) {
+					runner.equal('Zhlédnuté běží: původní doběhne a zapíše', [firstRun.result && firstRun.result.updated, firstRun.writes], [1, [{ 1: 'DONE' }]]);
+				});
+			}
+		]);
+	}
+
 	/* ---------------------------------- spuštění ---------------------------------- */
 
 	/** @returns {Promise<Object>} souhrn ve tvaru NV194TestRunner.summarize() */
@@ -1301,7 +1579,8 @@ window.AnimeSyncTests = (function () {
 			['klient pomocníka', proxyClient],
 			['tok aktualizace', flows],
 			['tok ČSFD hodnocení', csfdFlows],
-			['tok MAL hodnocení', malFlows]
+			['tok MAL hodnocení', malFlows],
+			['tok zhlédnutých epizod', watchedFlows]
 		];
 		return sequence(groups.map(function (group) {
 			return function () {

@@ -22,9 +22,9 @@ prohlížeče. Hry jsou dostupné v češtině a angličtině.
 [Anime](./anime.html) (po přihlášení s plným přístupem) zobrazuje seznam z
 `data/anime.json`. Tlačítko **Aktualizovat** otevře stejné volby jako desktopový
 skript `AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, Seznam
-a Všechno. Zatím jsou hotové volby **Seznam**, **ČSFD hodnocení** a **MAL
-hodnocení**, ostatní jsou označené „Připravujeme“. Všechny potřebují pomocný
-program (viz níže).
+a Všechno. Hotové jsou volby **Zhlédnuté epizody**, **ČSFD hodnocení**, **MAL
+hodnocení** a **Seznam**, Všechno je označené „Připravujeme“. Všechny potřebují
+pomocný program (viz níže).
 
 ### Aktualizovat → Seznam
 
@@ -44,15 +44,15 @@ python tools/anime_proxy.py
 Poslouchá jen na `127.0.0.1:8787`. Parametry: `--port`, `--allow-origin ORIGIN`
 (další adresa stránky; výchozí jsou GitHub Pages a `http://127.0.0.1:8765`,
 `http://localhost:8765`), `--images-dir` (výchozí `img/anime`), `--data-file`
-(soubor, do kterého se zapisují ČSFD a MAL hodnocení; výchozí `data/anime.json`
-vedle složky `tools`) a `--check`. Při
+(soubor, do kterého se zapisují ČSFD a MAL hodnocení a zhlédnuté epizody; výchozí
+`data/anime.json` vedle složky `tools`) a `--check`. Při
 jiném portu nastavte v konzoli prohlížeče
 `localStorage.setItem('anime-proxy-url', 'http://127.0.0.1:PORT')`.
 
-**Přihlašovací cookie.** Hodnotu cookie `user_logged_in` z přihlášeného
-sledujserialy.io (stejnou jako v `AnimeList.pyw`) předejte proměnnou prostředí
-`SLEDUJ_SERIALY_LOGIN_COOKIE` nebo souborem `tools/anime_proxy.local.json`, který je
-v `.gitignore` a nesmí se commitovat:
+**Přihlašovací cookie.** Seznam a Zhlédnuté epizody potřebují hodnotu cookie
+`user_logged_in` z přihlášeného sledujserialy.io (stejnou jako v `AnimeList.pyw`).
+Předejte ji proměnnou prostředí `SLEDUJ_SERIALY_LOGIN_COOKIE` nebo souborem
+`tools/anime_proxy.local.json`, který je v `.gitignore` a nesmí se commitovat:
 
 ```json
 {"sledujSerialyLoginCookie": "...", "cfClearance": "", "userAgent": ""}
@@ -73,7 +73,7 @@ sami v prohlížeči:
    `https://sledujserialy.io` hodnotu cookie `cf_clearance` a z Console výsledek
    příkazu `navigator.userAgent`.
 3. Obojí vložte do `cfClearance` a `userAgent` v `tools/anime_proxy.local.json`
-   a v anime stránce spusťte Seznam znovu.
+   a v anime stránce spusťte aktualizaci znovu.
 
 Povolení platí jen pro stejnou IP adresu a stejný User-Agent a po omezenou dobu
 (výchozí nastavení Cloudflare je 30 minut), potom postup zopakujte. Pokud výzva trvá
@@ -127,11 +127,35 @@ jako u ČSFD. MyAnimeList nepotřebuje cookie.
 - Anime, které na MyAnimeList zatím skóre nemá („N/A“), dostane `?%`.
 - Potřebuje pomocný program verze 3; se starší verzí stránka požádá o jeho restart.
 
+### Aktualizovat → Zhlédnuté epizody
+
+Podle oblíbených seriálů na sledujserialy.io přepíše stav zhlédnutí (`State`), jako
+funkce `UpdateWatched` ze skriptu. Stejně jako Seznam potřebuje přihlašovací cookie
+(a případně vyřešení Cloudflare, viz výše).
+
+- Anime, které v oblíbených není (porovnává se `FavoriteName`) nebo má ve stavu
+  `DROPPED`, se nemění.
+- Oblíbený bez „Pokračuj“ je dokončený seriál, stav je `DONE`.
+- U oblíbeného s „Pokračuj“ se načte stránka seriálu a podle ikon řad se ověří,
+  jestli opravdu není dokončený. Je-li nezhlédnutá řada z odkazu „Pokračuj“, stav
+  je řada a epizoda z odkazu (`S02E07`); je-li nezhlédnutá jiná řada, je to tato
+  řada bez epizody (`S03E--`). Když jsou všechny řady zhlédnuté nebo stránka žádné
+  řady nemá, stav je `DONE` (jako ve skriptu).
+- Po zpracování všech anime pomocný program zapíše zjištěné stavy najednou do
+  `data/anime.json` (změní jen `State`). Uložené úpravy v prohlížeči, anime mimo
+  soubor a chyba zápisu se řeší stejně jako u ČSFD hodnocení.
+- Když se stav jednoho anime nepodaří zjistit (např. HTTP 404, vypršený čas, web
+  stránku seriálu přesměroval jinam), anime si nechá původní stav, běh pokračuje
+  a na konci se vypíše, kterých anime se to týkalo. Běh zastaví chyba, která by se
+  opakovala u všech anime (výzva Cloudflare, pomocný program neběží, chybí cookie
+  nebo sekce oblíbených); stavy zjištěné do té doby se do souboru zapíšou.
+- Potřebuje pomocný program verze 4; se starší verzí stránka požádá o jeho restart.
+
 ### Uložení a publikace dat
 
 Anime přidaná Seznamem se hned uloží do localStorage prohlížeče a jejich obrázky jako
-`img/anime/N.jpg` (ČSFD a MAL hodnocení zapisuje pomocný program rovnou do souboru,
-viz výše). Do repozitáře se data dostanou takto:
+`img/anime/N.jpg` (ČSFD a MAL hodnocení a zhlédnuté epizody zapisuje pomocný
+program rovnou do souboru, viz výše). Do repozitáře se data dostanou takto:
 
 1. **Exportovat data** stáhne `AnimeData.json` (stejný tvar jako `data/anime.json`).
 2. Soubor uložte jako `data/anime.json`.
@@ -147,7 +171,7 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
 - Anime se přidá a uloží až celé hotové, obrázek se stahuje jako poslední krok.
   Chyba běh zastaví a zobrazí se (včetně názvu anime); už přidaná anime zůstanou.
 - Seznam ukládá data do prohlížeče, ne do souboru na disku (viz výše). ČSFD a MAL
-  hodnocení zapisuje do `data/anime.json` pomocný program.
+  hodnocení a zhlédnuté epizody zapisuje do `data/anime.json` pomocný program.
 - Nová anime přijdou na konec aktuálního pořadí. Číslo je největší dosud použité
   číslo (v datech i v `img/anime`) zvýšené o 1.
 - Odpověď HTTP 400 a vyšší je chyba. Hledání na MyAnimeList bez výsledků (MAL ho
@@ -155,9 +179,11 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
   MAL rovnou přesměruje na stránku anime, použije se tato stránka.
 - Bez nových anime se zobrazí „Žádné nové anime.“. Chybějící sekce oblíbených na
   sledujserialy.io (typicky chybná cookie) je chyba.
-- ČSFD a MAL hodnocení: skript při chybě jednoho anime spadne celý a nic neuloží,
-  stránka ho přeskočí (viz výše). Text hodnocení se stejně jako ve skriptu ukládá bez
-  mezer (`85%`, `?%`); hodnocení jiného tvaru se nezapíše.
+- ČSFD a MAL hodnocení a zhlédnuté epizody: skript při chybě jednoho anime spadne
+  celý a nic neuloží, stránka ho přeskočí (viz výše). Text hodnocení se stejně jako
+  ve skriptu ukládá bez mezer (`85%`, `?%`); hodnocení jiného tvaru se nezapíše.
+  Stejně tak stav zhlédnutí jiného tvaru než `DONE` nebo `S<řada>E<epizoda>`
+  (epizoda může být `--`).
 - MAL hodnocení anime bez skóre („N/A“) je `?%` (při aktualizaci hodnocení i při
   přidání Seznamem). Skript v tomto případě omylem vezme číslo z dalšího prvku
   stránky (počet členů) a zapíše nesmysl jako `1690%`.

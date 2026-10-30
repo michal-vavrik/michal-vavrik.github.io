@@ -1,6 +1,7 @@
 /**
- * Aktualizace anime listu ze sledujserialy.io (Aktualizovat -> Seznam)
- * a ČSFD a MAL hodnocení (Aktualizovat -> ČSFD hodnocení, MAL hodnocení).
+ * Aktualizace anime listu ze sledujserialy.io (Aktualizovat -> Seznam),
+ * ČSFD a MAL hodnocení (Aktualizovat -> ČSFD hodnocení, MAL hodnocení)
+ * a zhlédnutých epizod (Aktualizovat -> Zhlédnuté epizody).
  *
  * Mirror Python AnimeList.pyw: UpdateAnimeList() (ř. 520-537), GetFavorites()
  * (ř. 1295), GetNewFavorites() (ř. 1333), GetNewFavoriteData() (ř. 1347),
@@ -46,11 +47,21 @@
  * (ř. 1503) a probíhá stejně jako ČSFD (mění jen MalRating, stejné odchylky).
  * MalID "0" dá "?%" bez dotazu jako ve skriptu, jiné nečíselné MalID se
  * přeskočí; anime bez skóre ("N/A") dostane "?%" (viz výše).
+ *
+ * Zhlédnuté epizody mirror Python UpdateWatched() (ř. 393-411),
+ * GetFavorites() a CheckIfReallyNotFinished() (ř. 1311). Mění jen State
+ * anime, které je v oblíbených a není DROPPED; pomocník State zapíše do
+ * data/anime.json. Stránka seriálu bez nalezených řad dá "DONE" jako skript.
+ * Odchylky jako u ČSFD (přeskočení chyb jednoho anime, zápis hotového po
+ * zastavení, uložení do prohlížeče). Navíc se přeskočí seriál, jehož název
+ * v adrese pomocník nepovoluje nebo jehož stránka přesměruje jinam než na
+ * stránku seriálu (Python by vzal cílovou stránku a nejspíš zapsal "DONE").
  */
 window.AnimeSync = (function () {
 	'use strict';
 
 	var FAVORITES_URL = 'https://sledujserialy.io/ucet/';
+	var SERIAL_URL = 'https://sledujserialy.io/serial/';
 	var IMAGE_ORIGIN = 'https://serialy.sx';
 	var CSFD_SEARCH_URL = 'https://www.csfd.cz/hledat/?q=';
 	var CSFD_FILM_URL = 'https://www.csfd.cz/film/';
@@ -70,9 +81,16 @@ window.AnimeSync = (function () {
 	// Tvar ČSFD i MAL hodnocení v data/anime.json; stejně ho kontroluje pomocník.
 	var RATING_FORMAT = /^(?:[0-9]{1,3}|\?)%$/;
 
-	// Nejstarší verze pomocníka, která umí zapsat hodnocení do data/anime.json.
+	// Stav zapsaný Python UpdateWatched() ("DONE", "S01E05", "S02E--"); stejně ho kontroluje pomocník.
+	var WATCHED_STATE_FORMAT = /^(?:DONE|S[0-9]{1,6}E(?:[0-9]{1,6}|--))$/;
+
+	// Název seriálu v adrese sledujserialy.io/serial/<název>; stejné pravidlo má pomocník (FETCH_RULES).
+	var SERIAL_SLUG = /^[A-Za-z0-9_.%-]+$/;
+
+	// Nejstarší verze pomocníka, která umí zapsat hodnocení nebo stav do data/anime.json.
 	var CSFD_MIN_HELPER_VERSION = 2;
 	var MAL_MIN_HELPER_VERSION = 3;
+	var WATCHED_MIN_HELPER_VERSION = 4;
 
 	// Python GetNewFavoriteData() (ř. 1357) - prázdná položka, jejíž pořadí klíčů
 	// určuje pořadí v exportovaných datech.
@@ -205,6 +223,63 @@ window.AnimeSync = (function () {
 		return favorites.filter(function (favorite) {
 			return !known.has(favorite.Name) && EXCEPTION_ANIME.indexOf(favorite.Name) === -1;
 		});
+	}
+
+	/**
+	 * Vybere ze stránky seriálu řady a jejich stav (Python
+	 * CheckIfReallyNotFinished(), ř. 1313-1315): "Videné" = celá řada
+	 * zhlédnutá, "Označiť" = ještě ne. Druhá varianta (apostrofy) se zkouší,
+	 * když první nic nenajde.
+	 * @returns {Array<{season: string, state: string}>}
+	 */
+	function parseSerialSeasons(html) {
+		var rows = findAll(/data-season="([0-9]+)"[\s\S]*?<i title="(Videné|Označiť)/g, html);
+		if (rows.length === 0) {
+			rows = findAll(/data-season='([0-9]+)'[\s\S]*?<i title='(Videné|Označiť)/g, html);
+		}
+		return rows.map(function (row) {
+			return { season: row[1], state: row[2] };
+		});
+	}
+
+	/**
+	 * Python CheckIfReallyNotFinished() (ř. 1316-1330) nad řadami ze stránky
+	 * seriálu: první nezhlédnutá řada znamená, že seriál není dokončený; je-li
+	 * to jiná řada než v odkazu oblíbeného, epizoda je "--". Bez nezhlédnuté
+	 * řady (i když se žádná nenašla) je seriál dokončený.
+	 * @param {Array<{season: string, state: string}>} seasons
+	 * @param {string} actualSeason - řada z odkazu oblíbeného ("01")
+	 * @param {string} actualEpisode - epizoda z odkazu oblíbeného ("05")
+	 * @returns {{finished: boolean, season: string, episode: string}}
+	 */
+	function checkIfReallyNotFinished(seasons, actualSeason, actualEpisode) {
+		var finished = true;
+		for (var i = 0; i < seasons.length; i++) {
+			if (seasons[i].state !== 'Videné') {
+				finished = false;
+				var season = seasons[i].season;
+				if (parseInt(actualSeason, 10) !== parseInt(season, 10)) {
+					actualSeason = parseInt(season, 10) < 10 ? '0' + season : season;
+					actualEpisode = '--';
+				}
+				break;
+			}
+		}
+		return { finished: finished, season: actualSeason, episode: actualEpisode };
+	}
+
+	// Stejné pravidlo jako FETCH_RULES pomocníka (včetně zákazu "." a ".."), jiný název by odmítl.
+	function isSerialSlug(slug) {
+		if (typeof slug !== 'string' || !SERIAL_SLUG.test(slug)) {
+			return false;
+		}
+		var decoded = slug;
+		try {
+			decoded = decodeURIComponent(slug);
+		} catch (error) {
+			decoded = slug;
+		}
+		return decoded !== '.' && decoded !== '..';
 	}
 
 	/* ------------------------------- ČSFD ------------------------------- */
@@ -467,19 +542,23 @@ window.AnimeSync = (function () {
 
 	function noop() {}
 
-	// Chyby jednoho anime při aktualizaci ČSFD nebo MAL hodnocení, po kterých má
-	// smysl pokračovat dalším (stránka anime zmizela, změnila se, web jednou
-	// neodpověděl). Ostatní chyby (pomocník neběží, síť požadavky blokuje...)
-	// by selhaly u všech anime, proto běh zastaví.
-	var RATING_SKIPPABLE = ['parse-error', 'upstream-http', 'timeout', 'network-error', 'invalid-encoding',
-		'bad-encoding', 'unsupported-encoding', 'too-large', 'too-many-redirects', 'bad-csfd-id', 'bad-mal-id'];
+	// Chyby jednoho anime při aktualizaci hodnocení nebo zhlédnutých epizod, po
+	// kterých má smysl pokračovat dalším (stránka anime zmizela, změnila se, web
+	// jednou neodpověděl). Ostatní chyby (pomocník neběží, síť požadavky
+	// blokuje, Cloudflare...) by selhaly u všech anime, proto běh zastaví.
+	var ITEM_SKIPPABLE = ['parse-error', 'upstream-http', 'timeout', 'network-error', 'invalid-encoding',
+		'bad-encoding', 'unsupported-encoding', 'too-large', 'too-many-redirects', 'bad-csfd-id', 'bad-mal-id',
+		'bad-serial-name'];
 
-	// Zdroje hodnocení pro runRatingsUpdate(): pole v datech, potřebná verze
-	// pomocníka, zjištění hodnocení jednoho anime a zápis do data/anime.json.
+	// Zdroje pro runItemsUpdate(): pole v datech, potřebná verze pomocníka,
+	// zjištění hodnoty jednoho anime a zápis do data/anime.json. Nepovinně
+	// prepare() (příprava před první položkou, výsledek dostane fetchValue()),
+	// progress() (výchozí 100 * index / počet) a isSkippable() (další chyby,
+	// po kterých se pokračuje).
 	var CSFD_RATINGS = {
 		field: 'CsfdRating',
 		minHelperVersion: CSFD_MIN_HELPER_VERSION,
-		fetchRating: function (proxy, item) {
+		fetchValue: function (proxy, item) {
 			var csfdId = String(item.CsfdID);
 			if (!/^[0-9]+$/.test(csfdId)) {
 				throw syncError('bad-csfd-id', csfdId);
@@ -496,7 +575,7 @@ window.AnimeSync = (function () {
 	var MAL_RATINGS = {
 		field: 'MalRating',
 		minHelperVersion: MAL_MIN_HELPER_VERSION,
-		fetchRating: function (proxy, item) {
+		fetchValue: function (proxy, item) {
 			var malId = String(item.MalID);
 			if (malId !== '0' && !/^[0-9]+$/.test(malId)) {
 				throw syncError('bad-mal-id', malId);
@@ -508,7 +587,74 @@ window.AnimeSync = (function () {
 		}
 	};
 
-	/** Zamkne aktualizace, aby nikdy neběžely dvě najednou (sdílí Seznam, ČSFD i MAL). */
+	/**
+	 * Ověří na stránce seriálu, že oblíbený bez "Pokračuj" opravdu není
+	 * dokončený, a výsledek zapíše do oblíbeného jako Python UpdateWatched()
+	 * (ř. 404). Vyjde-li dokončený, další anime se stejným jménem už se
+	 * neptá; jinak se ptá znovu (s řadou a epizodou z této kontroly).
+	 */
+	function checkWatchedFavorite(proxy, favorite) {
+		if (!isSerialSlug(favorite.AnimeUrlName)) {
+			return Promise.reject(syncError('bad-serial-name', favorite.AnimeUrlName));
+		}
+		return proxy.fetchPage(SERIAL_URL + favorite.AnimeUrlName).then(function (page) {
+			var result = checkIfReallyNotFinished(parseSerialSeasons(page.text), favorite.ActualSeason, favorite.ActualEpisode);
+			favorite.Finished = result.finished;
+			favorite.ActualSeason = result.season;
+			favorite.ActualEpisode = result.episode;
+		});
+	}
+
+	var WATCHED_STATES = {
+		field: 'State',
+		minHelperVersion: WATCHED_MIN_HELPER_VERSION,
+		// Python UpdateWatched() nejdřív stáhne oblíbené (GetFavorites()).
+		prepare: function (proxy, health) {
+			if (!health.cookieConfigured) {
+				throw syncError('cookie-missing', '');
+			}
+			return proxy.fetchPage(FAVORITES_URL).then(function (page) {
+				return parseFavorites(page.text);
+			});
+		},
+		// Python hlásí průběh před zpracováním anime už včetně něj (ř. 400).
+		progress: function (index, total) {
+			return 100 * (index + 1) / total;
+		},
+		// Undefined = anime se nemění (není v oblíbených nebo je DROPPED), Python ř. 401-409.
+		fetchValue: function (proxy, item, favorites) {
+			if (typeof item.State === 'string' && item.State.indexOf('DROPPED') !== -1) {
+				return undefined;
+			}
+			var favorite = null;
+			for (var i = 0; i < favorites.length; i++) {
+				if (favorites[i].Name === item.FavoriteName) {
+					favorite = favorites[i];
+					break;
+				}
+			}
+			if (!favorite) {
+				return undefined;
+			}
+			var checked = favorite.Finished ? Promise.resolve() : checkWatchedFavorite(proxy, favorite);
+			return checked.then(function () {
+				var state = favorite.Finished ? 'DONE' : 'S' + favorite.ActualSeason + 'E' + favorite.ActualEpisode;
+				if (!WATCHED_STATE_FORMAT.test(state)) {
+					throw parseError('state');
+				}
+				return state;
+			});
+		},
+		// Přesměrování stránky seriálu na jinou stránku webu (pomocník ji nestáhne) se týká jen tohoto seriálu.
+		isSkippable: function (error) {
+			return error.code === 'redirect-blocked' && error.detail === 'path-not-allowed';
+		},
+		save: function (proxy, states) {
+			return proxy.saveWatchedStates(states);
+		}
+	};
+
+	/** Zamkne aktualizace, aby nikdy neběžely dvě najednou (sdílí všechny volby Aktualizovat). */
 	function exclusive(run) {
 		if (running) {
 			return Promise.reject(syncError('already-running', ''));
@@ -639,7 +785,7 @@ window.AnimeSync = (function () {
 	 */
 	function updateCsfd(deps) {
 		return exclusive(function () {
-			return runRatingsUpdate(deps, CSFD_RATINGS);
+			return runItemsUpdate(deps, CSFD_RATINGS);
 		});
 	}
 
@@ -651,14 +797,32 @@ window.AnimeSync = (function () {
 	 */
 	function updateMal(deps) {
 		return exclusive(function () {
-			return runRatingsUpdate(deps, MAL_RATINGS);
+			return runItemsUpdate(deps, MAL_RATINGS);
 		});
 	}
 
-	function runRatingsUpdate(deps, source) {
+	/**
+	 * Podle oblíbených na sledujserialy.io přepíše zhlédnuté epizody (State)
+	 * anime, která v oblíbených jsou a nejsou DROPPED (Python UpdateWatched(),
+	 * ř. 393-411), a nechá je pomocníka zapsat do data/anime.json. Stav je
+	 * "DONE", nebo "S<řada>E<epizoda>" z odkazu oblíbeného ("S02E--", když je
+	 * nezhlédnutá jiná řada). Parametry, výsledek i chyby jako updateCsfd();
+	 * deps.proxy potřebuje saveWatchedStates, pomocníka verze 4 s cookie.
+	 * `updated` počítá jen anime, kterým se stav zjistil (ostatní se nemění).
+	 */
+	function updateWatched(deps) {
+		return exclusive(function () {
+			return runItemsUpdate(deps, WATCHED_STATES);
+		});
+	}
+
+	function runItemsUpdate(deps, source) {
 		var proxy = deps.proxy;
 		var data = deps.data;
 		var onProgress = deps.onProgress || noop;
+		var progress = source.progress || function (index, total) {
+			return 100 * index / total;
+		};
 		var items = data.getItems();
 		if (!items) {
 			return Promise.reject(syncError('data-not-loaded', ''));
@@ -669,42 +833,49 @@ window.AnimeSync = (function () {
 		var updated = 0;
 		var changed = 0;
 		var failures = [];
-		// Number -> zjištěné hodnocení a jméno anime (pro zápis do souboru a hlášení).
-		var ratings = {};
+		// Number -> zjištěná hodnota a jméno anime (pro zápis do souboru a hlášení).
+		var values = {};
 		var names = {};
 
 		function itemName(item) {
 			return item.NameEn || item.FavoriteName || item.NameJa || String(item.Number);
 		}
 
-		function updateItem(item) {
+		function isSkippable(error) {
+			return ITEM_SKIPPABLE.indexOf(error.code) !== -1 || Boolean(source.isSkippable && source.isSkippable(error));
+		}
+
+		function updateItem(item, context) {
 			return Promise.resolve().then(function () {
-				return source.fetchRating(proxy, item);
-			}).then(function (rating) {
-				if (item[source.field] !== rating) {
+				return source.fetchValue(proxy, item, context);
+			}).then(function (value) {
+				if (value === undefined) {
+					return;
+				}
+				if (item[source.field] !== value) {
 					changed += 1;
 				}
-				item[source.field] = rating;
-				ratings[String(item.Number)] = rating;
+				item[source.field] = value;
+				values[String(item.Number)] = value;
 				names[String(item.Number)] = itemName(item);
 				updated += 1;
 			}, function (error) {
 				error.favorite = itemName(item);
-				if (RATING_SKIPPABLE.indexOf(error.code) === -1) {
+				if (!isSkippable(error)) {
 					throw error;
 				}
 				failures.push({ name: itemName(item), number: String(item.Number), code: error.code, detail: error.detail || '' });
 			});
 		}
 
-		// Zapíše zjištěná hodnocení do data/anime.json. Uložené úpravy
+		// Zapíše zjištěné hodnoty do data/anime.json. Uložené úpravy
 		// v prohlížeči soubor přebíjí, proto se v takovém případě uloží i tam;
-		// když zápis do souboru selže, zůstanou hodnocení aspoň v prohlížeči.
+		// když zápis do souboru selže, zůstanou hodnoty aspoň v prohlížeči.
 		function persist() {
 			if (updated === 0) {
 				return Promise.resolve({ savedTo: null, notInFile: [] });
 			}
-			return source.save(proxy, ratings).then(function (result) {
+			return source.save(proxy, values).then(function (result) {
 				if (data.hasStoredItems()) {
 					data.save(data.getItems());
 				}
@@ -733,11 +904,13 @@ window.AnimeSync = (function () {
 			if (!health.dataFile) {
 				throw syncError('data-file-missing', '');
 			}
+			return source.prepare ? source.prepare(proxy, health) : null;
+		}).then(function (context) {
 			var chain = Promise.resolve();
 			items.forEach(function (item, index) {
 				chain = chain.then(function () {
-					onProgress(100 * index / items.length);
-					return updateItem(item);
+					onProgress(progress(index, items.length));
+					return updateItem(item, context);
 				});
 			});
 			return chain;
@@ -778,6 +951,9 @@ window.AnimeSync = (function () {
 		buildNewItem: buildNewItem,
 		updateList: updateList,
 		updateCsfd: updateCsfd,
-		updateMal: updateMal
+		updateMal: updateMal,
+		parseSerialSeasons: parseSerialSeasons,
+		checkIfReallyNotFinished: checkIfReallyNotFinished,
+		updateWatched: updateWatched
 	};
 })();

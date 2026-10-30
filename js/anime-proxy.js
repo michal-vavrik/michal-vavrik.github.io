@@ -183,18 +183,22 @@ window.AnimeProxy = (function () {
 	}
 
 	/**
-	 * Nechá pomocníka zapsat hodnocení do data/anime.json (mirror Python
-	 * `UpdateCSFD()`/`UpdateMAL()` + `WriteDataToTheFile()`). Mění se jen
-	 * hodnocení anime, která v souboru jsou; čísla ostatních vrátí v `missing`.
-	 * @param {string} path - '/csfd-ratings' (CsfdRating) nebo '/mal-ratings' (MalRating)
-	 * @param {Object<string, string>} ratings Number -> hodnocení ("85%", "?%")
+	 * Nechá pomocníka zapsat jedno pole anime do data/anime.json (mirror Python
+	 * `UpdateCSFD()`/`UpdateMAL()`/`UpdateWatched()` + `WriteDataToTheFile()`).
+	 * Mění se jen anime, která v souboru jsou; čísla ostatních vrátí v `missing`.
+	 * @param {string} path - '/csfd-ratings' (CsfdRating), '/mal-ratings' (MalRating)
+	 *     nebo '/watched-states' (State)
+	 * @param {string} key - klíč v těle požadavku ('ratings' nebo 'states')
+	 * @param {Object<string, string>} values Number -> nová hodnota ("85%", "?%", "DONE", "S01E05"...)
 	 * @returns {Promise<{changed: number, missing: Array<string>}>}
 	 */
-	function saveRatings(path, ratings) {
+	function saveValues(path, key, values) {
+		var body = {};
+		body[key] = values;
 		return call(path, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ ratings: ratings })
+			body: JSON.stringify(body)
 		}).then(function (result) {
 			if (result.response.status !== 200) {
 				throw errorFromResponse(result.response);
@@ -212,14 +216,19 @@ window.AnimeProxy = (function () {
 		});
 	}
 
-	/** ČSFD hodnocení do data/anime.json (pole CsfdRating), viz saveRatings(). */
+	/** ČSFD hodnocení do data/anime.json (pole CsfdRating), viz saveValues(). */
 	function saveCsfdRatings(ratings) {
-		return saveRatings('/csfd-ratings', ratings);
+		return saveValues('/csfd-ratings', 'ratings', ratings);
 	}
 
-	/** MAL hodnocení do data/anime.json (pole MalRating, pomocník od verze 3), viz saveRatings(). */
+	/** MAL hodnocení do data/anime.json (pole MalRating, pomocník od verze 3), viz saveValues(). */
 	function saveMalRatings(ratings) {
-		return saveRatings('/mal-ratings', ratings);
+		return saveValues('/mal-ratings', 'ratings', ratings);
+	}
+
+	/** Zhlédnuté epizody do data/anime.json (pole State, pomocník od verze 4), viz saveValues(). */
+	function saveWatchedStates(states) {
+		return saveValues('/watched-states', 'states', states);
 	}
 
 	return {
@@ -230,6 +239,7 @@ window.AnimeProxy = (function () {
 		fetchPage: fetchPage,
 		saveImage: saveImage,
 		saveCsfdRatings: saveCsfdRatings,
-		saveMalRatings: saveMalRatings
+		saveMalRatings: saveMalRatings,
+		saveWatchedStates: saveWatchedStates
 	};
 })();

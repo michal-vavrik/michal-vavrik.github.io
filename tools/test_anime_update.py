@@ -1,4 +1,5 @@
-"""Prohlížečové testy Aktualizovat -> Seznam a ČSFD hodnocení (anime.html, js/anime-*.js a tools/anime_proxy.py).
+"""Prohlížečové testy Aktualizovat -> Seznam, ČSFD hodnocení, MAL hodnocení a Zhlédnuté epizody
+(anime.html, js/anime-*.js a tools/anime_proxy.py).
 
 Stránku řídí Playwright, pomocník běží ve stejném procesu a weby, ze kterých
 stahuje (sledujserialy.io, ČSFD, MyAnimeList, serialy.sx), nahrazuje atrapa -
@@ -47,6 +48,7 @@ ITEM_KEYS = ["Number", "FavoriteName", "CsfdID", "MalID", "MalName", "Image", "N
 SEED_NUMBERS = (9001, 9002, 9004)
 
 FAVORITES_URL = "https://sledujserialy.io/ucet/"
+SERIAL_PREFIX = "https://sledujserialy.io/serial/"
 IMAGE_ORIGIN = "https://serialy.sx"
 CSFD_SEARCH_PREFIX = "https://www.csfd.cz/hledat/"
 CSFD_FILM_PREFIX = "https://www.csfd.cz/film/"
@@ -75,14 +77,32 @@ MAL_NOT_FOUND = "<html><body>No titles that matched your query were found.</body
 
 
 def favorites_page(entries):
+    """entries: (název, slug, obrázek, dokončeno[, epizoda v odkazu, výchozí "s01e05"])"""
     blocks = []
-    for name, slug, image, finished in entries:
+    for entry in entries:
+        name, slug, image, finished = entry[:4]
+        episode = entry[4] if len(entry) > 4 else "s01e05"
         state = "S01E24" if finished else "Pokračuj"
         blocks.append(
-            f'<div class="a-favorites__item"><a href="/episode/{slug}-s01e05/"><img src="{image}">'
+            f'<div class="a-favorites__item"><a href="/episode/{slug}-{episode}/"><img src="{image}">'
             f'<h2 class="a-favorites__title">{name}</h2><span>{state}</span></a></div>'
         )
     return f'<html><body><div id="favorites">{"".join(blocks)}</div><div id="planned"></div></body></html>'
+
+
+def watched_favorite(number, finished, episode="s01e05"):
+    """Oblíbený seriál k anime ze SEED_DATA (FavoriteName "Known <číslo>")."""
+    return ("Known %d" % number, "known-%d" % number, "/upload/serial/known-%d.jpg" % number, finished, episode)
+
+
+def serial_page(seasons):
+    """Stránka seriálu na sledujserialy.io; seasons: [(číslo řady, "Videné" | "Označiť"), ...]"""
+    blocks = "".join(
+        f'<div class="season" data-season="{number}"><h3>Séria {number}</h3>'
+        f'<a href="#"><i title="{state}" class="fa fa-eye"></i></a></div>'
+        for number, state in seasons
+    )
+    return f'<html><body><div class="seasons">{blocks}</div></body></html>'
 
 
 def csfd_search_page(film_id):
@@ -384,13 +404,14 @@ class UpdateListTests(SiteBrowserCase):
         expect(toggle).to_have_attribute("aria-expanded", "true")
         expect(menu.locator("button")).to_have_text(
             ["Zhlédnuté epizody", "ČSFD hodnocení", "MAL hodnocení", "Seznam", "Všechno"])
-        # Zapojené jsou zatím Seznam, ČSFD a MAL hodnocení.
-        for name in ("watched", "all"):
+        # Zapojené jsou všechny volby kromě Všechno.
+        button = page.locator("#anime-update-all-btn")
+        expect(button).to_be_disabled()
+        expect(button).to_have_attribute("title", "Připravujeme")
+        for name in ("watched", "csfd", "mal", "list"):
             button = page.locator("#anime-update-%s-btn" % name)
-            expect(button).to_be_disabled()
-            expect(button).to_have_attribute("title", "Připravujeme")
-        for name in ("csfd", "mal", "list"):
-            expect(page.locator("#anime-update-%s-btn" % name)).to_be_enabled()
+            expect(button).to_be_enabled()
+            expect(button).not_to_have_attribute("title", "Připravujeme")
 
         page.keyboard.press("Escape")
         expect(menu).to_be_hidden()
@@ -406,7 +427,7 @@ class UpdateListTests(SiteBrowserCase):
         page.locator("#anime-update-toggle").focus()
         page.keyboard.press("Enter")
         expect(page.locator("#anime-update-menu")).to_be_visible()
-        expect(page.locator("#anime-update-csfd-btn")).to_be_focused()
+        expect(page.locator("#anime-update-watched-btn")).to_be_focused()
 
     def test_list_update_adds_new_favorites(self):
         helper = self.start_helper()
@@ -634,7 +655,7 @@ class UpdateListTests(SiteBrowserCase):
         toggle.click()
         expect(page.locator("#anime-update-menu button")).to_have_text(
             ["Watched episodes", "CSFD rating", "MAL rating", "List", "All"])
-        expect(page.locator("#anime-update-watched-btn")).to_have_attribute("title", "Coming soon")
+        expect(page.locator("#anime-update-all-btn")).to_have_attribute("title", "Coming soon")
         expect(page.locator("#anime-update-menu")).to_have_attribute("aria-label", "Update options")
 
         page.locator("#anime-update-list-btn").click()
@@ -740,7 +761,7 @@ class UpdateListTests(SiteBrowserCase):
 
         self.run_csfd_update(page)
         expect(page.locator("#anime-update-error")).to_have_text(
-            "Hodnocení se nepodařilo zapsat do data/anime.json. Podrobnosti: data-file-invalid. "
+            "Výsledek aktualizace se nepodařilo zapsat do data/anime.json. Podrobnosti: data-file-invalid. "
             "Zjištěná hodnocení (3) zůstala uložená jen v prohlížeči, do souboru je dostanete přes Exportovat data.")
         self.expect_unlocked(page)
         self.assertEqual(self.read_data_file(), b"{")
@@ -752,7 +773,7 @@ class UpdateListTests(SiteBrowserCase):
             page = self.open_page(self.start_helper(), stored=False)
             self.run_csfd_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
-                "Pomocný program je zastaralý a neumí zapsat hodnocení do data/anime.json. "
+                "Pomocný program je zastaralý a výsledek této aktualizace neumí zapsat do data/anime.json. "
                 "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
         self.expect_unlocked(page)
 
@@ -923,7 +944,7 @@ class UpdateListTests(SiteBrowserCase):
             page = self.open_page(self.start_helper(), stored=False)
             self.run_mal_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
-                "Pomocný program je zastaralý a neumí zapsat hodnocení do data/anime.json. "
+                "Pomocný program je zastaralý a výsledek této aktualizace neumí zapsat do data/anime.json. "
                 "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
         self.expect_unlocked(page)
         self.assertEqual(self.web.urls, [])
@@ -957,6 +978,156 @@ class UpdateListTests(SiteBrowserCase):
         self.assertIn("0.00% Updating MAL ratings", page.evaluate("() => window.__infoLog"))
         expect(page.locator("#anime-update-error")).to_have_text(
             "The MAL rating could not be retrieved for 1 anime; the previous value was kept: Known 9002 EN.")
+
+    # ----------------------------- Zhlédnuté epizody -----------------------------
+
+    def run_watched_update(self, page):
+        page.locator("#anime-update-toggle").click()
+        page.locator("#anime-update-watched-btn").click()
+
+    def serve_favorites(self, *entries):
+        self.web.serve(FAVORITES_URL, favorites_page(entries))
+
+    def state_cells(self, page):
+        return page.locator("#anime-list .anime-row .anime-row__cell--State").all_inner_texts()
+
+    @staticmethod
+    def with_states(states, base=None):
+        data = json.loads(json.dumps(SEED_DATA if base is None else base))
+        for number, state in states.items():
+            data[number]["State"] = state
+        return data
+
+    def test_watched_update_writes_states_to_data_file(self):
+        seed = self.with_states({"9001": "S01E03", "9004": "DROPPED"})
+        self.write_data_file(seed)
+        self.serve_favorites(
+            watched_favorite(9001, True),
+            (SHOW_A["name"], SHOW_A["slug"], SHOW_A["image"], False),
+            watched_favorite(9002, False, "s01e12"),
+            watched_favorite(9004, False),
+        )
+        self.web.serve(SERIAL_PREFIX + "known-9002", serial_page([("1", "Videné"), ("2", "Označiť")]))
+        page = self.open_page(self.start_helper(), stored=False)
+        page.evaluate(INFO_LOG_SCRIPT)
+
+        self.run_watched_update(page)
+        expect(page.locator("#anime-update-menu")).to_be_hidden()
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+
+        # Texty průběhu jako ve skriptu AnimeList.pyw (UpdateWatched a UpdateWatchedDone).
+        info_log = []
+        for text in page.evaluate("() => window.__infoLog"):
+            if not info_log or info_log[-1] != text:
+                info_log.append(text)
+        self.assertEqual(info_log, ["0.00% Aktualizuji zhlédnuté epizody", "33.33% Aktualizuji zhlédnuté epizody",
+                                    "66.67% Aktualizuji zhlédnuté epizody", "100.00% Aktualizuji zhlédnuté epizody",
+                                    "100.00% Hotovo", ""])
+        # Stránka seriálu se stahuje jen u nedokončeného oblíbeného, který není DROPPED; cookie jde jen na sledujserialy.io.
+        self.assertEqual(self.web.urls, [FAVORITES_URL, SERIAL_PREFIX + "known-9002"])
+        self.assertEqual([url for url, headers in self.web.calls if "Cookie" in headers], self.web.urls)
+
+        # Pořadí řádků zůstane; nezhlédnutá je řada 2, takže epizoda je "--".
+        self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004"])
+        self.assertEqual(self.state_cells(page), ["DONE", "S02E--", "DROPPED"])
+        expect(page.locator("#anime-update-error")).to_be_hidden()
+
+        # Stav zapsal pomocník do souboru ve formátu Python skriptu; prohlížeč si nic neuložil.
+        self.assertEqual(self.read_data_file(), self.python_json(self.with_states({"9001": "DONE", "9002": "S02E--"}, seed)))
+        self.assertFalse(self.has_stored_items(page))
+
+        page.reload()
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        self.assertEqual(self.state_cells(page), ["DONE", "S02E--", "DROPPED"])
+        self.assertEqual(self.unexpected_console_errors(), [])
+
+    def test_watched_update_skips_failing_anime_and_lists_them(self):
+        self.serve_favorites(watched_favorite(9001, False), watched_favorite(9002, False), watched_favorite(9004, False, "s02e07"))
+        self.web.serve(SERIAL_PREFIX + "known-9001", "<html>Nenalezeno</html>", status=404)
+        # Web přesměroval na stránku, kterou pomocník nestahuje - týká se jen tohoto seriálu.
+        self.web.redirect(SERIAL_PREFIX + "known-9002", "https://sledujserialy.io/")
+        self.web.serve(SERIAL_PREFIX + "known-9004", serial_page([("1", "Videné"), ("2", "Označiť")]))
+        page = self.open_page(self.start_helper())
+
+        self.run_watched_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "Zhlédnuté epizody se nepodařilo zjistit u 2 anime, zůstal původní stav: Known 9001 EN, Known 9002 EN.")
+        self.assertEqual(self.web.urls, [FAVORITES_URL] + [SERIAL_PREFIX + "known-" + number for number in ("9001", "9002", "9004")])
+        self.assertEqual(self.state_cells(page), ["DONE", "DONE", "S02E07"])
+        expected = self.with_states({"9004": "S02E07"})
+        self.assertEqual(self.read_data_file(), self.python_json(expected))
+        # Uložené úpravy v prohlížeči přebíjí soubor, proto se stav uložil i tam.
+        self.assertEqual(self.stored_items(page), expected)
+        self.assertTrue(any("Watched episodes not updated" in text for kind, text in self.console if kind == "warning"))
+
+    def test_watched_update_stops_on_cloudflare_and_keeps_finished_states(self):
+        seed = self.with_states({"9001": "S01E03", "9004": "S01E01"})
+        self.write_data_file(seed)
+        self.serve_favorites(watched_favorite(9001, True), watched_favorite(9002, False), watched_favorite(9004, True))
+        self.web.serve(SERIAL_PREFIX + "known-9002", "<title>Just a moment...</title>", status=403,
+                       headers={"cf-mitigated": "challenge", "server": "cloudflare"})
+        page = self.open_page(self.start_helper(), stored=False)
+
+        self.run_watched_update(page)
+        error = page.locator("#anime-update-error")
+        expect(error).to_contain_text("vyžaduje ověření Cloudflare")
+        expect(error).to_contain_text("Anime: Known 9002 EN.")
+        expect(error).to_contain_text("Zhlédnuté epizody zjištěné před chybou se zapsaly do data/anime.json (1).")
+        expect(page.locator("#anime-update-toggle")).to_be_enabled(timeout=1000)
+        expect(page.locator("#anime-update-info")).to_have_text("")
+        self.assertEqual(self.web.urls, [FAVORITES_URL, SERIAL_PREFIX + "known-9002"])
+        self.assertEqual(self.state_cells(page), ["DONE", "DONE", "S01E01"])
+        self.assertEqual(self.read_data_file(), self.python_json(self.with_states({"9001": "DONE"}, seed)))
+
+    def test_watched_update_keeps_states_in_browser_when_data_file_cannot_be_written(self):
+        self.serve_favorites(watched_favorite(9001, True), watched_favorite(9002, True), watched_favorite(9004, False, "s03e02"))
+        self.web.serve(SERIAL_PREFIX + "known-9004", serial_page([("1", "Videné"), ("2", "Videné"), ("3", "Označiť")]))
+        page = self.open_page(self.start_helper(), stored=False)
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        self.write_data_file(b"{")
+
+        self.run_watched_update(page)
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "Výsledek aktualizace se nepodařilo zapsat do data/anime.json. Podrobnosti: data-file-invalid. "
+            "Zjištěné zhlédnuté epizody (3) zůstaly uložené jen v prohlížeči, do souboru je dostanete přes Exportovat data.")
+        self.expect_unlocked(page)
+        self.assertEqual(self.read_data_file(), b"{")
+        self.assertEqual(self.state_cells(page), ["DONE", "DONE", "S03E02"])
+        self.assertEqual(self.stored_items(page), self.with_states({"9004": "S03E02"}))
+
+    def test_watched_update_requires_cookie_and_helper_version_4(self):
+        page = self.open_page(self.start_helper(proxy.Config()), stored=False)
+        self.run_watched_update(page)
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "Pomocný program nemá nastavenou přihlašovací cookie pro sledujserialy.io (viz README).")
+        self.expect_unlocked(page)
+
+        # Pomocník verze 3 umí zapsat jen hodnocení.
+        with mock.patch.object(proxy, "VERSION", 3):
+            page = self.open_page(self.start_helper(), stored=False)
+            self.run_watched_update(page)
+            expect(page.locator("#anime-update-error")).to_have_text(
+                "Pomocný program je zastaralý a výsledek této aktualizace neumí zapsat do data/anime.json. "
+                "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
+        self.expect_unlocked(page)
+        self.assertEqual(self.web.urls, [])
+        self.assertEqual(self.read_data_file(), self.python_json(SEED_DATA))
+
+    def test_watched_update_in_english(self):
+        self.serve_favorites(watched_favorite(9001, True), watched_favorite(9002, False), watched_favorite(9004, True))
+        self.web.serve(SERIAL_PREFIX + "known-9002", "<html>Not found</html>", status=404)
+        page = self.open_page(self.start_helper(), lang="en")
+        page.evaluate(INFO_LOG_SCRIPT)
+
+        self.run_watched_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Done")
+        self.expect_unlocked(page)
+        self.assertIn("0.00% Updating watched episodes", page.evaluate("() => window.__infoLog"))
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "The watched episodes could not be retrieved for 1 anime; the previous state was kept: Known 9002 EN.")
 
 
 class BrowserUnitTests(SiteBrowserCase):

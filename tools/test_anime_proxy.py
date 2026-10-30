@@ -169,6 +169,7 @@ class GuardTests(ProxyTestCase):
         self.assertEqual(self.request("POST", "/health")[0], 405)
         self.assertEqual(self.request("GET", "/csfd-ratings")[0], 405)
         self.assertEqual(self.request("GET", "/mal-ratings")[0], 405)
+        self.assertEqual(self.request("GET", "/watched-states")[0], 405)
 
 
 class FetchTests(ProxyTestCase):
@@ -538,11 +539,13 @@ class ConfigReloadTests(ProxyTestCase):
 
 
 class DataFileTests(ProxyTestCase):
-    """POST /csfd-ratings a /mal-ratings zapisují hodnocení do souboru s daty."""
+    """POST /csfd-ratings, /mal-ratings a /watched-states zapisují do souboru s daty."""
 
     ITEMS = {
-        "1": {"Number": "1", "FavoriteName": "Naruto Šippúden", "NameJa": "ナルト", "CsfdRating": "80%", "MalRating": "82%"},
-        "2": {"Number": "2", "FavoriteName": "Bleach", "NameJa": "ブリーチ", "CsfdRating": "?%", "MalRating": "79%"},
+        "1": {"Number": "1", "FavoriteName": "Naruto Šippúden", "NameJa": "ナルト", "State": "S01E05",
+              "CsfdRating": "80%", "MalRating": "82%"},
+        "2": {"Number": "2", "FavoriteName": "Bleach", "NameJa": "ブリーチ", "State": "DONE",
+              "CsfdRating": "?%", "MalRating": "79%"},
     }
 
     def make_server(self):
@@ -617,8 +620,8 @@ class DataFileTests(ProxyTestCase):
         self.assertEqual(self.post_ratings({})[0], 400)
         self.assertEqual(self.post_ratings(b"{", headers={})[0], 400)
         self.assertEqual(self.post_ratings(b"{}", headers={"Content-Type": "text/plain"})[0], 415)
-        self.assertEqual(self.post_ratings(b'{"ratings": "' + b"a" * proxy.MAX_RATINGS_BODY + b'"}')[0], 413)
-        too_many = {str(number): "50%" for number in range(1, proxy.MAX_RATINGS + 2)}
+        self.assertEqual(self.post_ratings(b'{"ratings": "' + b"a" * proxy.MAX_DATA_BODY + b'"}')[0], 413)
+        too_many = {str(number): "50%" for number in range(1, proxy.MAX_DATA_VALUES + 2)}
         self.assertEqual(self.post_ratings({"ratings": too_many})[0], 400)
         self.assertEqual(self.read_data(), before)
 
@@ -690,6 +693,51 @@ class DataFileTests(ProxyTestCase):
         status, _, _ = self.post_ratings({"ratings": {"1": "50%"}}, path="/mal-ratings", headers={proxy.REQUEST_HEADER: None})
         self.assertEqual(status, 403)
         status, _, _ = self.post_ratings({"ratings": {"1": "50%"}}, path="/mal-ratings", headers={"Origin": "https://evil.example"})
+        self.assertEqual(status, 403)
+        self.assertEqual(self.read_data(), before)
+
+    def test_watched_states_change_only_state(self):
+        status, _, body = self.post_ratings({"states": {"1": "S02E--", "2": "DONE", "99": "DONE"}}, path="/watched-states")
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 1, "missing": ["99"]}))
+        expected = json.loads(json.dumps(self.ITEMS))
+        expected["1"]["State"] = "S02E--"
+        self.assertEqual(self.read_data(), self.dumps(expected).encode("utf-8"))
+        self.assertEqual(os.listdir(self.tmp), ["anime.json"])
+        self.assertEqual(self.transport.calls, [])
+
+    def test_watched_states_accept_python_formats(self):
+        for state in ("DONE", "S01E05", "S10E123", "S02E--", "S1E1"):
+            with self.subTest(state=state):
+                self.assertEqual(self.post_ratings({"states": {"2": state}}, path="/watched-states")[0], 200)
+                self.assertEqual(json.loads(self.read_data())["2"]["State"], state)
+
+    def test_watched_states_unchanged_do_not_touch_the_file(self):
+        os.utime(self.data_path, ns=(10 ** 9, 10 ** 9))
+        status, _, body = self.post_ratings({"states": {"1": "S01E05", "2": "DONE"}}, path="/watched-states")
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 0, "missing": []}))
+        self.assertEqual(os.stat(self.data_path).st_mtime_ns, 10 ** 9)
+
+    def test_watched_states_are_validated(self):
+        before = self.read_data()
+        for states in ([], {"1": "DROPPED"}, {"1": "DROPPED S01E05"}, {"1": "done"}, {"1": "S01"}, {"1": "S01E"},
+                       {"1": "SxxE05"}, {"1": "S01E-"}, {"1": "S01E05 "}, {"1": ""}, {"1": None}, {"x": "DONE"}):
+            with self.subTest(states=states):
+                status, headers, _ = self.post_ratings({"states": states}, path="/watched-states")
+                self.assertEqual((status, headers["x-proxy-error"]), (400, "bad-request"))
+        # Hodnocení do State nepatří a stavy nejdou poslat pod klíčem "ratings".
+        self.assertEqual(self.post_ratings({"states": {"1": "85%"}}, path="/watched-states")[0], 400)
+        self.assertEqual(self.post_ratings({"ratings": {"1": "DONE"}}, path="/watched-states")[0], 400)
+        self.assertEqual(self.post_ratings({"states": {"1": "DONE"}}, path="/csfd-ratings")[0], 400)
+        self.assertEqual(self.read_data(), before)
+        os.remove(self.data_path)
+        status, headers, _ = self.post_ratings({"states": {"1": "DONE"}}, path="/watched-states")
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-missing"))
+
+    def test_watched_states_need_the_api_header_and_origin(self):
+        before = self.read_data()
+        status, _, _ = self.post_ratings({"states": {"1": "DONE"}}, path="/watched-states", headers={proxy.REQUEST_HEADER: None})
+        self.assertEqual(status, 403)
+        status, _, _ = self.post_ratings({"states": {"1": "DONE"}}, path="/watched-states", headers={"Origin": "https://evil.example"})
         self.assertEqual(status, 403)
         self.assertEqual(self.read_data(), before)
 
