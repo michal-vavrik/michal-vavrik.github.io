@@ -97,7 +97,7 @@ window.AnimeProxy = (function () {
 
 	/**
 	 * Ověří, že pomocník běží, a vrátí jeho stav.
-	 * @returns {Promise<{version: number, cookieConfigured: boolean, maxImageNumber: number}>}
+	 * @returns {Promise<{version: number, cookieConfigured: boolean, maxImageNumber: number, dataFile: boolean}>}
 	 */
 	function health() {
 		return call('/health', { method: 'GET' }).then(function (result) {
@@ -116,7 +116,8 @@ window.AnimeProxy = (function () {
 			return {
 				version: payload.version,
 				cookieConfigured: Boolean(payload.cookieConfigured),
-				maxImageNumber: Number(payload.maxImageNumber) || 0
+				maxImageNumber: Number(payload.maxImageNumber) || 0,
+				dataFile: payload.dataFile === true
 			};
 		});
 	}
@@ -181,12 +182,42 @@ window.AnimeProxy = (function () {
 		});
 	}
 
+	/**
+	 * Nechá pomocníka zapsat ČSFD hodnocení do data/anime.json (mirror Python
+	 * `UpdateCSFD()` + `WriteDataToTheFile()`). Mění se jen `CsfdRating`
+	 * anime, která v souboru jsou; čísla ostatních vrátí v `missing`.
+	 * @param {Object<string, string>} ratings Number -> hodnocení ("85%", "?%")
+	 * @returns {Promise<{changed: number, missing: Array<string>}>}
+	 */
+	function saveCsfdRatings(ratings) {
+		return call('/csfd-ratings', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ ratings: ratings })
+		}).then(function (result) {
+			if (result.response.status !== 200) {
+				throw errorFromResponse(result.response);
+			}
+			var payload = null;
+			try {
+				payload = JSON.parse(result.text);
+			} catch (parseError) {
+				payload = null;
+			}
+			if (!payload || payload.ok !== true || !Array.isArray(payload.missing)) {
+				throw createError('unexpected-response', 'csfd-ratings');
+			}
+			return { changed: Number(payload.changed) || 0, missing: payload.missing.map(String) };
+		});
+	}
+
 	return {
 		DEFAULT_URL: DEFAULT_URL,
 		URL_STORAGE_KEY: URL_STORAGE_KEY,
 		baseUrl: baseUrl,
 		health: health,
 		fetchPage: fetchPage,
-		saveImage: saveImage
+		saveImage: saveImage,
+		saveCsfdRatings: saveCsfdRatings
 	};
 })();

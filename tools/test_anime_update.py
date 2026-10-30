@@ -1,10 +1,11 @@
-"""Prohlížečové testy Aktualizovat -> Seznam (anime.html, js/anime-*.js a tools/anime_proxy.py).
+"""Prohlížečové testy Aktualizovat -> Seznam a ČSFD hodnocení (anime.html, js/anime-*.js a tools/anime_proxy.py).
 
 Stránku řídí Playwright, pomocník běží ve stejném procesu a weby, ze kterých
 stahuje (sledujserialy.io, ČSFD, MyAnimeList, serialy.sx), nahrazuje atrapa -
-testy nepoužívají síť ani přihlašovací cookie. Třída BrowserUnitTests navíc
-spouští tools/anime-sync-tests.html (testy js/anime-sync.js a js/anime-proxy.js;
-stránku lze otevřít i ručně v prohlížeči).
+testy nepoužívají síť ani přihlašovací cookie. Pomocník zapisuje do dočasné
+kopie data/anime.json, kterou stránka načítá místo souboru v repozitáři.
+Třída BrowserUnitTests navíc spouští tools/anime-sync-tests.html (testy
+js/anime-sync.js a js/anime-proxy.js; stránku lze otevřít i ručně v prohlížeči).
 
 Spuštění:  python -m unittest discover -s tools -p "test_anime_update.py" -v
 Vyžaduje:  pip install playwright a nainstalovaný Microsoft Edge nebo Google Chrome
@@ -48,6 +49,7 @@ SEED_NUMBERS = (9001, 9002, 9004)
 FAVORITES_URL = "https://sledujserialy.io/ucet/"
 IMAGE_ORIGIN = "https://serialy.sx"
 CSFD_SEARCH_PREFIX = "https://www.csfd.cz/hledat/"
+CSFD_FILM_PREFIX = "https://www.csfd.cz/film/"
 
 SHOW_A = {
     "name": "New Show A", "slug": "new-show-a", "image": "/upload/serial/new-show-a.jpg",
@@ -277,6 +279,9 @@ class UpdateListTests(SiteBrowserCase):
         self.addCleanup(shutil.rmtree, self.tmp, True)
         self.images_dir = os.path.join(self.tmp, "img")
         os.makedirs(self.images_dir)
+        # Pomocník zapisuje do kopie dat a stránka ji načítá místo data/anime.json repozitáře.
+        self.data_file = os.path.join(self.tmp, "anime.json")
+        self.write_data_file(SEED_DATA)
         self.web = FakeWeb()
         self.web.serve(FAVORITES_URL, favorites_page([
             KNOWN_FAVORITE,
@@ -292,9 +297,10 @@ class UpdateListTests(SiteBrowserCase):
     def tearDown(self):
         self.assertEqual(self.web.unknown, [], "pomocník stahoval adresu, kterou test nepřipravil")
 
-    def start_helper(self, config=None):
+    def start_helper(self, config=None, data_path=True):
         server = proxy.ProxyServer(0, proxy.DEFAULT_ORIGINS + (self.origin,), self.images_dir,
-                                   config or proxy.Config(cookie=COOKIE), self.web)
+                                   config or proxy.Config(cookie=COOKIE), self.web,
+                                   data_path=self.data_file if data_path is True else data_path)
         threading.Thread(target=server.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True).start()
         self.addCleanup(server.server_close)
         self.addCleanup(server.shutdown)
@@ -302,17 +308,38 @@ class UpdateListTests(SiteBrowserCase):
         self.addCleanup(self.web.release.set)
         return "http://127.0.0.1:%d" % server.server_address[1]
 
-    def open_page(self, helper_url, lang="cs", seed=None):
+    @staticmethod
+    def python_json(data):
+        """Stejný text jako Python WriteDataToTheFile() a data/anime.json."""
+        return json.dumps(data, indent=4, ensure_ascii=False).encode("utf-8")
+
+    def write_data_file(self, data):
+        with open(self.data_file, "wb") as handle:
+            handle.write(data if isinstance(data, bytes) else self.python_json(data))
+
+    def read_data_file(self):
+        with open(self.data_file, "rb") as handle:
+            return handle.read()
+
+    def serve_data_file(self, route):
+        route.fulfill(status=200, content_type="application/json; charset=utf-8", body=self.read_data_file())
+
+    def open_page(self, helper_url, lang="cs", seed=None, stored=True):
+        """Otevře stránku; se `stored=False` nemá prohlížeč uložené úpravy a data čte ze souboru."""
         context = self.browser.new_context(viewport={"width": 1400, "height": 900})
         self.addCleanup(context.close)
+        context.route(re.compile(r"/data/anime\.json(\?|$)"), self.serve_data_file)
+        seed_script = (
+            "if (localStorage.getItem('anime-data-overrides') === null) {"
+            "localStorage.setItem('anime-data-overrides', %s);}"
+            % json.dumps(json.dumps(SEED_DATA if seed is None else seed))
+        ) if stored else ""
         # Data se vloží jen poprvé, aby po znovunačtení zůstala uložená aktualizace.
         context.add_init_script(
             "sessionStorage.setItem('site-auth-role', 'full');"
             "localStorage.setItem('site-lang', %s);"
             "localStorage.setItem('anime-proxy-url', %s);"
-            "if (localStorage.getItem('anime-data-overrides') === null) {"
-            "localStorage.setItem('anime-data-overrides', %s);}"
-            % (json.dumps(lang), json.dumps(helper_url), json.dumps(json.dumps(SEED_DATA if seed is None else seed)))
+            % (json.dumps(lang), json.dumps(helper_url)) + seed_script
         )
         page = context.new_page()
         page.on("console", lambda message: self.console.append((message.type, message.text)))
@@ -331,6 +358,9 @@ class UpdateListTests(SiteBrowserCase):
     def stored_items(self, page):
         raw = page.evaluate("() => localStorage.getItem('anime-data-overrides')")
         return json.loads(raw)
+
+    def has_stored_items(self, page):
+        return page.evaluate("() => localStorage.getItem('anime-data-overrides') !== null")
 
     def unexpected_console_errors(self):
         # 404 na obrázky chybějící v repozitáři je v těchto testech očekávané.
@@ -353,12 +383,13 @@ class UpdateListTests(SiteBrowserCase):
         expect(toggle).to_have_attribute("aria-expanded", "true")
         expect(menu.locator("button")).to_have_text(
             ["Zhlédnuté epizody", "ČSFD hodnocení", "MAL hodnocení", "Seznam", "Všechno"])
-        # Zatím je zapojený jen Seznam.
-        for name in ("watched", "csfd", "mal", "all"):
+        # Zapojené jsou zatím Seznam a ČSFD hodnocení.
+        for name in ("watched", "mal", "all"):
             button = page.locator("#anime-update-%s-btn" % name)
             expect(button).to_be_disabled()
             expect(button).to_have_attribute("title", "Připravujeme")
-        expect(page.locator("#anime-update-list-btn")).to_be_enabled()
+        for name in ("csfd", "list"):
+            expect(page.locator("#anime-update-%s-btn" % name)).to_be_enabled()
 
         page.keyboard.press("Escape")
         expect(menu).to_be_hidden()
@@ -374,7 +405,7 @@ class UpdateListTests(SiteBrowserCase):
         page.locator("#anime-update-toggle").focus()
         page.keyboard.press("Enter")
         expect(page.locator("#anime-update-menu")).to_be_visible()
-        expect(page.locator("#anime-update-list-btn")).to_be_focused()
+        expect(page.locator("#anime-update-csfd-btn")).to_be_focused()
 
     def test_list_update_adds_new_favorites(self):
         helper = self.start_helper()
@@ -608,6 +639,198 @@ class UpdateListTests(SiteBrowserCase):
         page.locator("#anime-update-list-btn").click()
         expect(page.locator("#anime-update-info")).to_have_text("100.00% No new anime.")
         self.expect_unlocked(page)
+
+    # ----------------------------- ČSFD hodnocení -----------------------------
+
+    def run_csfd_update(self, page):
+        page.locator("#anime-update-toggle").click()
+        page.locator("#anime-update-csfd-btn").click()
+
+    def serve_rating(self, film_id, rating):
+        self.web.serve(CSFD_FILM_PREFIX + film_id, csfd_film_page("Known", "Known JA", rating, "Popis"))
+
+    def csfd_cells(self, page):
+        return page.locator("#anime-list .anime-row .anime-row__cell--CsfdRating").all_inner_texts()
+
+    def expected_data(self, ratings, base=None):
+        data = json.loads(json.dumps(SEED_DATA if base is None else base))
+        for number, rating in ratings.items():
+            data[number]["CsfdRating"] = rating
+        return data
+
+    def test_csfd_update_writes_ratings_to_data_file(self):
+        self.serve_rating("9001", "81 %")
+        self.serve_rating("9002", "70%")
+        self.serve_rating("9004", "? %")
+        # ČSFD přihlášení nepotřebuje, pomocník bez cookie stačí.
+        page = self.open_page(self.start_helper(proxy.Config()), stored=False)
+        page.evaluate(INFO_LOG_SCRIPT)
+
+        self.run_csfd_update(page)
+        expect(page.locator("#anime-update-menu")).to_be_hidden()
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+
+        # Texty průběhu jako ve skriptu AnimeList.pyw (UpdateCSFD a UpdateCSFDDone).
+        info_log = []
+        for text in page.evaluate("() => window.__infoLog"):
+            if not info_log or info_log[-1] != text:
+                info_log.append(text)
+        self.assertEqual(info_log, ["0.00% Aktualizuji ČSFD hodnocení", "33.33% Aktualizuji ČSFD hodnocení",
+                                    "66.67% Aktualizuji ČSFD hodnocení", "100.00% Hotovo", ""])
+        self.assertEqual(self.web.urls, [CSFD_FILM_PREFIX + number for number in ("9001", "9002", "9004")])
+
+        # Pořadí řádků zůstane, změní se jen hodnocení.
+        self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004"])
+        self.assertEqual(self.csfd_cells(page), ["81%", "70%", "?%"])
+        expect(page.locator("#anime-update-error")).to_be_hidden()
+
+        # Hodnocení zapsal pomocník do souboru ve formátu Python skriptu; prohlížeč si nic neuložil.
+        self.assertEqual(self.read_data_file(), self.python_json(self.expected_data({"9001": "81%", "9004": "?%"})))
+        self.assertFalse(self.has_stored_items(page))
+
+        # Po znovunačtení stránka ukáže hodnocení ze souboru.
+        page.reload()
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        self.assertEqual(self.csfd_cells(page), ["81%", "70%", "?%"])
+        self.assertEqual(self.unexpected_console_errors(), [])
+
+    def test_csfd_update_with_browser_edits_writes_file_and_browser(self):
+        self.serve_rating("9001", "81%")
+        self.serve_rating("9002", "70%")
+        self.serve_rating("9004", "66%")
+        page = self.open_page(self.start_helper())
+
+        self.run_csfd_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+        # Uložené úpravy v prohlížeči přebíjí soubor, proto se hodnocení uložila i tam.
+        expected = self.expected_data({"9001": "81%", "9004": "66%"})
+        self.assertEqual(self.read_data_file(), self.python_json(expected))
+        self.assertEqual(self.stored_items(page), expected)
+        page.reload()
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        self.assertEqual(self.csfd_cells(page), ["81%", "70%", "66%"])
+
+    def test_csfd_update_reports_anime_missing_from_data_file(self):
+        # Anime 9004 je jen v prohlížeči (např. přidané Seznamem a zatím neexportované).
+        self.write_data_file({number: SEED_DATA[number] for number in ("9001", "9002")})
+        self.serve_rating("9001", "81%")
+        self.serve_rating("9002", "70%")
+        self.serve_rating("9004", "66%")
+        page = self.open_page(self.start_helper())
+
+        self.run_csfd_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "V souboru data/anime.json chybí 1 anime, jejich hodnocení se do něj nezapsalo: Known 9004 EN.")
+        self.assertEqual(json.loads(self.read_data_file()),
+                         {number: dict(SEED_DATA[number], CsfdRating=rating) for number, rating in (("9001", "81%"), ("9002", "70%"))})
+        self.assertEqual(self.stored_items(page)["9004"]["CsfdRating"], "66%")
+
+    def test_csfd_update_keeps_ratings_in_browser_when_data_file_cannot_be_written(self):
+        self.serve_rating("9001", "81%")
+        self.serve_rating("9002", "70%")
+        self.serve_rating("9004", "66%")
+        page = self.open_page(self.start_helper(), stored=False)
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        self.write_data_file(b"{")
+
+        self.run_csfd_update(page)
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "Hodnocení se nepodařilo zapsat do data/anime.json. Podrobnosti: data-file-invalid. "
+            "Zjištěná hodnocení (3) zůstala uložená jen v prohlížeči, do souboru je dostanete přes Exportovat data.")
+        self.expect_unlocked(page)
+        self.assertEqual(self.read_data_file(), b"{")
+        self.assertEqual(self.csfd_cells(page), ["81%", "70%", "66%"])
+        self.assertEqual(self.stored_items(page), self.expected_data({"9001": "81%", "9004": "66%"}))
+
+    def test_csfd_update_requires_helper_that_can_write_data_file(self):
+        with mock.patch.object(proxy, "VERSION", 1):
+            page = self.open_page(self.start_helper(), stored=False)
+            self.run_csfd_update(page)
+            expect(page.locator("#anime-update-error")).to_have_text(
+                "Pomocný program je zastaralý a neumí zapsat hodnocení do data/anime.json. "
+                "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
+        self.expect_unlocked(page)
+
+        page = self.open_page(self.start_helper(data_path=os.path.join(self.tmp, "missing.json")), stored=False)
+        self.run_csfd_update(page)
+        expect(page.locator("#anime-update-error")).to_contain_text("Pomocný program nenašel soubor s daty")
+        self.expect_unlocked(page)
+        self.assertEqual(self.web.urls, [])
+        self.assertEqual(self.read_data_file(), self.python_json(SEED_DATA))
+
+    def test_csfd_update_skips_failing_anime_and_lists_them(self):
+        self.serve_rating("9001", "81%")
+        self.web.serve(CSFD_FILM_PREFIX + "9002", "<html>Nenalezeno</html>", status=404)
+        self.serve_rating("9004", "66%")
+        page = self.open_page(self.start_helper())
+
+        self.run_csfd_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+        # Souhrn přeskočených zůstane vidět i po odemčení.
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "ČSFD hodnocení se nepodařilo zjistit u 1 anime, zůstalo původní: Known 9002 EN.")
+        self.assertEqual(self.csfd_cells(page), ["81%", "70%", "66%"])
+        self.assertEqual(self.stored_items(page)["9004"]["CsfdRating"], "66%")
+        self.assertEqual(self.read_data_file(), self.python_json(self.expected_data({"9001": "81%", "9004": "66%"})))
+        self.assertTrue(any("CSFD rating not updated" in text for kind, text in self.console if kind == "warning"))
+
+        # Další aktualizace souhrn smaže.
+        self.serve_rating("9002", "55%")
+        self.run_csfd_update(page)
+        expect(page.locator("#anime-update-error")).to_be_hidden()
+        self.expect_unlocked(page)
+        self.assertEqual(self.csfd_cells(page), ["81%", "55%", "66%"])
+
+    def test_csfd_update_never_gives_up_on_skippable_errors(self):
+        for number in ("9001", "9002", "9004"):
+            self.web.serve(CSFD_FILM_PREFIX + number, "<html>Nenalezeno</html>", status=404)
+        page = self.open_page(self.start_helper())
+
+        self.run_csfd_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "ČSFD hodnocení se nepodařilo zjistit u 3 anime, zůstalo původní: "
+            "Known 9001 EN, Known 9002 EN, Known 9004 EN.")
+        self.assertEqual(self.web.urls, [CSFD_FILM_PREFIX + number for number in ("9001", "9002", "9004")])
+        self.assertEqual(self.csfd_cells(page), ["70%", "70%", "70%"])
+        self.assertEqual(self.read_data_file(), self.python_json(SEED_DATA))
+
+    def test_csfd_update_stops_on_blocked_redirect_and_keeps_finished_ratings(self):
+        self.serve_rating("9001", "81%")
+        self.web.redirect(CSFD_FILM_PREFIX + "9002", "https://blocked.example/notification")
+        page = self.open_page(self.start_helper())
+
+        self.run_csfd_update(page)
+        error = page.locator("#anime-update-error")
+        expect(error).to_be_visible()
+        expect(error).to_contain_text("Anime: Known 9002 EN.")
+        expect(error).to_contain_text("Hodnocení zjištěná před chybou se zapsala do data/anime.json (1).")
+        expect(page.locator("#anime-update-toggle")).to_be_enabled(timeout=1000)
+        expect(page.locator("#anime-update-info")).to_have_text("")
+        self.assertEqual(self.web.urls, [CSFD_FILM_PREFIX + "9001", CSFD_FILM_PREFIX + "9002"])
+        self.assertEqual(self.csfd_cells(page), ["81%", "70%", "70%"])
+        self.assertEqual(self.read_data_file(), self.python_json(self.expected_data({"9001": "81%"})))
+        self.assertEqual(self.stored_items(page)["9001"]["CsfdRating"], "81%")
+
+    def test_csfd_update_in_english(self):
+        self.serve_rating("9001", "81%")
+        self.web.serve(CSFD_FILM_PREFIX + "9002", "<html>Nenalezeno</html>", status=404)
+        self.serve_rating("9004", "66%")
+        page = self.open_page(self.start_helper(), lang="en")
+        page.evaluate(INFO_LOG_SCRIPT)
+
+        self.run_csfd_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Done")
+        self.expect_unlocked(page)
+        self.assertIn("0.00% Updating CSFD ratings", page.evaluate("() => window.__infoLog"))
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "The CSFD rating could not be retrieved for 1 anime; the previous value was kept: Known 9002 EN.")
 
 
 class BrowserUnitTests(SiteBrowserCase):

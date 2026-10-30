@@ -82,6 +82,16 @@ window.AnimeData = (function () {
 	}
 
 	/**
+	 * Zjistí, jestli jsou v prohlížeči uložené úpravy, které při načtení
+	 * přebíjí data/anime.json (Krok 20 - ČSFD hodnocení zapsaná pomocníkem
+	 * do souboru je pak nutné uložit i sem, jinak by je stránka neukázala).
+	 * @returns {boolean}
+	 */
+	function hasStoredItems() {
+		return readStoredItems() !== null;
+	}
+
+	/**
 	 * Vrátí data ve stejném textovém formátu jako Python WriteDataToTheFile()
 	 * (`json.dump(JsonData, File, indent = 4, ensure_ascii = False)`) - pro
 	 * stažení do souboru (Krok 16, bez Python vzoru - web nemá přístup
@@ -272,6 +282,7 @@ window.AnimeData = (function () {
 		addItem: addItem,
 		sortItems: sortItems,
 		save: save,
+		hasStoredItems: hasStoredItems,
 		reset: reset,
 		toJsonString: toJsonString,
 		importFromObject: importFromObject

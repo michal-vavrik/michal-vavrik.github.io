@@ -22,7 +22,8 @@ prohlížeče. Hry jsou dostupné v češtině a angličtině.
 [Anime](./anime.html) (po přihlášení s plným přístupem) zobrazuje seznam z
 `data/anime.json`. Tlačítko **Aktualizovat** otevře stejné volby jako desktopový
 skript `AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, Seznam
-a Všechno. Zatím je hotová volba **Seznam**, ostatní jsou označené „Připravujeme“.
+a Všechno. Zatím jsou hotové volby **Seznam** a **ČSFD hodnocení**, ostatní jsou
+označené „Připravujeme“. Obě volby potřebují pomocný program (viz níže).
 
 ### Aktualizovat → Seznam
 
@@ -41,7 +42,8 @@ python tools/anime_proxy.py
 
 Poslouchá jen na `127.0.0.1:8787`. Parametry: `--port`, `--allow-origin ORIGIN`
 (další adresa stránky; výchozí jsou GitHub Pages a `http://127.0.0.1:8765`,
-`http://localhost:8765`), `--images-dir` (výchozí `img/anime`) a `--check`. Při
+`http://localhost:8765`), `--images-dir` (výchozí `img/anime`), `--data-file`
+(výchozí `data/anime.json` vedle složky `tools`) a `--check`. Při
 jiném portu nastavte v konzoli prohlížeče
 `localStorage.setItem('anime-proxy-url', 'http://127.0.0.1:PORT')`.
 
@@ -81,10 +83,39 @@ platnosti cookie), ČSFD, MyAnimeList a serialy.sx (obrázky) a vypíše stav ka
 z nich. Ve firemní síti (např. Zscaler) mohou být weby blokované nebo přesměrované
 (`redirect-blocked`, chyba TLS), použijte jinou síť.
 
+### Aktualizovat → ČSFD hodnocení
+
+Projde všechna anime v seznamu (i DROPPED a DONE, funkce `UpdateCSFD` ze skriptu),
+načte jejich stránku na ČSFD podle `CsfdID` a přepíše `CsfdRating`. Anime se
+zpracovávají jedno po druhém (u ~300 anime to trvá i několik minut), průběh se ukazuje
+pod tlačítky a pořadí řádků se nemění. ČSFD nepotřebuje cookie ani řešení Cloudflare,
+stačí spuštěný pomocný program.
+
+Po zjištění všech hodnocení je pomocný program najednou zapíše přímo do
+`data/anime.json` (jako `WriteDataToTheFile` ve skriptu): změní jen `CsfdRating`,
+formát souboru zůstane stejný, takže `git diff` ukáže jen změněná hodnocení. Na
+GitHub Pages se nové hodnoty objeví až po commitu a pushi. Pomocný program starší
+než tato změna zápis neumí; stránka pak požádá o jeho restart.
+
+- Pokud má prohlížeč uložené úpravy z localStorage (např. anime přidaná Seznamem),
+  stránka čte je místo `data/anime.json`, proto se hodnocení uloží i tam. Anime,
+  která v `data/anime.json` nejsou, se vypíšou pod tlačítky a jejich hodnocení
+  zůstane jen v prohlížeči.
+- Když se hodnocení jednoho anime nepodaří zjistit (např. HTTP 404, změněná
+  stránka, vypršený čas, nečekaný tvar hodnocení), anime si nechá původní hodnotu,
+  běh pokračuje a na konci se pod tlačítky vypíše, kterých anime se to týkalo.
+  Souhrn zůstane vidět do další aktualizace.
+- Běh zastaví jen chyba, která by se opakovala u všech anime (pomocný program
+  neběží, blokované přesměrování). Hodnocení zjištěná do té doby se do souboru
+  zapíšou.
+- Když zápis do souboru selže (soubor chybí, je poškozený nebo zamčený), hodnocení
+  zůstanou uložená v prohlížeči a do souboru se dostanou přes Exportovat data.
+
 ### Uložení a publikace dat
 
-Každé dokončené anime se hned uloží do localStorage prohlížeče a jeho obrázek jako
-`img/anime/N.jpg`. Do repozitáře se dostane takto:
+Anime přidaná Seznamem se hned uloží do localStorage prohlížeče a jejich obrázky jako
+`img/anime/N.jpg` (ČSFD hodnocení zapisuje pomocný program rovnou do souboru, viz
+výše). Do repozitáře se data dostanou takto:
 
 1. **Exportovat data** stáhne `AnimeData.json` (stejný tvar jako `data/anime.json`).
 2. Soubor uložte jako `data/anime.json`.
@@ -99,7 +130,8 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
 
 - Anime se přidá a uloží až celé hotové, obrázek se stahuje jako poslední krok.
   Chyba běh zastaví a zobrazí se (včetně názvu anime); už přidaná anime zůstanou.
-- Data se neukládají do souboru na disku, ale do prohlížeče (viz výše).
+- Seznam ukládá data do prohlížeče, ne do souboru na disku (viz výše). ČSFD
+  hodnocení zapisuje do `data/anime.json` pomocný program.
 - Nová anime přijdou na konec aktuálního pořadí. Číslo je největší dosud použité
   číslo (v datech i v `img/anime`) zvýšené o 1.
 - Odpověď HTTP 400 a vyšší je chyba. Hledání na MyAnimeList bez výsledků (MAL ho
@@ -107,6 +139,9 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
   MAL rovnou přesměruje na stránku anime, použije se tato stránka.
 - Bez nových anime se zobrazí „Žádné nové anime.“. Chybějící sekce oblíbených na
   sledujserialy.io (typicky chybná cookie) je chyba.
+- ČSFD hodnocení: skript při chybě jednoho anime spadne celý a nic neuloží, stránka
+  ho přeskočí (viz výše). Text hodnocení se stejně jako ve skriptu ukládá bez mezer
+  (`85%`, `?%`); hodnocení jiného tvaru se nezapíše.
 
 ### Řešení potíží
 
@@ -117,6 +152,8 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
   a `http://127.0.0.1:8765`).
 - **Pomocný program stránku nepovoluje:** spusťte ho s `--allow-origin` a adresou
   stránky.
+- **Pomocný program je zastaralý:** ukončete ho (Ctrl+C) a spusťte znovu, aby se
+  načetla jeho nová verze.
 - **Web vyžaduje ověření Cloudflare:** viz část o Cloudflare výše.
 - **Požadavek byl přesměrován na nepovolenou adresu:** firemní filtr (např. Zscaler)
   blokuje obrázkový server serialy.sx. Nové anime se v takové síti nedokončí ani

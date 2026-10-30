@@ -8,8 +8,11 @@
  * ukazuje průběh a řazení hlavičky je zamčené. Po dokončení zůstane výsledek
  * 2 s vidět (Python Timer(2, ...), ř. 567) a teprve potom se vše odemkne.
  *
- * Zatím je zapojené jen "Seznam" (js/anime-sync.js, Python UpdateAnimeList);
- * ostatní podtlačítka jsou vidět, ale neaktivní.
+ * Zapojené jsou "Seznam" (js/anime-sync.js, Python UpdateAnimeList) a "ČSFD
+ * hodnocení" (Python UpdateCSFD); ostatní podtlačítka jsou vidět, ale neaktivní.
+ * Anime přeskočená při aktualizaci ČSFD (bez Python vzoru) a anime, jejichž
+ * hodnocení se nezapsalo do data/anime.json, se vypíšou v liště a souhrn
+ * zůstane vidět až do další aktualizace.
  *
  * Bez Python vzoru: chyba (neběžící pomocný program, změněná stránka zdroje,
  * ...) se zobrazí v liště, ovládání se hned odemkne a už přidané anime zůstane
@@ -39,10 +42,13 @@ window.AnimeUpdate = (function () {
 	var menuOpen = false;
 	var unlockTimer = null;
 
-	// {kind: 'start' | 'progress' | 'done', percent, count} - text v informačním řádku.
+	// {action: 'list' | 'csfd', kind: 'start' | 'progress' | 'done', percent, count} - text v informačním řádku.
 	var progress = null;
-	// {error, kept} - poslední chyba a počet anime přidaných před ní.
+	// {error, kept, keptKey, skipped, notInFile} - poslední chyba, počet anime
+	// uložených před ní a anime přeskočená nebo nezapsaná do souboru.
 	var failure = null;
+	// {skipped, notInFile} po jinak dokončené aktualizaci ČSFD; souhrn zůstane vidět do další aktualizace.
+	var skippedNotice = null;
 
 	function byId(id) {
 		return document.getElementById(id);
@@ -62,7 +68,9 @@ window.AnimeUpdate = (function () {
 			return;
 		}
 		var key;
-		if (progress.kind === 'start') {
+		if (progress.action === 'csfd') {
+			key = 'anime.update.csfd.' + progress.kind;
+		} else if (progress.kind === 'start') {
 			key = 'anime.update.list.start';
 		} else if (progress.kind === 'progress') {
 			key = pluralKey('anime.update.list.progress', progress.count);
@@ -70,6 +78,24 @@ window.AnimeUpdate = (function () {
 			key = progress.count === 0 ? 'anime.update.list.done.none' : pluralKey('anime.update.list.done', progress.count);
 		}
 		els.info.textContent = i18n.t(key, { percent: progress.percent.toFixed(2), count: progress.count });
+	}
+
+	function namesOf(entries) {
+		return entries.map(function (entry) {
+			return entry.name;
+		}).join(', ');
+	}
+
+	// Souhrn anime, u kterých se ČSFD hodnocení nezjistilo nebo nezapsalo do souboru.
+	function skippedMessage(notice) {
+		var parts = [];
+		if (notice.skipped && notice.skipped.length > 0) {
+			parts.push(i18n.t('anime.update.csfd.failed', { count: notice.skipped.length, names: namesOf(notice.skipped) }));
+		}
+		if (notice.notInFile && notice.notInFile.length > 0) {
+			parts.push(i18n.t('anime.update.csfd.notInFile', { count: notice.notInFile.length, names: namesOf(notice.notInFile) }));
+		}
+		return parts.join(' ');
 	}
 
 	function errorMessage(current) {
@@ -87,7 +113,11 @@ window.AnimeUpdate = (function () {
 			parts.push(i18n.t('anime.update.error.detail', { detail: detail }));
 		}
 		if (current.kept > 0) {
-			parts.push(i18n.t('anime.update.error.kept', { count: current.kept }));
+			parts.push(i18n.t(current.keptKey || 'anime.update.error.kept', { count: current.kept }));
+		}
+		var notice = skippedMessage(current);
+		if (notice) {
+			parts.push(notice);
 		}
 		return parts.join(' ');
 	}
@@ -96,8 +126,14 @@ window.AnimeUpdate = (function () {
 		if (!els || !els.error) {
 			return;
 		}
-		els.error.textContent = failure ? errorMessage(failure) : '';
-		els.error.hidden = !failure;
+		var text = '';
+		if (failure) {
+			text = errorMessage(failure);
+		} else if (skippedNotice) {
+			text = skippedMessage(skippedNotice);
+		}
+		els.error.textContent = text;
+		els.error.hidden = text === '';
 	}
 
 	function setMenuOpen(open) {
@@ -144,19 +180,20 @@ window.AnimeUpdate = (function () {
 		}
 	}
 
-	function begin() {
+	function begin(action) {
 		window.clearTimeout(unlockTimer);
 		unlockTimer = null;
 		busy = true;
 		failure = null;
-		progress = { kind: 'start', percent: 0, count: 0 };
+		skippedNotice = null;
+		progress = { action: action, kind: 'start', percent: 0, count: 0 };
 		renderError();
 		renderInfo();
 		refreshControls();
 	}
 
 	function finish(total) {
-		progress = { kind: 'done', percent: 100, count: total };
+		progress = { action: progress ? progress.action : 'list', kind: 'done', percent: 100, count: total };
 		renderInfo();
 		unlockTimer = window.setTimeout(function () {
 			unlockTimer = null;
@@ -168,13 +205,16 @@ window.AnimeUpdate = (function () {
 		}, doneDelayMs);
 	}
 
-	function fail(error, kept) {
+	function fail(error, kept, keptKey) {
 		if (window.console && typeof window.console.error === 'function') {
 			window.console.error('Anime update failed:', error);
 		}
 		progress = null;
 		renderInfo();
-		failure = { error: error, kept: kept };
+		failure = {
+			error: error, kept: kept, keptKey: keptKey,
+			skipped: error && error.failures, notInFile: error && error.notInFile
+		};
 		renderError();
 		busy = false;
 		refreshControls();
@@ -187,14 +227,14 @@ window.AnimeUpdate = (function () {
 			return;
 		}
 		var added = 0;
-		begin();
+		begin('list');
 		window.AnimeSync.updateList({
 			proxy: window.AnimeProxy,
 			data: options.data,
 			onTotal: function (total) {
 				// Bez nových anime Python průběh nehlásí, zůstane "0.00% Aktualizuji anime list".
 				if (total > 0) {
-					progress = { kind: 'progress', percent: 0, count: total };
+					progress = { action: 'list', kind: 'progress', percent: 0, count: total };
 					renderInfo();
 				}
 			},
@@ -212,6 +252,39 @@ window.AnimeUpdate = (function () {
 			finish(result.total);
 		}, function (error) {
 			fail(error, added);
+		});
+	}
+
+	/** Aktualizovat -> ČSFD hodnocení (Python aUpdateCsfdPBClicked(), ř. 435-439, a UpdateCSFDDone(), ř. 457-472). */
+	function runCsfd() {
+		if (busy || !ready || editMode) {
+			return;
+		}
+		begin('csfd');
+		window.AnimeSync.updateCsfd({
+			proxy: window.AnimeProxy,
+			data: options.data,
+			onProgress: function (percent) {
+				progress = { action: 'csfd', kind: 'progress', percent: percent, count: 0 };
+				renderInfo();
+			}
+		}).then(function (result) {
+			// Python po dokončení jen přepíše hodnoty v řádcích, pořadí se nemění.
+			options.onItemsChanged(options.data.getItems());
+			if (result.failures.length > 0 || result.notInFile.length > 0) {
+				if (window.console && typeof window.console.warn === 'function') {
+					window.console.warn('CSFD rating not updated for:', result.failures, 'not in data file:', result.notInFile);
+				}
+				skippedNotice = { skipped: result.failures, notInFile: result.notInFile };
+				renderError();
+			}
+			finish(result.total);
+		}, function (error) {
+			if (error && error.updated > 0) {
+				options.onItemsChanged(options.data.getItems());
+			}
+			var keptKey = error && error.savedTo === 'file' ? 'anime.update.error.keptRatingsFile' : 'anime.update.error.keptRatingsBrowser';
+			fail(error, (error && error.updated) || 0, keptKey);
 		});
 	}
 
@@ -238,7 +311,7 @@ window.AnimeUpdate = (function () {
 		}
 
 		// Další aktualizace přibudou s dalšími kroky; do té doby jsou jejich tlačítka neaktivní.
-		actions = { list: runList };
+		actions = { list: runList, csfd: runCsfd };
 		actionButtons = Array.prototype.slice.call(els.menu.querySelectorAll('[data-update-action]'));
 		actionButtons.forEach(function (button) {
 			var name = button.getAttribute('data-update-action');

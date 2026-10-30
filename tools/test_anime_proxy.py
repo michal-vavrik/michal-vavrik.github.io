@@ -105,7 +105,8 @@ class GuardTests(ProxyTestCase):
         status, headers, body = self.request("GET", "/health")
         self.assertEqual(status, 200)
         payload = json.loads(body)
-        self.assertEqual(payload, {"ok": True, "version": proxy.VERSION, "cookieConfigured": True, "maxImageNumber": 12})
+        self.assertEqual(payload, {"ok": True, "version": proxy.VERSION, "cookieConfigured": True, "maxImageNumber": 12,
+                                   "dataFile": False})
         self.assertEqual(headers["access-control-allow-origin"], ORIGIN)
         self.assertIn("X-Upstream-Status", headers["access-control-expose-headers"])
         self.assertEqual(headers["cache-control"], "no-store")
@@ -166,6 +167,7 @@ class GuardTests(ProxyTestCase):
         self.assertEqual(self.request("POST", "/fetch")[0], 405)
         self.assertEqual(self.request("GET", "/images")[0], 405)
         self.assertEqual(self.request("POST", "/health")[0], 405)
+        self.assertEqual(self.request("GET", "/csfd-ratings")[0], 405)
 
 
 class FetchTests(ProxyTestCase):
@@ -532,6 +534,128 @@ class ConfigReloadTests(ProxyTestCase):
         with mock.patch.object(proxy, "load_config") as load:
             self.assertEqual(server.config.cookie, "fixed")
         load.assert_not_called()
+
+
+class DataFileTests(ProxyTestCase):
+    """POST /csfd-ratings zapisuje ČSFD hodnocení do souboru s daty."""
+
+    ITEMS = {
+        "1": {"Number": "1", "FavoriteName": "Naruto Šippúden", "NameJa": "ナルト", "CsfdRating": "80%", "MalRating": "82%"},
+        "2": {"Number": "2", "FavoriteName": "Bleach", "NameJa": "ブリーチ", "CsfdRating": "?%", "MalRating": "79%"},
+    }
+
+    def make_server(self):
+        quiet = mock.patch("builtins.print")
+        quiet.start()
+        self.addCleanup(quiet.stop)
+        self.data_path = os.path.join(self.tmp, "anime.json")
+        self.write_data(self.dumps(self.ITEMS).encode("utf-8"))
+        return proxy.ProxyServer(0, proxy.DEFAULT_ORIGINS, self.images, proxy.Config(cookie=COOKIE), self.transport,
+                                 data_path=self.data_path)
+
+    @staticmethod
+    def dumps(data):
+        return json.dumps(data, indent=4, ensure_ascii=False)
+
+    def write_data(self, raw):
+        with open(self.data_path, "wb") as handle:
+            handle.write(raw)
+
+    def read_data(self):
+        with open(self.data_path, "rb") as handle:
+            return handle.read()
+
+    def post_ratings(self, payload, **kwargs):
+        body = payload if isinstance(payload, bytes) else json.dumps(payload).encode("utf-8")
+        headers = {"Content-Type": "application/json"}
+        headers.update(kwargs.pop("headers", {}))
+        return self.request("POST", "/csfd-ratings", headers=headers, body=body, **kwargs)
+
+    def test_health_reports_data_file(self):
+        self.assertTrue(json.loads(self.request("GET", "/health")[2])["dataFile"])
+        os.remove(self.data_path)
+        self.assertFalse(json.loads(self.request("GET", "/health")[2])["dataFile"])
+
+    def test_writes_only_ratings_in_python_format(self):
+        status, _, body = self.post_ratings({"ratings": {"1": "85%", "2": "?%"}})
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(body), {"ok": True, "changed": 1, "missing": []})
+        expected = json.loads(json.dumps(self.ITEMS))
+        expected["1"]["CsfdRating"] = "85%"
+        self.assertEqual(self.read_data(), self.dumps(expected).encode("utf-8"))
+        self.assertEqual(os.listdir(self.tmp), ["anime.json"])
+        self.assertEqual(self.transport.calls, [])
+
+    def test_unknown_numbers_are_reported_and_not_added(self):
+        status, _, body = self.post_ratings({"ratings": {"2": "75%", "99": "60%"}})
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 1, "missing": ["99"]}))
+        data = json.loads(self.read_data())
+        self.assertEqual(sorted(data), ["1", "2"])
+        self.assertEqual(data["2"]["CsfdRating"], "75%")
+
+    def test_unchanged_ratings_do_not_touch_the_file(self):
+        os.utime(self.data_path, ns=(10 ** 9, 10 ** 9))
+        status, _, body = self.post_ratings({"ratings": {"1": "80%", "2": "?%"}})
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 0, "missing": []}))
+        self.assertEqual(os.stat(self.data_path).st_mtime_ns, 10 ** 9)
+
+    def test_keeps_bom_line_endings_and_final_newline(self):
+        original = (self.dumps(self.ITEMS).replace("\n", "\r\n") + "\r\n").encode("utf-8")
+        self.write_data(b"\xef\xbb\xbf" + original)
+        self.assertEqual(self.post_ratings({"ratings": {"1": "81%"}})[0], 200)
+        raw = self.read_data()
+        self.assertEqual(raw, b"\xef\xbb\xbf" + original.replace(b'"80%"', b'"81%"'))
+
+    def test_invalid_ratings_are_rejected_without_writing(self):
+        before = self.read_data()
+        for ratings in ([], "85%", {"1": 85}, {"1": "85"}, {"1": "1000%"}, {"1": ""}, {"1": None},
+                        {"x": "85%"}, {"": "85%"}, {"1234567": "85%"}, {"1": "85% "}, {"1": "%"}):
+            with self.subTest(ratings=ratings):
+                status, headers, _ = self.post_ratings({"ratings": ratings})
+                self.assertEqual((status, headers["x-proxy-error"]), (400, "bad-request"))
+        self.assertEqual(self.post_ratings({})[0], 400)
+        self.assertEqual(self.post_ratings(b"{", headers={})[0], 400)
+        self.assertEqual(self.post_ratings(b"{}", headers={"Content-Type": "text/plain"})[0], 415)
+        self.assertEqual(self.post_ratings(b'{"ratings": "' + b"a" * proxy.MAX_RATINGS_BODY + b'"}')[0], 413)
+        too_many = {str(number): "50%" for number in range(1, proxy.MAX_RATINGS + 2)}
+        self.assertEqual(self.post_ratings({"ratings": too_many})[0], 400)
+        self.assertEqual(self.read_data(), before)
+
+    def test_large_but_valid_request_is_accepted(self):
+        ratings = {str(number): "50%" for number in range(1, 3001)}
+        status, _, body = self.post_ratings({"ratings": ratings})
+        self.assertEqual(status, 200)
+        self.assertEqual(len(json.loads(body)["missing"]), 2998)
+
+    def test_missing_or_invalid_data_file(self):
+        os.remove(self.data_path)
+        status, headers, _ = self.post_ratings({"ratings": {"1": "81%"}})
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-missing"))
+        self.assertFalse(os.path.exists(self.data_path))
+        for raw in (b"{", b"[]", b"\xff\xfe"):
+            with self.subTest(raw=raw):
+                self.write_data(raw)
+                status, headers, _ = self.post_ratings({"ratings": {"1": "81%"}})
+                self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-invalid"))
+                self.assertEqual(self.read_data(), raw)
+
+    def test_failed_write_keeps_original_file(self):
+        before = self.read_data()
+        with mock.patch.object(proxy.os, "replace", side_effect=PermissionError("locked")), \
+                mock.patch.object(proxy.time, "sleep"):
+            status, headers, _ = self.post_ratings({"ratings": {"1": "81%"}})
+        self.assertEqual((status, headers["x-proxy-error"], headers["x-proxy-detail"]), (500, "data-write-failed", "PermissionError"))
+        self.assertEqual(self.read_data(), before)
+        self.assertEqual(os.listdir(self.tmp), ["anime.json"])
+
+    def test_server_without_data_file(self):
+        self.server.data_path = None
+        self.assertFalse(json.loads(self.request("GET", "/health")[2])["dataFile"])
+        status, headers, _ = self.post_ratings({"ratings": {"1": "81%"}})
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-missing"))
+
+    def test_default_data_file_is_the_site_data(self):
+        self.assertEqual(proxy.DEFAULT_DATA_FILE, os.path.join(os.path.dirname(proxy.HERE), "data", "anime.json"))
 
 
 class CheckTests(unittest.TestCase):

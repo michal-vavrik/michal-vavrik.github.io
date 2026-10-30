@@ -1,5 +1,5 @@
 /**
- * Automatické testy aktualizace anime listu (Aktualizovat -> Seznam):
+ * Automatické testy aktualizace anime listu (Aktualizovat -> Seznam a ČSFD hodnocení):
  * js/anime-sync.js, js/anime-proxy.js a addItem() v js/anime-data.js.
  *
  * Vzorové stránky sledujserialy.io, ČSFD a MyAnimeList jsou zjednodušené, ale
@@ -222,6 +222,21 @@ window.AnimeSyncTests = (function () {
 		runner.equal('parseCsfdData: chybí žánry',
 			errorSummary(thrown(function () { Sync.parseCsfdData(csfdFilmPage({ names: [], rating: '1%', genres: null }), '1'); })),
 			{ code: 'parse-error', detail: 'csfd-genres' });
+
+		runner.equal('parseCsfdRating: hodnocení bez mezer', Sync.parseCsfdRating(csfdFilmPage({ names: [], rating: '85 %', genres: null, plot: null })), '85%');
+		runner.equal('parseCsfdRating: nehodnocený seriál', Sync.parseCsfdRating(csfdFilmPage({ names: [], rating: '? %' })), '?%');
+		runner.equal('parseCsfdRating: chybí hlavní část stránky',
+			errorSummary(thrown(function () { Sync.parseCsfdRating(csfdFilmPage({ names: [], rating: '1%', main: false })); })),
+			{ code: 'parse-error', detail: 'csfd-page' });
+		runner.equal('parseCsfdRating: chybí hodnocení',
+			errorSummary(thrown(function () { Sync.parseCsfdRating(csfdFilmPage({ names: [], rating: null })); })),
+			{ code: 'parse-error', detail: 'csfd-rating' });
+		['<span>85%</span>', '85', '1000%', '8 5 %x'].forEach(function (rating) {
+			runner.equal('parseCsfdRating: nečekaný tvar hodnocení ' + rating,
+				errorSummary(thrown(function () { Sync.parseCsfdRating(csfdFilmPage({ names: [], rating: rating })); })),
+				{ code: 'parse-error', detail: 'csfd-rating' });
+		});
+		runner.equal('parseCsfdRating: 100 %', Sync.parseCsfdRating(csfdFilmPage({ names: [], rating: '100 %' })), '100%');
 	}
 
 	/* ------------------------------- MyAnimeList ------------------------------- */
@@ -314,17 +329,24 @@ window.AnimeSyncTests = (function () {
 
 	function proxyClient(runner) {
 		var base = Client.baseUrl();
-		var healthBody = JSON.stringify({ ok: true, version: 1, cookieConfigured: true, maxImageNumber: '7' });
+		var healthBody = JSON.stringify({ ok: true, version: 2, cookieConfigured: true, maxImageNumber: '7', dataFile: true });
 
 		return sequence([
 			function () {
 				return withFetch(function () { return reply(healthBody, 200); }, function (stub) {
 					return Client.health().then(function (health) {
-						runner.equal('health: výsledek', health, { version: 1, cookieConfigured: true, maxImageNumber: 7 });
+						runner.equal('health: výsledek', health, { version: 2, cookieConfigured: true, maxImageNumber: 7, dataFile: true });
 						runner.equal('health: adresa a nastavení požadavku', [
 							stub.calls[0].url, stub.calls[0].init.method, stub.calls[0].init.headers['X-Anime-Proxy'],
 							stub.calls[0].init.credentials, stub.calls[0].init.cache
 						], [base + '/health', 'GET', '1', 'omit', 'no-store']);
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply(JSON.stringify({ ok: true, version: 1, cookieConfigured: false, maxImageNumber: 0 }), 200); }, function () {
+					return Client.health().then(function (health) {
+						runner.equal('health: starší pomocník bez dataFile', health, { version: 1, cookieConfigured: false, maxImageNumber: 0, dataFile: false });
 					});
 				});
 			},
@@ -432,6 +454,31 @@ window.AnimeSyncTests = (function () {
 				return withFetch(function () { return reply('nic', 201); }, function () {
 					return summarizeError(Client.saveImage('https://serialy.sx/a.jpg', 12)).then(function (error) {
 						runner.equal('saveImage: neplatná odpověď', error, { code: 'unexpected-response', detail: 'images', status: 0 });
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply(JSON.stringify({ ok: true, changed: 1, missing: ['9'] }), 200); }, function (stub) {
+					return Client.saveCsfdRatings({ 1: '85%', 9: '?%' }).then(function (saved) {
+						runner.equal('saveCsfdRatings: výsledek', saved, { changed: 1, missing: ['9'] });
+						runner.equal('saveCsfdRatings: požadavek', [
+							stub.calls[0].url, stub.calls[0].init.method, stub.calls[0].init.headers['Content-Type'],
+							stub.calls[0].init.headers['X-Anime-Proxy'], JSON.parse(stub.calls[0].init.body)
+						], [base + '/csfd-ratings', 'POST', 'application/json', '1', { ratings: { 1: '85%', 9: '?%' } }]);
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply('{}', 500, { 'X-Proxy-Error': 'data-write-failed', 'X-Proxy-Detail': 'PermissionError' }); }, function () {
+					return summarizeError(Client.saveCsfdRatings({ 1: '85%' })).then(function (error) {
+						runner.equal('saveCsfdRatings: chyba zápisu', error, { code: 'data-write-failed', detail: 'PermissionError', status: 500 });
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply('{"ok": true}', 200); }, function () {
+					return summarizeError(Client.saveCsfdRatings({ 1: '85%' })).then(function (error) {
+						runner.equal('saveCsfdRatings: neplatná odpověď', error, { code: 'unexpected-response', detail: 'csfd-ratings', status: 0 });
 					});
 				});
 			},
@@ -799,6 +846,288 @@ window.AnimeSyncTests = (function () {
 		]);
 	}
 
+	/* ------------------------- tok ČSFD hodnocení ------------------------- */
+
+	function ratingItems(count) {
+		var items = [];
+		for (var index = 1; index <= count; index += 1) {
+			items.push({ Number: String(index), FavoriteName: 'Fav ' + index, CsfdID: String(100 + index), NameEn: 'Anime ' + index,
+				State: index === 2 ? 'DROPPED' : 'DONE', CsfdRating: '50%' });
+		}
+		return items;
+	}
+
+	function filmUrl(id) {
+		return 'https://www.csfd.cz/film/' + id;
+	}
+
+	function ratingPage(rating) {
+		return csfdFilmPage({ names: [], rating: rating });
+	}
+
+	/**
+	 * Spustí aktualizaci ČSFD hodnocení s atrapou pomocníka a dat.
+	 * @param {Object} setup - routes (adresa -> text | Error), items, health, healthError, healthGate,
+	 *     missing (čísla, která v souboru nejsou), writeError, storedItems (jsou uložené úpravy v prohlížeči)
+	 */
+	function runCsfdUpdate(setup) {
+		var events = [];
+		var calls = [];
+		var saves = [];
+		var writes = [];
+		var items = setup.items === null ? null : (setup.items || ratingItems(3));
+		var proxy = {
+			health: function () {
+				events.push('health');
+				if (setup.healthError) {
+					return Promise.reject(setup.healthError);
+				}
+				var ready = setup.health || { version: 2, cookieConfigured: false, maxImageNumber: 0, dataFile: true };
+				return setup.healthGate ? setup.healthGate.then(function () { return ready; }) : Promise.resolve(ready);
+			},
+			fetchPage: function (url) {
+				calls.push(url);
+				var route = setup.routes[url];
+				if (route instanceof Error) {
+					return Promise.reject(route);
+				}
+				if (route === undefined) {
+					return Promise.reject(makeError('test-missing-route', url));
+				}
+				return Promise.resolve({ text: route, status: 200, finalUrl: url });
+			},
+			saveCsfdRatings: function (ratings) {
+				writes.push(JSON.parse(JSON.stringify(ratings)));
+				events.push('write');
+				if (setup.writeError) {
+					return Promise.reject(setup.writeError);
+				}
+				return Promise.resolve({ changed: 0, missing: setup.missing || [] });
+			}
+		};
+		var data = {
+			getItems: function () {
+				return items;
+			},
+			save: function (all) {
+				saves.push(all.map(function (item) { return item.CsfdRating; }));
+				events.push('save');
+			},
+			hasStoredItems: function () {
+				return Boolean(setup.storedItems);
+			}
+		};
+		return Sync.updateCsfd({
+			proxy: proxy,
+			data: data,
+			onProgress: function (percent) { events.push('progress:' + percent.toFixed(2)); }
+		}).then(function (result) {
+			return { result: result, error: null, events: events, calls: calls, saves: saves, writes: writes, items: items };
+		}, function (error) {
+			return { result: null, error: error, events: events, calls: calls, saves: saves, writes: writes, items: items };
+		});
+	}
+
+	function ratingsOf(items) {
+		return items.map(function (item) { return item.CsfdRating; });
+	}
+
+	function savedState(error) {
+		return error && [error.savedTo, error.updated, error.notInFile];
+	}
+
+	function csfdFlows(runner) {
+		return sequence([
+			function () {
+				var routes = {};
+				routes[filmUrl(101)] = ratingPage('81 %');
+				routes[filmUrl(102)] = ratingPage('50%');
+				routes[filmUrl(103)] = ratingPage('? %');
+				return runCsfdUpdate({ routes: routes }).then(function (run) {
+					runner.equal('ČSFD: bez chyby', run.error && run.error.message, null);
+					runner.equal('ČSFD: všechna anime včetně DROPPED, v pořadí dat', run.calls, [filmUrl(101), filmUrl(102), filmUrl(103)]);
+					runner.equal('ČSFD: průběh jako Python (100 * index / počet) a jeden zápis do souboru na konci', run.events,
+						['health', 'progress:0.00', 'progress:33.33', 'progress:66.67', 'write']);
+					runner.equal('ČSFD: nové hodnoty', ratingsOf(run.items), ['81%', '50%', '?%']);
+					runner.equal('ČSFD: do souboru jdou všechna zjištěná hodnocení', run.writes, [{ 1: '81%', 2: '50%', 3: '?%' }]);
+					runner.equal('ČSFD: bez uložených úprav se do prohlížeče neukládá', run.saves, []);
+					runner.equal('ČSFD: výsledek', run.result,
+						{ total: 3, updated: 3, changed: 2, failures: [], savedTo: 'file', notInFile: [] });
+				});
+			},
+			function () {
+				var routes = {};
+				routes[filmUrl(101)] = ratingPage('81%');
+				return runCsfdUpdate({ routes: routes, items: ratingItems(1), storedItems: true }).then(function (run) {
+					runner.equal('ČSFD s uloženými úpravami: zapíše soubor i prohlížeč', [run.events.slice(-2), run.writes, run.saves],
+						[['write', 'save'], [{ 1: '81%' }], [['81%']]]);
+					runner.equal('ČSFD s uloženými úpravami: výsledek', run.result && run.result.savedTo, 'file');
+				});
+			},
+			function () {
+				var routes = {};
+				routes[filmUrl(101)] = ratingPage('81%');
+				routes[filmUrl(102)] = ratingPage('82%');
+				routes[filmUrl(103)] = ratingPage('83%');
+				return runCsfdUpdate({ routes: routes, missing: ['2', '3'], storedItems: true }).then(function (run) {
+					runner.equal('ČSFD anime mimo soubor: vypíšou se', run.result && run.result.notInFile,
+						[{ name: 'Anime 2', number: '2' }, { name: 'Anime 3', number: '3' }]);
+					runner.equal('ČSFD anime mimo soubor: hodnocení zůstanou v prohlížeči', run.saves, [['81%', '82%', '83%']]);
+				});
+			},
+			function () {
+				var items = ratingItems(4);
+				items[0].NameEn = '';
+				items[2].CsfdID = 'abc';
+				var routes = {};
+				routes[filmUrl(101)] = makeError('upstream-http', '404', 404);
+				routes[filmUrl(102)] = '<html>jiná stránka</html>';
+				routes[filmUrl(104)] = ratingPage('70%');
+				return runCsfdUpdate({ routes: routes, items: items }).then(function (run) {
+					runner.equal('ČSFD přeskočení: bez chyby', run.error && run.error.message, null);
+					runner.equal('ČSFD přeskočení: nečíselné ID bez dotazu', run.calls, [filmUrl(101), filmUrl(102), filmUrl(104)]);
+					runner.equal('ČSFD přeskočení: selhaná anime si nechají původní hodnotu', ratingsOf(run.items), ['50%', '50%', '50%', '70%']);
+					runner.equal('ČSFD přeskočení: seznam selhaných', run.result && run.result.failures, [
+						{ name: 'Fav 1', number: '1', code: 'upstream-http', detail: '404' },
+						{ name: 'Anime 2', number: '2', code: 'parse-error', detail: 'csfd-page' },
+						{ name: 'Anime 3', number: '3', code: 'bad-csfd-id', detail: 'abc' }
+					]);
+					runner.equal('ČSFD přeskočení: počty', run.result && [run.result.updated, run.result.changed], [1, 1]);
+					runner.equal('ČSFD přeskočení: do souboru jen zjištěná hodnocení', run.writes, [{ 4: '70%' }]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[filmUrl(101)] = ratingPage('<b>81%</b>');
+				routes[filmUrl(102)] = ratingPage('82%');
+				return runCsfdUpdate({ routes: routes, items: ratingItems(2) }).then(function (run) {
+					runner.equal('ČSFD hodnocení nečekaného tvaru: přeskočí se a nezapíše',
+						[run.result && run.result.failures.map(function (f) { return [f.number, f.code, f.detail]; }), run.writes],
+						[[['1', 'parse-error', 'csfd-rating']], [{ 2: '82%' }]]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[filmUrl(101)] = makeError('timeout', '');
+				routes[filmUrl(102)] = makeError('timeout', '');
+				return runCsfdUpdate({ routes: routes, items: ratingItems(2) }).then(function (run) {
+					runner.equal('ČSFD nic nezjištěno: soubor se nezapisuje',
+						[run.writes, run.saves, run.result && run.result.savedTo, run.result && run.result.failures.length], [[], [], null, 2]);
+				});
+			},
+			function () {
+				var items = ratingItems(8);
+				var routes = {};
+				routes[filmUrl(101)] = ratingPage('90%');
+				routes[filmUrl(102)] = ratingPage('40%');
+				[103, 104, 105, 106, 107, 108].forEach(function (id) {
+					routes[filmUrl(id)] = makeError('timeout', '');
+				});
+				return runCsfdUpdate({ routes: routes, items: items }).then(function (run) {
+					// Přeskočitelné chyby běh nikdy nezastaví, ani když jich je hodně za sebou.
+					runner.equal('ČSFD mnoho chyb za sebou: doběhne', run.error && run.error.message, null);
+					runner.equal('ČSFD mnoho chyb za sebou: zkusí všechna anime', run.calls.length, 8);
+					runner.equal('ČSFD mnoho chyb za sebou: zapíše zjištěná', run.writes, [{ 1: '90%', 2: '40%' }]);
+					runner.equal('ČSFD mnoho chyb za sebou: všechna selhaná v souhrnu',
+						run.result && [run.result.updated, run.result.failures.map(function (f) { return f.number; })],
+						[2, ['3', '4', '5', '6', '7', '8']]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[filmUrl(101)] = ratingPage('77%');
+				routes[filmUrl(102)] = makeError('redirect-blocked', 'zscaler');
+				return runCsfdUpdate({ routes: routes }).then(function (run) {
+					runner.equal('ČSFD neopravitelná chyba: zastaví hned', [errorSummary(run.error), run.error && run.error.favorite, run.calls.length],
+						[{ code: 'redirect-blocked', detail: 'zscaler' }, 'Anime 2', 2]);
+					runner.equal('ČSFD neopravitelná chyba: hotové se zapíše do souboru', [run.writes, run.saves, savedState(run.error)],
+						[[{ 1: '77%' }], [], ['file', 1, []]]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[filmUrl(101)] = ratingPage('77%');
+				routes[filmUrl(102)] = makeError('unreachable', 'http://127.0.0.1:8787');
+				return runCsfdUpdate({ routes: routes, writeError: makeError('unreachable', 'http://127.0.0.1:8787') }).then(function (run) {
+					runner.equal('ČSFD pomocník přestal odpovídat: hotové zůstane v prohlížeči',
+						[errorSummary(run.error), run.writes.length, run.saves, savedState(run.error)],
+						[{ code: 'unreachable', detail: 'http://127.0.0.1:8787' }, 1, [['77%', '50%', '50%']], ['browser', 1, []]]);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[filmUrl(101)] = ratingPage('81%');
+				routes[filmUrl(102)] = makeError('timeout', '');
+				routes[filmUrl(103)] = ratingPage('83%');
+				return runCsfdUpdate({ routes: routes, writeError: makeError('data-write-failed', 'PermissionError', 500) }).then(function (run) {
+					runner.equal('ČSFD zápis do souboru selže: chyba s příčinou', errorSummary(run.error),
+						{ code: 'data-save-failed', detail: 'data-write-failed PermissionError' });
+					runner.equal('ČSFD zápis do souboru selže: hodnocení zůstanou v prohlížeči', [run.saves, savedState(run.error)],
+						[[['81%', '50%', '83%']], ['browser', 2, []]]);
+					runner.equal('ČSFD zápis do souboru selže: přeskočená anime zůstanou v hlášení',
+						run.error && run.error.failures.map(function (f) { return f.number; }), ['2']);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[filmUrl(101)] = makeError('unreachable', 'http://127.0.0.1:8787');
+				return runCsfdUpdate({ routes: routes }).then(function (run) {
+					runner.equal('ČSFD pomocník přestal odpovídat hned: bez uložení',
+						[errorSummary(run.error), run.writes, run.saves, savedState(run.error)],
+						[{ code: 'unreachable', detail: 'http://127.0.0.1:8787' }, [], [], [null, 0, []]]);
+				});
+			},
+			function () {
+				return runCsfdUpdate({ routes: {}, healthError: makeError('unreachable', 'x') }).then(function (run) {
+					runner.equal('ČSFD pomocník neběží: nic se nestahuje', [errorSummary(run.error), run.calls, run.saves, run.writes],
+						[{ code: 'unreachable', detail: 'x' }, [], [], []]);
+				});
+			},
+			function () {
+				var health = { version: 1, cookieConfigured: true, maxImageNumber: 0, dataFile: false };
+				return runCsfdUpdate({ routes: {}, health: health }).then(function (run) {
+					runner.equal('ČSFD starý pomocník: odmítne se dřív, než se cokoli stáhne', [errorSummary(run.error), run.calls, run.writes],
+						[{ code: 'helper-outdated', detail: '' }, [], []]);
+				});
+			},
+			function () {
+				var health = { version: 2, cookieConfigured: true, maxImageNumber: 0, dataFile: false };
+				return runCsfdUpdate({ routes: {}, health: health }).then(function (run) {
+					runner.equal('ČSFD pomocník bez souboru s daty: odmítne se', [errorSummary(run.error), run.calls, run.writes],
+						[{ code: 'data-file-missing', detail: '' }, [], []]);
+				});
+			},
+			function () {
+				return runCsfdUpdate({ routes: {}, items: null }).then(function (run) {
+					runner.equal('ČSFD data nejsou načtená', [errorSummary(run.error), run.events], [{ code: 'data-not-loaded', detail: '' }, []]);
+				});
+			},
+			function () {
+				// ČSFD i Seznam sdílejí zámek - nikdy neběží dvě aktualizace najednou.
+				var release;
+				var gate = new Promise(function (resolve) { release = resolve; });
+				var routes = {};
+				routes[filmUrl(101)] = ratingPage('1%');
+				var first = runCsfdUpdate({ routes: routes, items: ratingItems(1), healthGate: gate });
+				return Promise.resolve().then(function () {
+					var listRoutes = {};
+					listRoutes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE]);
+					return Promise.all([runUpdate({ routes: listRoutes }), runCsfdUpdate({ routes: routes, items: ratingItems(1) })]);
+				}).then(function (others) {
+					runner.equal('ČSFD běží: Seznam i druhé ČSFD se odmítnou', others.map(function (other) { return errorSummary(other.error); }),
+						[{ code: 'already-running', detail: '' }, { code: 'already-running', detail: '' }]);
+					release();
+					return first;
+				}).then(function (firstRun) {
+					runner.equal('ČSFD běží: původní doběhne', firstRun.result && firstRun.result.updated, 1);
+					return runCsfdUpdate({ routes: routes, items: ratingItems(1) });
+				}).then(function (again) {
+					runner.equal('ČSFD: po dokončení jde spustit znovu', again.result && again.result.updated, 1);
+				});
+			}
+		]);
+	}
+
 	/* ---------------------------------- spuštění ---------------------------------- */
 
 	/** @returns {Promise<Object>} souhrn ve tvaru NV194TestRunner.summarize() */
@@ -812,7 +1141,8 @@ window.AnimeSyncTests = (function () {
 			['nová položka', newItem],
 			['datová vrstva', dataLayer],
 			['klient pomocníka', proxyClient],
-			['tok aktualizace', flows]
+			['tok aktualizace', flows],
+			['tok ČSFD hodnocení', csfdFlows]
 		];
 		return sequence(groups.map(function (group) {
 			return function () {
