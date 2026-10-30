@@ -1,0 +1,9 @@
+# Původní desktopová aplikace (AnimeList.pyw obsahuje přihlašovací cookie) - nikdy necommitovat
+origin_animelist/
+
+# Lokální konfigurace helperu tools/anime_proxy.py (obsahuje přihlašovací cookie)
+tools/anime_proxy.local.json
+.env
+
+__pycache__/
+*.pyc

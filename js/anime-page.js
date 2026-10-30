@@ -26,6 +26,9 @@
  * řaditelných sloupcích hlavičky (js/anime-view.js), aria-label na
  * editovatelných polích (js/anime-row-view.js) a aria-invalid na neplatných
  * hodnotách po kliknutí na ULOŽIT.
+ * Krok 20: tlačítko AKTUALIZOVAT s podtlačítky (js/anime-update.js, mirror
+ * Python aUpdate*PBClicked()) - každé nově přidané anime se hned vykreslí
+ * a během aktualizace je zamčené řazení hlavičky.
  */
 (function () {
 	'use strict';
@@ -33,6 +36,7 @@
 	var i18n = window.I18n;
 	var data = window.AnimeData;
 	var view = window.AnimeView;
+	var update = window.AnimeUpdate;
 
 	// Výchozí řazení - stejné jako Python (MainWindow.__init__, řádek 79):
 	// ActualSorting = {"Column": "Number", "Ascending": True}.
@@ -98,6 +102,11 @@
 	}
 
 	function setEditButtonText() {
+		// Aktualizace je v edit módu nedostupná (vykreslení nových řádků by
+		// přepsalo rozepsané úpravy), proto o změně módu vždy dáme vědět.
+		if (update) {
+			update.setEditMode(editMode);
+		}
 		var btn = document.getElementById('anime-edit-toggle');
 		if (!btn || !i18n) {
 			return;
@@ -213,10 +222,33 @@
 	}
 
 	document.addEventListener('DOMContentLoaded', function () {
+		// Statická část stránky je v HTML až za skriptem js/i18n.js, takže při
+		// načtení ještě nemusela dostat překlad - jakmile existuje v DOM,
+		// doplní se zde (stejně jako v js/nv194-page.js).
+		if (i18n) {
+			i18n.applyStatic();
+		}
+
 		// Data se počítá už během `applyStatic` (initial i18n), ale text „Načítám…"
 		// necháme dosadit i po změně jazyka během načítání.
 		document.addEventListener('site:langchange', renderStatus);
 		document.addEventListener('site:langchange', setEditButtonText);
+
+		if (update) {
+			update.init({
+				data: data,
+				// Nově přidané anime se vykreslí hned, ne až po skončení celé aktualizace.
+				onItemsChanged: function (items) {
+					if (view) {
+						view.renderList(items, editMode);
+					}
+					if (searchText !== '') {
+						applySearch();
+					}
+					setStatus('loaded', items.length);
+				}
+			});
+		}
 
 		var header = document.getElementById('anime-header');
 		if (header) {
@@ -224,6 +256,10 @@
 			header.addEventListener('click', function (event) {
 				var cell = event.target.closest('.anime__header-cell--sortable');
 				if (!cell || !data) {
+					return;
+				}
+				// Python během aktualizace hlavičku zablokuje (EnableButtonsWhileUpdate(), ř. 610-628).
+				if (update && update.isBusy()) {
 					return;
 				}
 				var column = cell.getAttribute('data-column');
@@ -447,6 +483,9 @@
 				view.showList();
 			}
 			setStatus('loaded', items.length);
+			if (update) {
+				update.setReady(true);
+			}
 		}).catch(function (error) {
 			if (window.console && typeof window.console.error === 'function') {
 				window.console.error('Anime data load failed:', error);

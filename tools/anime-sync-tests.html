@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Anime – automatické testy aktualizace</title>
+	<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
+	<script src="../js/auth.js"></script>
+	<style>
+		body { font-family: Consolas, "Courier New", monospace; margin: 2rem; background: #101418; color: #d7dee6; }
+		h1 { font-size: 1.2rem; margin-bottom: 1rem; }
+		#summary { font-size: 1.05rem; margin-bottom: 1rem; font-weight: bold; }
+		.ok { color: #6ddf6d; }
+		.fail { color: #ff6b6b; }
+		pre { white-space: pre-wrap; line-height: 1.45; margin: 0; }
+	</style>
+</head>
+<body>
+	<h1>Anime – automatické testy aktualizace (Aktualizovat → Seznam)</h1>
+	<p id="summary">Spouštím…</p>
+	<pre id="details"></pre>
+
+	<script src="../js/anime-sync.js"></script>
+	<script src="../js/anime-proxy.js"></script>
+	<script src="../js/anime-data.js"></script>
+	<script src="nv194-test-runner.js"></script>
+	<script src="anime-sync.tests.js"></script>
+	<script>
+		var summary = document.getElementById('summary');
+		var details = document.getElementById('details');
+
+		window.AnimeSyncTests.run().then(function (report) {
+			var passed = report.failed === 0;
+			summary.textContent = passed
+				? 'OK – prošlo všech ' + report.total + ' kontrol.'
+				: 'CHYBA – neprošlo ' + report.failed + ' z ' + report.total + ' kontrol.';
+			summary.className = passed ? 'ok' : 'fail';
+
+			details.className = passed ? 'ok' : 'fail';
+			details.textContent = passed
+				? report.results.map(function (item) { return 'OK   ' + item.name; }).join('\n')
+				: report.failures.map(function (item) {
+					return 'FAIL ' + item.name + '\n     ' + item.detail;
+				}).join('\n');
+		}).catch(function (error) {
+			summary.textContent = 'CHYBA při spuštění testů: ' + error.message;
+			summary.className = 'fail';
+		});
+	</script>
+</body>
+</html>

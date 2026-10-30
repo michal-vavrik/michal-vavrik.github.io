@@ -6,6 +6,9 @@
  * Krok 7 přidal barevné odstupňování hodnocení (Python FormatRating, ř. 777-790).
  * Krok 12 přidal edit mód - editovatelné sloupce (column.editable) se v edit
  * módu vykreslí jako <textarea> místo textu/odkazu (Python SwitchEditMode, ř. 793-808).
+ * Krok 20 (bez Python vzoru): obrázek nového anime existuje jen ve složce
+ * img/anime, dokud se nenahraje do repozitáře - chybějící obrázek nahradí
+ * popisek (anime.row.imageMissing).
  *
  * Struktura:
  *   <article class="anime-row" data-number="1">
@@ -34,10 +37,24 @@ window.AnimeRow = (function () {
 
 		var img = document.createElement('img');
 		img.className = 'anime-row__image';
-		img.src = IMAGE_BASE + String(item.Image) + '.jpg';
 		img.alt = '';
 		img.loading = 'lazy';
 		img.decoding = 'async';
+		// Obrázek nového anime (Aktualizovat -> Seznam) vzniká jen ve složce
+		// img/anime, na webu se objeví až po nahrání do repozitáře - do té doby
+		// ukáže místo rozbitého obrázku popisek (web-only).
+		img.addEventListener('error', function () {
+			var placeholder = document.createElement('span');
+			placeholder.className = 'anime-row__image-missing';
+			placeholder.setAttribute('data-i18n', 'anime.row.imageMissing');
+			if (img.parentNode === cell) {
+				cell.replaceChild(placeholder, img);
+			}
+			if (window.I18n && typeof window.I18n.applyStatic === 'function') {
+				window.I18n.applyStatic(cell);
+			}
+		});
+		img.src = IMAGE_BASE + String(item.Image) + '.jpg';
 		cell.appendChild(img);
 		return cell;
 	}

@@ -7,7 +7,7 @@
 		<link rel="stylesheet" type="text/css" href="css/main.css?v=header-scroll-1">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=hide-locked-menu-2">
 		<link rel="stylesheet" type="text/css" href="css/i18n.css">
-		<link rel="stylesheet" type="text/css" href="css/anime.css?v=anime-import-1">
+		<link rel="stylesheet" type="text/css" href="css/anime.css?v=anime-update-1">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
 		<script src="js/auth.js"></script>
@@ -82,7 +82,7 @@
 			</div>
 		</div>
 
-		<script src="js/i18n.js?v=anime-import-1"></script>
+		<script src="js/i18n.js?v=anime-update-2"></script>
 		<script src="js/lang-switcher.js"></script>
 		<script src="js/auth-ui.js?v=snake-1"></script>
 		<script src="js/menu.js"></script>
@@ -108,7 +108,20 @@
 				<button type="button" id="anime-import-btn" class="anime__edit-btn anime__edit-btn--import" data-i18n="anime.import.button">Importovat data</button>
 				<button type="button" id="anime-export-btn" class="anime__edit-btn anime__edit-btn--export" data-i18n="anime.export.button">Exportovat data</button>
 				<button type="button" id="anime-reset-btn" class="anime__edit-btn anime__edit-btn--reset" data-i18n="anime.reset.button">Obnovit původní data</button>
+				<button type="button" id="anime-update-toggle" class="anime__edit-btn anime__edit-btn--update" data-i18n="anime.update.button" aria-expanded="false" aria-controls="anime-update-menu" disabled>Aktualizovat</button>
 				<button type="button" id="anime-edit-toggle" class="anime__edit-btn" data-i18n="anime.edit.start" aria-pressed="false">Upravit</button>
+
+				<div class="anime__update-panel">
+					<div class="anime__update-menu" id="anime-update-menu" role="group" data-i18n-aria-label="anime.update.menuLabel" hidden>
+						<button type="button" id="anime-update-watched-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="watched" data-i18n="anime.update.watched">Zhlédnuté epizody</button>
+						<button type="button" id="anime-update-csfd-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="csfd" data-i18n="anime.update.csfd">ČSFD hodnocení</button>
+						<button type="button" id="anime-update-mal-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="mal" data-i18n="anime.update.mal">MAL hodnocení</button>
+						<button type="button" id="anime-update-list-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="list" data-i18n="anime.update.list">Seznam</button>
+						<button type="button" id="anime-update-all-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="all" data-i18n="anime.update.all">Všechno</button>
+					</div>
+					<p class="anime__update-info" id="anime-update-info" role="status"></p>
+					<p class="anime__edit-error" id="anime-update-error" role="alert" hidden></p>
+				</div>
 			</div>
 		</main>
 
@@ -125,11 +138,14 @@
 			</div>
 		</div>
 
-		<script src="js/anime-data.js?v=anime-import-1"></script>
+		<script src="js/anime-data.js?v=anime-update-1"></script>
 		<script src="js/anime-columns.js?v=anime-edit-1"></script>
-		<script src="js/anime-row-view.js?v=anime-a11y-1"></script>
+		<script src="js/anime-row-view.js?v=anime-update-1"></script>
 		<script src="js/anime-view.js?v=anime-a11y-1"></script>
-		<script src="js/anime-page.js?v=anime-a11y-1"></script>
+		<script src="js/anime-proxy.js?v=anime-update-1"></script>
+		<script src="js/anime-sync.js?v=anime-update-1"></script>
+		<script src="js/anime-update.js?v=anime-update-1"></script>
+		<script src="js/anime-page.js?v=anime-update-1"></script>
 
 	</body>
 </html>

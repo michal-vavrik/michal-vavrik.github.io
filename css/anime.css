@@ -231,6 +231,22 @@
 	border-radius: 39px / 30px;
 }
 
+/* Náhrada za chybějící soubor obrázku (viz buildImageCell v js/anime-row-view.js). */
+.anime-row__image-missing {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-sizing: border-box;
+	width: 90px;
+	min-height: 100px;
+	padding: 6px;
+	border: 1px dashed rgba(255, 255, 255, 0.35);
+	border-radius: 39px / 30px;
+	color: rgba(255, 255, 255, 0.55);
+	font-size: 11px;
+	line-height: 1.2;
+}
+
 .anime-row__cell--Description {
 	text-align: left;
 	justify-content: flex-start;
@@ -306,13 +322,68 @@
 }
 
 /*
- * Spodní lišta s tlačítkem UPRAVIT/ULOŽIT. Odpovídá Self.BottomBar.EditPB
- * v Python aplikaci (MainWindow.CreateWidgets, ř. 1059-1061).
+ * Spodní lišta s tlačítky (Python Self.BottomBar, MainWindow.CreateWidgets,
+ * ř. 996-1061). Tlačítka se dělí o řádek na stejné díly a když se nevejdou,
+ * zalomí se - globální `button { width: 100% }` by je jinak rozdělilo na
+ * samostatné řádky. Pod tlačítky je panel aktualizace (.anime__update-panel).
  */
 .anime__bottom-bar {
 	display: flex;
+	flex-wrap: wrap;
 	justify-content: flex-end;
 	margin-top: 16px;
+}
+
+.anime__bottom-bar > .anime__edit-btn {
+	flex: 1 1 150px;
+	width: auto;
+}
+
+.anime__bottom-bar > .anime__edit-error {
+	flex: 0 0 100%;
+	margin: 0 0 8px;
+}
+
+/*
+ * Panel aktualizace pod tlačítky: podtlačítka po kliknutí na AKTUALIZOVAT
+ * (Python Self.UpdateGB, ř. 1022-1053), informační řádek průběhu (Python
+ * Self.BottomBar.InfoL, barva #fb0) a chyba aktualizace. Tlačítka nad ním tak
+ * zůstávají na místě, ať se zobrazí cokoli z toho.
+ */
+.anime__update-panel {
+	flex: 0 0 100%;
+}
+
+.anime__update-info {
+	margin: 8px 0;
+	color: #fb0;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 0.95rem;
+}
+
+.anime__update-info:empty {
+	display: none;
+}
+
+.anime__update-panel > .anime__edit-error {
+	margin: 8px 0;
+}
+
+/* Bez [hidden] pravidla by `display: flex` přebilo atribut `hidden`. */
+.anime__update-menu {
+	display: flex;
+	flex-wrap: wrap;
+	column-gap: 12px;
+}
+
+.anime__update-menu[hidden] {
+	display: none;
+}
+
+.anime__update-menu > .anime__edit-btn {
+	flex: 1 1 150px;
+	width: auto;
+	margin-right: 0;
 }
 
 .anime__edit-btn {
@@ -329,8 +400,14 @@
 	transition: background-color 0.15s ease;
 }
 
-.anime__edit-btn:hover {
+.anime__edit-btn:hover:not(:disabled) {
 	background: #e0a800;
+}
+
+/* Neaktivní tlačítko (běží aktualizace, edit mód, data se ještě načítají). */
+.anime__edit-btn:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
 }
 
 /*
@@ -344,7 +421,7 @@
 	margin-right: 12px;
 }
 
-.anime__edit-btn--reset:hover {
+.anime__edit-btn--reset:hover:not(:disabled) {
 	background: rgba(248, 113, 113, 0.2);
 	border-color: rgba(248, 113, 113, 0.55);
 }
@@ -360,7 +437,7 @@
 	margin-right: 12px;
 }
 
-.anime__edit-btn--export:hover {
+.anime__edit-btn--export:hover:not(:disabled) {
 	background: rgba(96, 165, 250, 0.2);
 	border-color: rgba(96, 165, 250, 0.55);
 }
@@ -376,9 +453,43 @@
 	margin-right: 12px;
 }
 
-.anime__edit-btn--import:hover {
+.anime__edit-btn--import:hover:not(:disabled) {
 	background: rgba(74, 222, 128, 0.2);
 	border-color: rgba(74, 222, 128, 0.55);
+}
+
+/*
+ * Tlačítko AKTUALIZOVAT a jeho podtlačítka (Python Self.UpdatePB a
+ * Self.Update*PB, MainWindow.CreateWidgets ř. 1028-1057).
+ */
+.anime__edit-btn--update {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	color: #e8edf5;
+	margin-right: 12px;
+}
+
+.anime__edit-btn--update:hover:not(:disabled),
+.anime__edit-btn--update[aria-expanded="true"] {
+	background: rgba(251, 191, 36, 0.2);
+	border-color: rgba(251, 191, 36, 0.55);
+}
+
+/*
+ * Zamčená hlavička během aktualizace - Python v EnableButtonsWhileUpdate()
+ * (ř. 610-628) zablokuje řazení a popisky ztmaví na šedou.
+ */
+.anime__header.is-locked .anime__header-cell--sortable {
+	cursor: default;
+}
+
+.anime__header.is-locked .anime__header-label {
+	color: gray;
+}
+
+.anime__header.is-locked .anime__header-rating-icon,
+.anime__header.is-locked .anime__header-sort {
+	opacity: 0.5;
 }
 
 /*

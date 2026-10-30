@@ -18,6 +18,9 @@
  *
  * importFromObject() (Krok 17, bez Python vzoru) přijme obsah nahraného
  * souboru ve stejném formátu a nahradí jím aktuální data.
+ *
+ * addItem() (Krok 20) přidá nově zjištěné anime z tlačítka Aktualizovat ->
+ * Seznam (js/anime-sync.js) a uloží data.
  */
 window.AnimeData = (function () {
 	'use strict';
@@ -163,6 +166,23 @@ window.AnimeData = (function () {
 	}
 
 	/**
+	 * Přidá novou položku na konec seznamu (bez přeřazení - nové anime se ve
+	 * Python aplikaci také zobrazí dole, ř. 547-551) a hned data uloží, aby
+	 * už hotové položky přežily případnou chybu při přidávání dalších
+	 * (Krok 20, Python zapisuje data jednou na konci aktualizace).
+	 * @param {Object} item - položka ve tvaru jako v data/anime.json
+	 * @returns {Array} aktuální pole položek
+	 */
+	function addItem(item) {
+		if (!state.items) {
+			throw new Error('Anime data are not loaded yet.');
+		}
+		state.items.push(item);
+		save(state.items);
+		return state.items;
+	}
+
+	/**
 	 * Smaže uložené úpravy z localStorage a znovu načte výchozí data ze
 	 * souboru data/anime.json (Krok 15, bez Python vzoru - web-only reset
 	 * úprav uložených přes save()).
@@ -249,6 +269,7 @@ window.AnimeData = (function () {
 	return {
 		load: load,
 		getItems: getItems,
+		addItem: addItem,
 		sortItems: sortItems,
 		save: save,
 		reset: reset,
