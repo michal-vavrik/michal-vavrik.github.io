@@ -20,7 +20,8 @@
  * souboru ve stejném formátu a nahradí jím aktuální data.
  *
  * addItem() (Krok 20) přidá nově zjištěné anime z tlačítka Aktualizovat ->
- * Seznam (js/anime-sync.js) a uloží data.
+ * Seznam (js/anime-sync.js) do dat v paměti; zapsání do data/anime.json
+ * (případně uložení do prohlížeče) zajistí js/anime-sync.js.
  */
 window.AnimeData = (function () {
 	'use strict';
@@ -176,10 +177,10 @@ window.AnimeData = (function () {
 	}
 
 	/**
-	 * Přidá novou položku na konec seznamu (bez přeřazení - nové anime se ve
-	 * Python aplikaci také zobrazí dole, ř. 547-551) a hned data uloží, aby
-	 * už hotové položky přežily případnou chybu při přidávání dalších
-	 * (Krok 20, Python zapisuje data jednou na konci aktualizace).
+	 * Přidá novou položku na konec seznamu v paměti (bez přeřazení - nové
+	 * anime se ve Python aplikaci také zobrazí dole, ř. 547-551). Neukládá:
+	 * přidaná anime zapíše pomocník do data/anime.json až na konci
+	 * aktualizace jako Python WriteDataToTheFile() (js/anime-sync.js).
 	 * @param {Object} item - položka ve tvaru jako v data/anime.json
 	 * @returns {Array} aktuální pole položek
 	 */
@@ -188,7 +189,6 @@ window.AnimeData = (function () {
 			throw new Error('Anime data are not loaded yet.');
 		}
 		state.items.push(item);
-		save(state.items);
 		return state.items;
 	}
 

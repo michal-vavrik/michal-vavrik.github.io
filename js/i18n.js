@@ -74,6 +74,8 @@ window.I18n = (function () {
 			'anime.update.list.done.none': '{percent}% Žádné nové anime.',
 			'anime.update.list.done.few': '{percent}% Hotovo. Celkem {count} nové anime.',
 			'anime.update.list.done.many': '{percent}% Hotovo. Celkem {count} nových anime.',
+			'anime.update.list.keptFile': 'Anime přidaná před chybou se zapsala do data/anime.json ({count}).',
+			'anime.update.list.keptBrowser': 'Přidaná anime ({count}) zůstala uložená jen v prohlížeči, do souboru je dostanete přes Exportovat data.',
 			'anime.update.watched.start': '{percent}% Aktualizuji zhlédnuté epizody',
 			'anime.update.watched.progress': '{percent}% Aktualizuji zhlédnuté epizody',
 			'anime.update.watched.done': '{percent}% Hotovo',
@@ -118,7 +120,6 @@ window.I18n = (function () {
 			'anime.update.error.generic': 'Aktualizace se nezdařila.',
 			'anime.update.error.favorite': 'Anime: {name}.',
 			'anime.update.error.detail': 'Podrobnosti: {detail}.',
-			'anime.update.error.kept': 'Anime přidaná před chybou zůstala uložená ({count}).',
 
 			'anime.row.imageMissing': 'Obrázek chybí',
 
@@ -462,6 +463,8 @@ window.I18n = (function () {
 			'anime.update.list.done.none': '{percent}% No new anime.',
 			'anime.update.list.done.few': '{percent}% Done. {count} new anime in total.',
 			'anime.update.list.done.many': '{percent}% Done. {count} new anime in total.',
+			'anime.update.list.keptFile': 'Anime added before the error were written to data/anime.json ({count}).',
+			'anime.update.list.keptBrowser': 'The added anime ({count}) were kept only in the browser; use Export data to get them into the file.',
 			'anime.update.watched.start': '{percent}% Updating watched episodes',
 			'anime.update.watched.progress': '{percent}% Updating watched episodes',
 			'anime.update.watched.done': '{percent}% Done',
@@ -506,7 +509,6 @@ window.I18n = (function () {
 			'anime.update.error.generic': 'The update failed.',
 			'anime.update.error.favorite': 'Anime: {name}.',
 			'anime.update.error.detail': 'Details: {detail}.',
-			'anime.update.error.kept': 'Anime added before the error were kept ({count}).',
 
 			'anime.row.imageMissing': 'Image missing',
 

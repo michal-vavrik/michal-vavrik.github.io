@@ -431,7 +431,7 @@ class UpdateListTests(SiteBrowserCase):
 
     def test_list_update_adds_new_favorites(self):
         helper = self.start_helper()
-        page = self.open_page(helper)
+        page = self.open_page(helper, stored=False)
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004"])
         page.evaluate(INFO_LOG_SCRIPT)
 
@@ -456,14 +456,18 @@ class UpdateListTests(SiteBrowserCase):
 
         # Nové anime dostanou číslo o jedna vyšší než dosavadní maximum.
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
-        stored = self.stored_items(page)
-        self.assertEqual(list(stored), ["9001", "9002", "9004", "9005", "9006"])
+        # Pomocník je zapsal do souboru s daty jako Python WriteDataToTheFile(); prohlížeč bez
+        # uložených úprav nic neukládá.
+        saved = json.loads(self.read_data_file())
+        self.assertEqual(list(saved), ["9001", "9002", "9004", "9005", "9006"])
         for number, show in (("9005", SHOW_A), ("9006", SHOW_B)):
-            item = stored[number]
+            item = saved[number]
             self.assertEqual(list(item), ITEM_KEYS)
             self.assertIn(item["Date"], {today_before, today_after})
             self.assertEqual(item, expected_item(show, int(number), item["Date"]))
-        self.assertEqual(stored["9001"], SEED_DATA["9001"])
+        self.assertEqual(self.read_data_file(), self.python_json(saved))
+        self.assertEqual({number: saved[number] for number in SEED_DATA}, SEED_DATA)
+        self.assertFalse(self.has_stored_items(page))
 
         # Obrázky uložil pomocník pod stejným číslem, jaké má anime.
         self.assertEqual(sorted(os.listdir(self.images_dir)), ["9005.jpg", "9006.jpg"])
@@ -493,12 +497,66 @@ class UpdateListTests(SiteBrowserCase):
         ])
         self.assertEqual([url for url, headers in self.web.calls if "Cookie" in headers], [FAVORITES_URL])
 
-        # Uložená data přežijí znovunačtení stránky.
+        # Data zapsaná do souboru přežijí znovunačtení stránky.
         page.reload()
         expect(page.locator("#anime-list-wrap")).to_be_visible()
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
+        self.assertFalse(self.has_stored_items(page))
         self.assertEqual(self.page_errors, [])
         self.assertEqual(self.unexpected_console_errors(), [])
+
+    def test_list_update_with_stored_edits_writes_data_file_and_browser(self):
+        # Uložené úpravy v prohlížeči přebíjí soubor: nová anime se uloží i tam, úpravy zůstanou jen v prohlížeči.
+        seed = json.loads(json.dumps(SEED_DATA))
+        seed["9001"]["MyRating"] = "95%"
+        page = self.open_page(self.start_helper(), seed=seed)
+
+        self.run_list_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo. Celkem 2 nové anime.")
+        self.expect_unlocked(page)
+
+        saved = json.loads(self.read_data_file())
+        self.assertEqual(list(saved), ["9001", "9002", "9004", "9005", "9006"])
+        self.assertEqual({number: saved[number] for number in SEED_DATA}, SEED_DATA)
+        stored = self.stored_items(page)
+        self.assertEqual(stored, dict(seed, **{"9005": saved["9005"], "9006": saved["9006"]}))
+
+        page.reload()
+        expect(page.locator("#anime-list-wrap")).to_be_visible()
+        self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
+        expect(page.locator('.anime-row[data-number="9001"] .anime-row__cell--MyRating')).to_have_text("95%")
+
+    def test_list_update_keeps_anime_in_browser_when_data_file_cannot_be_written(self):
+        page = self.open_page(self.start_helper(), stored=False)
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        self.write_data_file(b"{")
+
+        self.run_list_update(page)
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "Výsledek aktualizace se nepodařilo zapsat do data/anime.json. Podrobnosti: data-file-invalid. "
+            "Přidaná anime (2) zůstala uložená jen v prohlížeči, do souboru je dostanete přes Exportovat data.")
+        self.expect_unlocked(page)
+        self.assertEqual(self.read_data_file(), b"{")
+        self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
+        self.assertEqual(list(self.stored_items(page)), ["9001", "9002", "9004", "9005", "9006"])
+        self.assertEqual(sorted(os.listdir(self.images_dir)), ["9005.jpg", "9006.jpg"])
+
+    def test_list_update_requires_helper_that_can_write_data_file(self):
+        with mock.patch.object(proxy, "VERSION", 4):
+            page = self.open_page(self.start_helper(), stored=False)
+            self.run_list_update(page)
+            expect(page.locator("#anime-update-error")).to_have_text(
+                "Pomocný program je zastaralý a výsledek této aktualizace neumí zapsat do data/anime.json. "
+                "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
+        self.expect_unlocked(page)
+
+        page = self.open_page(self.start_helper(data_path=os.path.join(self.tmp, "missing.json")), stored=False)
+        self.run_list_update(page)
+        expect(page.locator("#anime-update-error")).to_contain_text("Pomocný program nenašel soubor s daty")
+        self.expect_unlocked(page)
+        self.assertEqual(self.web.urls, [])
+        self.assertEqual(os.listdir(self.images_dir), [])
+        self.assertEqual(self.read_data_file(), self.python_json(SEED_DATA))
 
     def test_list_update_without_new_favorites(self):
         self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE, EXCEPTION_FAVORITE]))
@@ -574,17 +632,18 @@ class UpdateListTests(SiteBrowserCase):
 
     def test_error_in_the_middle_keeps_added_anime_and_update_can_be_repeated(self):
         self.web.serve(SHOW_B["mal_search"], MAL_NOT_FOUND, status=404)
-        page = self.open_page(self.start_helper())
+        page = self.open_page(self.start_helper(), stored=False)
 
         self.run_list_update(page)
         error = page.locator("#anime-update-error")
         expect(error).to_have_text("Anime se na MyAnimeList nepodařilo najít. Anime: New Show B. "
-                                   "Anime přidaná před chybou zůstala uložená (1).")
+                                   "Anime přidaná před chybou se zapsala do data/anime.json (1).")
         expect(page.locator("#anime-update-info")).to_have_text("")
         expect(page.locator("#anime-update-toggle")).to_be_enabled(timeout=1000)
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005"])
-        self.assertEqual(list(self.stored_items(page)), ["9001", "9002", "9004", "9005"])
-        # Rozpracované anime po sobě nezanechá ani obrázek.
+        # Hotové anime zapsal pomocník do souboru, rozpracované po sobě nezanechá ani obrázek.
+        self.assertEqual(list(json.loads(self.read_data_file())), ["9001", "9002", "9004", "9005"])
+        self.assertFalse(self.has_stored_items(page))
         self.assertEqual(os.listdir(self.images_dir), ["9005.jpg"])
 
         # Po opravě zdroje se doplní jen to, co chybí.
@@ -594,6 +653,7 @@ class UpdateListTests(SiteBrowserCase):
         expect(error).to_be_hidden()
         self.expect_unlocked(page)
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
+        self.assertEqual(list(json.loads(self.read_data_file())), ["9001", "9002", "9004", "9005", "9006"])
         self.assertEqual(sorted(os.listdir(self.images_dir)), ["9005.jpg", "9006.jpg"])
 
     def test_controls_are_locked_while_running(self):

@@ -24,7 +24,7 @@ prohlížeče. Hry jsou dostupné v češtině a angličtině.
 skript `AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, Seznam
 a Všechno. Hotové jsou volby **Zhlédnuté epizody**, **ČSFD hodnocení**, **MAL
 hodnocení** a **Seznam**, Všechno je označené „Připravujeme“. Všechny potřebují
-pomocný program (viz níže).
+pomocný program (viz níže), který výsledky zapisuje přímo do `data/anime.json`.
 
 ### Aktualizovat → Seznam
 
@@ -32,6 +32,13 @@ Načte oblíbené seriály ze sledujserialy.io (funkce `UpdateAnimeList` ze skri
 Ke každému seriálu, který v seznamu ještě není (kromě výjimek jako ve skriptu),
 dohledá data na ČSFD a MyAnimeList, stáhne obrázek a přidá ho na konec seznamu.
 Průběh a výsledek se ukazují pod tlačítky.
+
+Nová anime pomocný program na konci najednou zapíše do `data/anime.json` (jako
+`WriteDataToTheFile` ve skriptu: seřazená podle čísla, ve stejném formátu, takže
+`git diff` ukáže jen přidaná anime) a jejich obrázky uloží jako `img/anime/N.jpg`.
+Když běh zastaví chyba, zapíšou se anime přidaná do té doby. Uložené úpravy
+v prohlížeči a chyba zápisu se řeší stejně jako u ČSFD hodnocení (viz níže).
+Potřebuje pomocný program verze 5; se starší verzí stránka požádá o jeho restart.
 
 Stránka na GitHub Pages si tyto weby sama stáhnout nemůže (CORS, přihlašovací
 cookie) ani zapisovat soubory, proto potřebuje **pomocný program**, který běží na
@@ -44,7 +51,7 @@ python tools/anime_proxy.py
 Poslouchá jen na `127.0.0.1:8787`. Parametry: `--port`, `--allow-origin ORIGIN`
 (další adresa stránky; výchozí jsou GitHub Pages a `http://127.0.0.1:8765`,
 `http://localhost:8765`), `--images-dir` (výchozí `img/anime`), `--data-file`
-(soubor, do kterého se zapisují ČSFD a MAL hodnocení a zhlédnuté epizody; výchozí
+(soubor, do kterého se zapisují výsledky aktualizací; výchozí
 `data/anime.json` vedle složky `tools`) a `--check`. Při
 jiném portu nastavte v konzoli prohlížeče
 `localStorage.setItem('anime-proxy-url', 'http://127.0.0.1:PORT')`.
@@ -99,10 +106,10 @@ formát souboru zůstane stejný, takže `git diff` ukáže jen změněná hodno
 GitHub Pages se nové hodnoty objeví až po commitu a pushi. Pomocný program starší
 než tato změna zápis neumí; stránka pak požádá o jeho restart.
 
-- Pokud má prohlížeč uložené úpravy z localStorage (např. anime přidaná Seznamem),
-  stránka čte je místo `data/anime.json`, proto se hodnocení uloží i tam. Anime,
-  která v `data/anime.json` nejsou, se vypíšou pod tlačítky a jejich hodnocení
-  zůstane jen v prohlížeči.
+- Pokud má prohlížeč uložené úpravy z localStorage (např. z edit módu, importu nebo
+  ze starší verze Seznamu), stránka čte je místo `data/anime.json`, proto se
+  hodnocení uloží i tam. Anime, která v `data/anime.json` nejsou, se vypíšou pod
+  tlačítky a jejich hodnocení zůstane jen v prohlížeči.
 - Když se hodnocení jednoho anime nepodaří zjistit (např. HTTP 404, změněná
   stránka, vypršený čas, nečekaný tvar hodnocení), anime si nechá původní hodnotu,
   běh pokračuje a na konci se pod tlačítky vypíše, kterých anime se to týkalo.
@@ -153,25 +160,32 @@ funkce `UpdateWatched` ze skriptu. Stejně jako Seznam potřebuje přihlašovac�
 
 ### Uložení a publikace dat
 
-Anime přidaná Seznamem se hned uloží do localStorage prohlížeče a jejich obrázky jako
-`img/anime/N.jpg` (ČSFD a MAL hodnocení a zhlédnuté epizody zapisuje pomocný
-program rovnou do souboru, viz výše). Do repozitáře se data dostanou takto:
+Všechny volby Aktualizovat zapisují výsledky přes pomocný program rovnou do
+`data/anime.json` (Seznam navíc ukládá obrázky jako `img/anime/N.jpg`). Na GitHub
+Pages se změny objeví až po commitu a pushi `data/anime.json` spolu s novými
+`img/anime/*.jpg`.
+
+Úpravy z edit módu a importu a výsledky, které se do souboru zapsat nepodařilo, se
+ukládají do localStorage prohlížeče a mají přednost před `data/anime.json`. Do
+repozitáře se dostanou takto:
 
 1. **Exportovat data** stáhne `AnimeData.json` (stejný tvar jako `data/anime.json`).
 2. Soubor uložte jako `data/anime.json`.
 3. Commitněte ho spolu s novými `img/anime/*.jpg`.
 
-**Obnovit původní data** vrátí stránku k obsahu `data/anime.json`. V soukromém
+**Obnovit původní data** smaže úpravy uložené v prohlížeči a vrátí stránku
+k obsahu `data/anime.json`; co v souboru není, předtím exportujte. V soukromém
 režimu prohlížeče se localStorage nemusí zachovat, před zavřením stránky proto
 data exportujte. Během aktualizace jsou zamčené Upravit, Importovat data a Obnovit
 původní data (Exportovat data zůstává) a prohlížeč při zavírání stránky varuje.
 
 ### Rozdíly oproti AnimeList.pyw
 
-- Anime se přidá a uloží až celé hotové, obrázek se stahuje jako poslední krok.
-  Chyba běh zastaví a zobrazí se (včetně názvu anime); už přidaná anime zůstanou.
-- Seznam ukládá data do prohlížeče, ne do souboru na disku (viz výše). ČSFD a MAL
-  hodnocení a zhlédnuté epizody zapisuje do `data/anime.json` pomocný program.
+- Anime se přidá až celé hotové, obrázek se stahuje jako poslední krok. Chyba běh
+  zastaví a zobrazí se (včetně názvu anime); anime přidaná do té doby se zapíšou do
+  `data/anime.json` (skript by při chybě nezapsal nic).
+- Pomocný program nikdy nepřepíše anime, jehož číslo už v `data/anime.json` je;
+  zápis pak odmítne (`item-exists`) a nová anime zůstanou v prohlížeči.
 - Nová anime přijdou na konec aktuálního pořadí. Číslo je největší dosud použité
   číslo (v datech i v `img/anime`) zvýšené o 1.
 - Odpověď HTTP 400 a vyšší je chyba. Hledání na MyAnimeList bez výsledků (MAL ho
@@ -208,6 +222,9 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
   diakritikou (např. „Naruto: šippúden“). Protože běh u chyby končí, přidejte takové
   anime ručně (Exportovat data, doplnit položku v JSONu, Importovat data) a spusťte
   Seznam znovu.
+- **Výsledek se nepodařilo zapsat, podrobnosti `item-exists`:** `data/anime.json`
+  už obsahuje anime se stejným číslem (soubor se změnil mimo stránku). Nová anime
+  zůstala v prohlížeči; data exportujte a se souborem je sloučte ručně.
 
 ### Testy
 

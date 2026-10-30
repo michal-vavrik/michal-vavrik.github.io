@@ -183,18 +183,11 @@ window.AnimeProxy = (function () {
 	}
 
 	/**
-	 * Nechá pomocníka zapsat jedno pole anime do data/anime.json (mirror Python
-	 * `UpdateCSFD()`/`UpdateMAL()`/`UpdateWatched()` + `WriteDataToTheFile()`).
-	 * Mění se jen anime, která v souboru jsou; čísla ostatních vrátí v `missing`.
-	 * @param {string} path - '/csfd-ratings' (CsfdRating), '/mal-ratings' (MalRating)
-	 *     nebo '/watched-states' (State)
-	 * @param {string} key - klíč v těle požadavku ('ratings' nebo 'states')
-	 * @param {Object<string, string>} values Number -> nová hodnota ("85%", "?%", "DONE", "S01E05"...)
-	 * @returns {Promise<{changed: number, missing: Array<string>}>}
+	 * Pošle pomocníkovi JSON k zápisu do data/anime.json a vrátí jeho odpověď.
+	 * Odpověď bez `ok: true` nebo neprošlá kontrolou `isValid` je chyba
+	 * `unexpected-response` s cestou bez lomítka v detailu.
 	 */
-	function saveValues(path, key, values) {
-		var body = {};
-		body[key] = values;
+	function postData(path, body, isValid) {
 		return call(path, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
@@ -209,9 +202,29 @@ window.AnimeProxy = (function () {
 			} catch (parseError) {
 				payload = null;
 			}
-			if (!payload || payload.ok !== true || !Array.isArray(payload.missing)) {
+			if (!payload || payload.ok !== true || !isValid(payload)) {
 				throw createError('unexpected-response', path.slice(1));
 			}
+			return payload;
+		});
+	}
+
+	/**
+	 * Nechá pomocníka zapsat jedno pole anime do data/anime.json (mirror Python
+	 * `UpdateCSFD()`/`UpdateMAL()`/`UpdateWatched()` + `WriteDataToTheFile()`).
+	 * Mění se jen anime, která v souboru jsou; čísla ostatních vrátí v `missing`.
+	 * @param {string} path - '/csfd-ratings' (CsfdRating), '/mal-ratings' (MalRating)
+	 *     nebo '/watched-states' (State)
+	 * @param {string} key - klíč v těle požadavku ('ratings' nebo 'states')
+	 * @param {Object<string, string>} values Number -> nová hodnota ("85%", "?%", "DONE", "S01E05"...)
+	 * @returns {Promise<{changed: number, missing: Array<string>}>}
+	 */
+	function saveValues(path, key, values) {
+		var body = {};
+		body[key] = values;
+		return postData(path, body, function (payload) {
+			return Array.isArray(payload.missing);
+		}).then(function (payload) {
 			return { changed: Number(payload.changed) || 0, missing: payload.missing.map(String) };
 		});
 	}
@@ -231,6 +244,22 @@ window.AnimeProxy = (function () {
 		return saveValues('/watched-states', 'states', states);
 	}
 
+	/**
+	 * Nechá pomocníka přidat nová anime ze Seznamu do data/anime.json (mirror
+	 * Python `UpdateAnimeList()` + `WriteDataToTheFile()`, pomocník od verze 5).
+	 * Číslo, které v souboru už je, pomocník nepřepíše a odmítne celý zápis
+	 * (chyba `item-exists`).
+	 * @param {Array<Object>} items - položky ve tvaru jako v data/anime.json
+	 * @returns {Promise<{added: number}>}
+	 */
+	function saveAnimeItems(items) {
+		return postData('/anime-items', { items: items }, function (payload) {
+			return typeof payload.added === 'number';
+		}).then(function (payload) {
+			return { added: payload.added };
+		});
+	}
+
 	return {
 		DEFAULT_URL: DEFAULT_URL,
 		URL_STORAGE_KEY: URL_STORAGE_KEY,
@@ -240,6 +269,7 @@ window.AnimeProxy = (function () {
 		saveImage: saveImage,
 		saveCsfdRatings: saveCsfdRatings,
 		saveMalRatings: saveMalRatings,
-		saveWatchedStates: saveWatchedStates
+		saveWatchedStates: saveWatchedStates,
+		saveAnimeItems: saveAnimeItems
 	};
 })();

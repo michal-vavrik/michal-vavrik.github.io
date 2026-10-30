@@ -539,7 +539,7 @@ class ConfigReloadTests(ProxyTestCase):
 
 
 class DataFileTests(ProxyTestCase):
-    """POST /csfd-ratings, /mal-ratings a /watched-states zapisují do souboru s daty."""
+    """POST /csfd-ratings, /mal-ratings, /watched-states a /anime-items zapisují do souboru s daty."""
 
     ITEMS = {
         "1": {"Number": "1", "FavoriteName": "Naruto Šippúden", "NameJa": "ナルト", "State": "S01E05",
@@ -738,6 +738,109 @@ class DataFileTests(ProxyTestCase):
         status, _, _ = self.post_ratings({"states": {"1": "DONE"}}, path="/watched-states", headers={proxy.REQUEST_HEADER: None})
         self.assertEqual(status, 403)
         status, _, _ = self.post_ratings({"states": {"1": "DONE"}}, path="/watched-states", headers={"Origin": "https://evil.example"})
+        self.assertEqual(status, 403)
+        self.assertEqual(self.read_data(), before)
+
+    @staticmethod
+    def new_item(number, **overrides):
+        item = {key: "" for key in proxy.ITEM_KEYS}
+        item.update({"Number": number, "FavoriteName": "Nové anime " + number, "Image": number, "NameJa": "新しい",
+                     "Genres": "Animovaný\nAkční", "Description": "Popis, s čárkou", "Date": "17.05.2024",
+                     "State": "S01E03", "CsfdRating": "75%", "MalRating": "?%", "MyRating": "?%"})
+        item.update(overrides)
+        return item
+
+    def post_items(self, items, **kwargs):
+        return self.post_ratings({"items": items}, path="/anime-items", **kwargs)
+
+    def test_anime_items_are_added_sorted_in_python_format(self):
+        # Klíče v jiném pořadí: do souboru jdou v pořadí ITEM_KEYS (Python GetNewFavoriteData()).
+        item_10 = dict(reversed(list(self.new_item("10").items())))
+        status, _, body = self.post_items([item_10, self.new_item("3")])
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "added": 2}))
+        expected = json.loads(json.dumps(self.ITEMS))
+        expected["3"] = self.new_item("3")
+        expected["10"] = self.new_item("10")
+        self.assertEqual(self.read_data(), self.dumps(expected).encode("utf-8"))
+        self.assertEqual(list(json.loads(self.read_data())), ["1", "2", "3", "10"])
+        self.assertEqual(list(json.loads(self.read_data())["10"]), list(proxy.ITEM_KEYS))
+        self.assertEqual(os.listdir(self.tmp), ["anime.json"])
+        self.assertEqual(self.transport.calls, [])
+
+    def test_anime_items_keep_bom_line_endings_and_final_newline(self):
+        original = self.dumps(self.ITEMS).replace("\n", "\r\n") + "\r\n"
+        self.write_data(b"\xef\xbb\xbf" + original.encode("utf-8"))
+        self.assertEqual(self.post_items([self.new_item("3")])[0], 200)
+        expected = json.loads(json.dumps(self.ITEMS))
+        expected["3"] = self.new_item("3")
+        self.assertEqual(self.read_data(), b"\xef\xbb\xbf" + (self.dumps(expected).replace("\n", "\r\n") + "\r\n").encode("utf-8"))
+
+    def test_anime_items_never_overwrite_existing_numbers(self):
+        before = self.read_data()
+        status, headers, _ = self.post_items([self.new_item("3"), self.new_item("2"), self.new_item("1")])
+        self.assertEqual((status, headers["x-proxy-error"], headers["x-proxy-detail"]), (409, "item-exists", "2 1"))
+        self.assertEqual(self.read_data(), before)
+
+    def test_anime_items_after_non_numeric_keys_are_appended(self):
+        self.write_data(self.dumps({"2": self.ITEMS["2"], "x": {"Number": "x"}}).encode("utf-8"))
+        self.assertEqual(self.post_items([self.new_item("1")])[0], 200)
+        self.assertEqual(list(json.loads(self.read_data())), ["2", "x", "1"])
+
+    def test_anime_items_are_validated(self):
+        before = self.read_data()
+        missing_key = self.new_item("3")
+        del missing_key["MyRating"]
+        bad_items = [
+            None, {}, [], "3", [None], ["3"], [missing_key], [self.new_item("3", Extra="x")],
+            [self.new_item("3", Description=None)], [self.new_item("3", CsfdRating=75)],
+            [self.new_item("0")], [self.new_item("03")], [self.new_item("x")], [self.new_item("")],
+            [self.new_item("1234567")], [self.new_item(" 3")], [self.new_item("3"), self.new_item("3")],
+        ]
+        for items in bad_items:
+            with self.subTest(items=items):
+                status, headers, _ = self.post_items(items)
+                self.assertEqual((status, headers["x-proxy-error"]), (400, "bad-request"))
+        self.assertEqual(self.post_ratings({"ratings": {"3": "50%"}}, path="/anime-items")[0], 400)
+        self.assertEqual(self.post_ratings({"items": [self.new_item("3")]}, path="/csfd-ratings")[0], 400)
+        self.assertEqual(self.post_ratings(b"{}", path="/anime-items", headers={"Content-Type": "text/plain"})[0], 415)
+        self.assertEqual(self.post_ratings(b'{"items": "' + b"a" * proxy.MAX_ITEMS_BODY + b'"}', path="/anime-items")[0], 413)
+        too_many = [dict(dict.fromkeys(proxy.ITEM_KEYS, ""), Number=str(number)) for number in range(3, proxy.MAX_DATA_VALUES + 4)]
+        self.assertEqual(self.post_items(too_many)[0], 400)
+        self.assertEqual(self.request("GET", "/anime-items")[0], 405)
+        self.assertEqual(self.read_data(), before)
+
+    def test_anime_items_with_long_descriptions_are_accepted(self):
+        items = [self.new_item(str(number), Description="Dlouhý popis. " * 200) for number in range(3, 303)]
+        status, _, body = self.post_items(items)
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "added": 300}))
+        self.assertEqual(len(json.loads(self.read_data())), 302)
+
+    def test_anime_items_need_a_data_file(self):
+        os.remove(self.data_path)
+        status, headers, _ = self.post_items([self.new_item("3")])
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-missing"))
+        self.assertFalse(os.path.exists(self.data_path))
+        self.write_data(b"[]")
+        status, headers, _ = self.post_items([self.new_item("3")])
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-invalid"))
+        self.server.data_path = None
+        status, headers, _ = self.post_items([self.new_item("3")])
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-missing"))
+
+    def test_anime_items_failed_write_keeps_original_file(self):
+        before = self.read_data()
+        with mock.patch.object(proxy.os, "replace", side_effect=PermissionError("locked")), \
+                mock.patch.object(proxy.time, "sleep"):
+            status, headers, _ = self.post_items([self.new_item("3")])
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-write-failed"))
+        self.assertEqual(self.read_data(), before)
+        self.assertEqual(os.listdir(self.tmp), ["anime.json"])
+
+    def test_anime_items_need_the_api_header_and_origin(self):
+        before = self.read_data()
+        status, _, _ = self.post_items([self.new_item("3")], headers={proxy.REQUEST_HEADER: None})
+        self.assertEqual(status, 403)
+        status, _, _ = self.post_items([self.new_item("3")], headers={"Origin": "https://evil.example"})
         self.assertEqual(status, 403)
         self.assertEqual(self.read_data(), before)
 

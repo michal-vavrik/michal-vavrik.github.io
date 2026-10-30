@@ -572,6 +572,32 @@ window.AnimeSyncTests = (function () {
 				});
 			},
 			function () {
+				var items = [{ Number: '13', FavoriteName: 'New A' }, { Number: '14', FavoriteName: 'New B' }];
+				return withFetch(function () { return reply(JSON.stringify({ ok: true, added: 2 }), 200); }, function (stub) {
+					return Client.saveAnimeItems(items).then(function (saved) {
+						runner.equal('saveAnimeItems: výsledek', saved, { added: 2 });
+						runner.equal('saveAnimeItems: požadavek', [
+							stub.calls[0].url, stub.calls[0].init.method, stub.calls[0].init.headers['Content-Type'],
+							stub.calls[0].init.headers['X-Anime-Proxy'], JSON.parse(stub.calls[0].init.body)
+						], [base + '/anime-items', 'POST', 'application/json', '1', { items: items }]);
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply(JSON.stringify({ ok: true, changed: 1, missing: [] }), 200); }, function () {
+					return summarizeError(Client.saveAnimeItems([{ Number: '13' }])).then(function (error) {
+						runner.equal('saveAnimeItems: neplatná odpověď', error, { code: 'unexpected-response', detail: 'anime-items', status: 0 });
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply('{}', 409, { 'X-Proxy-Error': 'item-exists', 'X-Proxy-Detail': '13' }); }, function () {
+					return summarizeError(Client.saveAnimeItems([{ Number: '13' }])).then(function (error) {
+						runner.equal('saveAnimeItems: číslo už v souboru je', error, { code: 'item-exists', detail: '13', status: 409 });
+					});
+				});
+			},
+			function () {
 				// Časovač se spustí hned a pozastavené spojení se přeruší, jako by uplynul limit.
 				var originalSetTimeout = window.setTimeout;
 				var delays = [];
@@ -677,13 +703,16 @@ window.AnimeSyncTests = (function () {
 	/**
 	 * Spustí aktualizaci s atrapou pomocníka a dat.
 	 * @param {Object} setup - routes (adresa -> text | {text, finalUrl} | Error), items (null = data nejsou načtená),
-	 *   health, imageError (number -> Error | null)
-	 * @returns {Promise<{result, error, events, calls, images, items}>}
+	 *   health, imageError (number -> Error | null), writeError (chyba zápisu do souboru),
+	 *   storedItems (jsou uložené úpravy v prohlížeči)
+	 * @returns {Promise<{result, error, events, calls, images, items, writes, saves}>}
 	 */
 	function runUpdate(setup) {
 		var events = [];
 		var calls = [];
 		var images = [];
+		var writes = [];
+		var saves = [];
 		var items = setup.items === null ? null : (setup.items || knownItems());
 		var proxy = {
 			health: function () {
@@ -693,7 +722,7 @@ window.AnimeSyncTests = (function () {
 						return setup.health;
 					});
 				}
-				return Promise.resolve(setup.health || { version: 1, cookieConfigured: true, maxImageNumber: 12 });
+				return Promise.resolve(setup.health || listHealth());
 			},
 			fetchPage: function (url, options) {
 				calls.push(url);
@@ -717,6 +746,14 @@ window.AnimeSyncTests = (function () {
 				var failure = setup.imageError ? setup.imageError(number) : null;
 				events.push('image:' + number);
 				return failure ? Promise.reject(failure) : Promise.resolve({ number: number, bytes: 10 });
+			},
+			saveAnimeItems: function (added) {
+				writes.push(JSON.parse(JSON.stringify(added)));
+				events.push('write');
+				if (setup.writeError) {
+					return Promise.reject(setup.writeError);
+				}
+				return Promise.resolve({ added: added.length });
 			}
 		};
 		var data = {
@@ -726,6 +763,13 @@ window.AnimeSyncTests = (function () {
 			addItem: function (item) {
 				items.push(item);
 				return items;
+			},
+			save: function (all) {
+				saves.push(all.map(function (item) { return item.Number; }));
+				events.push('save');
+			},
+			hasStoredItems: function () {
+				return Boolean(setup.storedItems);
 			}
 		};
 		return Sync.updateList({
@@ -738,10 +782,23 @@ window.AnimeSyncTests = (function () {
 				events.push('added:' + item.Number + '/' + all.length);
 			}
 		}).then(function (result) {
-			return { result: result, error: null, events: events, calls: calls, images: images, items: items };
+			return { result: result, error: null, events: events, calls: calls, images: images, items: items, writes: writes, saves: saves };
 		}, function (error) {
-			return { result: null, error: error, events: events, calls: calls, images: images, items: items };
+			return { result: null, error: error, events: events, calls: calls, images: images, items: items, writes: writes, saves: saves };
 		});
+	}
+
+	// Odpověď /health pomocníka, který umí zapsat Seznam do data/anime.json.
+	function listHealth(overrides) {
+		var health = { version: 5, cookieConfigured: true, maxImageNumber: 12, dataFile: true };
+		Object.keys(overrides || {}).forEach(function (key) {
+			health[key] = overrides[key];
+		});
+		return health;
+	}
+
+	function numbersOf(items) {
+		return items.map(function (item) { return item.Number; });
 	}
 
 	function twoNewFavorites() {
@@ -758,10 +815,11 @@ window.AnimeSyncTests = (function () {
 				return runUpdate({ routes: twoNewFavorites() }).then(function (run) {
 					runner.equal('tok: bez chyby', run.error && run.error.message, null);
 					runner.equal('tok: výsledek', run.result && [run.result.total, run.result.added.length], [2, 2]);
-					runner.equal('tok: pořadí kroků, průběh a obrázek jako poslední krok položky', run.events, [
+					runner.equal('tok: pořadí kroků, průběh, obrázek jako poslední krok položky a jeden zápis do souboru na konci', run.events, [
 						'health', 'total:2',
 						'progress:10.00', 'progress:20.00', 'progress:30.00', 'progress:40.00', 'image:13', 'progress:50.00', 'added:13/3',
-						'progress:60.00', 'progress:70.00', 'progress:80.00', 'progress:90.00', 'image:14', 'progress:100.00', 'added:14/4'
+						'progress:60.00', 'progress:70.00', 'progress:80.00', 'progress:90.00', 'image:14', 'progress:100.00', 'added:14/4',
+						'write'
 					]);
 					runner.equal('tok: stahované stránky', run.calls, [
 						Sync.FAVORITES_URL,
@@ -774,14 +832,33 @@ window.AnimeSyncTests = (function () {
 					runner.equal('tok: přidané položky', run.items.slice(2), [expectedItemA(13), expectedItemB(14)]);
 					runner.equal('tok: původní položky zůstanou', run.items.slice(0, 2), knownItems());
 					runner.equal('tok: vrácené položky', run.result && run.result.added, [expectedItemA(13), expectedItemB(14)]);
+					runner.equal('tok: do souboru jdou jen přidaná anime', run.writes, [[expectedItemA(13), expectedItemB(14)]]);
+					runner.equal('tok: bez uložených úprav se do prohlížeče neukládá', run.saves, []);
+					runner.equal('tok: zapsáno do souboru', run.result && [run.result.total, run.result.savedTo], [2, 'file']);
+				});
+			},
+			function () {
+				return runUpdate({ routes: twoNewFavorites(), storedItems: true }).then(function (run) {
+					runner.equal('s uloženými úpravami: zapíše soubor i prohlížeč', [run.events.slice(-2), run.saves, run.result && run.result.savedTo],
+						[['write', 'save'], [['3', '10', '13', '14']], 'file']);
+				});
+			},
+			function () {
+				return runUpdate({ routes: twoNewFavorites(), writeError: makeError('item-exists', '13', 409) }).then(function (run) {
+					runner.equal('zápis do souboru selže: chyba data-save-failed s příčinou', errorSummary(run.error),
+						{ code: 'data-save-failed', detail: 'item-exists 13' });
+					runner.equal('zápis do souboru selže: anime zůstanou v prohlížeči',
+						[run.error && run.error.savedTo, run.error && run.error.added, run.saves, numbersOf(run.items)],
+						['browser', 2, [['3', '10', '13', '14']], ['3', '10', '13', '14']]);
+					runner.equal('zápis do souboru selže: chyba nemá anime', Boolean(run.error && run.error.favorite), false);
 				});
 			},
 			function () {
 				var routes = {};
 				routes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE, EXCEPTION_FAVORITE]);
 				return runUpdate({ routes: routes }).then(function (run) {
-					runner.equal('bez nových anime: výsledek', run.result, { total: 0, added: [] });
-					runner.equal('bez nových anime: jen seznam oblíbených, žádný průběh', [run.calls, run.events], [[Sync.FAVORITES_URL], ['health', 'total:0']]);
+					runner.equal('bez nových anime: výsledek', run.result, { total: 0, added: [], savedTo: null });
+					runner.equal('bez nových anime: jen seznam oblíbených, žádný průběh ani zápis', [run.calls, run.events], [[Sync.FAVORITES_URL], ['health', 'total:0']]);
 				});
 			},
 			function () {
@@ -824,8 +901,22 @@ window.AnimeSyncTests = (function () {
 				});
 			},
 			function () {
-				return runUpdate({ routes: {}, health: { version: 1, cookieConfigured: false, maxImageNumber: 0 } }).then(function (run) {
+				return runUpdate({ routes: {}, health: listHealth({ cookieConfigured: false, maxImageNumber: 0 }) }).then(function (run) {
 					runner.equal('chybí cookie: chyba a žádné stahování', [errorSummary(run.error), run.calls], [{ code: 'cookie-missing', detail: '' }, []]);
+				});
+			},
+			function () {
+				// Starší pomocník by nová anime nezapsal; kontroly jdou ve stejném pořadí jako u ostatních voleb.
+				var outdated = listHealth({ version: 4, cookieConfigured: false, dataFile: false });
+				return runUpdate({ routes: twoNewFavorites(), health: outdated }).then(function (run) {
+					runner.equal('pomocník verze 4: zastaralý, nic se nestahuje', [errorSummary(run.error), run.calls, run.events],
+						[{ code: 'helper-outdated', detail: '' }, [], ['health']]);
+				});
+			},
+			function () {
+				return runUpdate({ routes: twoNewFavorites(), health: listHealth({ dataFile: false, cookieConfigured: false }) }).then(function (run) {
+					runner.equal('pomocník bez datového souboru: chyba před kontrolou cookie a nic se nestahuje', [errorSummary(run.error), run.calls],
+						[{ code: 'data-file-missing', detail: '' }, []]);
 				});
 			},
 			function () {
@@ -843,6 +934,26 @@ window.AnimeSyncTests = (function () {
 						['mal-not-found', 'New B']);
 					runner.equal('chyba uprostřed: první anime zůstane, druhé se nepřidá a nemá obrázek',
 						[run.items.map(function (item) { return item.Number; }), run.images.length], [['3', '10', '13'], 1]);
+					runner.equal('chyba uprostřed: hotové anime se zapíše do souboru',
+						[run.writes, run.error && run.error.added, run.error && run.error.savedTo, run.saves], [[[expectedItemA(13)]], 1, 'file', []]);
+				});
+			},
+			function () {
+				var routes = twoNewFavorites();
+				routes[Sync.malSearchUrl('New B')] = { text: MAL_NOT_FOUND, status: 404 };
+				return runUpdate({ routes: routes, writeError: makeError('helper-unreachable', '') }).then(function (run) {
+					runner.equal('chyba uprostřed a selhaný zápis: zůstane původní chyba, anime jen v prohlížeči',
+						[run.error && run.error.code, run.error && run.error.added, run.error && run.error.savedTo, run.saves],
+						['mal-not-found', 1, 'browser', [['3', '10', '13']]]);
+				});
+			},
+			function () {
+				var routes = twoNewFavorites();
+				routes[Sync.malSearchUrl('New A')] = { text: MAL_NOT_FOUND, status: 404 };
+				return runUpdate({ routes: routes }).then(function (run) {
+					runner.equal('chyba u prvního anime: nic se nezapisuje',
+						[run.error && run.error.code, run.writes, run.saves, run.error && run.error.added, run.error && run.error.savedTo],
+						['mal-not-found', [], [], 0, null]);
 				});
 			},
 			function () {
@@ -912,7 +1023,7 @@ window.AnimeSyncTests = (function () {
 				routes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE]);
 				var release;
 				var gate = new Promise(function (resolve) { release = resolve; });
-				var first = runUpdate({ routes: routes, healthGate: gate, health: { version: 1, cookieConfigured: true, maxImageNumber: 0 } });
+				var first = runUpdate({ routes: routes, healthGate: gate, health: listHealth({ maxImageNumber: 0 }) });
 				return Promise.resolve().then(function () {
 					return runUpdate({ routes: routes });
 				}).then(function (second) {
@@ -920,16 +1031,16 @@ window.AnimeSyncTests = (function () {
 					release();
 					return first;
 				}).then(function (firstRun) {
-					runner.equal('původní aktualizace doběhne', firstRun.result, { total: 0, added: [] });
+					runner.equal('původní aktualizace doběhne', firstRun.result, { total: 0, added: [], savedTo: null });
 					return runUpdate({ routes: routes });
 				}).then(function (afterSuccess) {
-					runner.equal('po dokončení jde aktualizaci spustit znovu', afterSuccess.result, { total: 0, added: [] });
-					return runUpdate({ routes: {}, health: { version: 1, cookieConfigured: false, maxImageNumber: 0 } });
+					runner.equal('po dokončení jde aktualizaci spustit znovu', afterSuccess.result, { total: 0, added: [], savedTo: null });
+					return runUpdate({ routes: {}, health: listHealth({ cookieConfigured: false, maxImageNumber: 0 }) });
 				}).then(function (failed) {
 					runner.equal('aktualizace skončí chybou', errorSummary(failed.error), { code: 'cookie-missing', detail: '' });
 					return runUpdate({ routes: routes });
 				}).then(function (afterError) {
-					runner.equal('po chybě jde aktualizaci spustit znovu', afterError.result, { total: 0, added: [] });
+					runner.equal('po chybě jde aktualizaci spustit znovu', afterError.result, { total: 0, added: [], savedTo: null });
 				});
 			}
 		]);

@@ -17,9 +17,11 @@
  * aktualizace.
  *
  * Bez Python vzoru: chyba (neběžící pomocný program, změněná stránka zdroje,
- * ...) se zobrazí v liště, ovládání se hned odemkne a už přidané anime zůstane
- * uložené. Během aktualizace jsou navíc zamčené Upravit, Importovat a Obnovit,
- * protože by měnily stejná data; Aktualizovat je neaktivní v edit módu.
+ * ...) se zobrazí v liště a ovládání se hned odemkne. Výsledky zjištěné před
+ * chybou (přidaná anime, hodnocení, zhlédnuté epizody) se zapíšou do
+ * data/anime.json, případně zůstanou v prohlížeči. Během aktualizace jsou
+ * navíc zamčené Upravit, Importovat a Obnovit, protože by měnily stejná data;
+ * Aktualizovat je neaktivní v edit módu.
  */
 window.AnimeUpdate = (function () {
 	'use strict';
@@ -120,7 +122,7 @@ window.AnimeUpdate = (function () {
 			parts.push(i18n.t('anime.update.error.detail', { detail: detail }));
 		}
 		if (current.kept > 0) {
-			parts.push(i18n.t(current.keptKey || 'anime.update.error.kept', { count: current.kept }));
+			parts.push(i18n.t(current.keptKey, { count: current.kept }));
 		}
 		var notice = skippedMessage(current);
 		if (notice) {
@@ -259,7 +261,8 @@ window.AnimeUpdate = (function () {
 		}).then(function (result) {
 			finish(result.total);
 		}, function (error) {
-			fail(error, added);
+			var keptKey = 'anime.update.list.kept' + (error && error.savedTo === 'file' ? 'File' : 'Browser');
+			fail(error, added, keptKey);
 		});
 	}
 

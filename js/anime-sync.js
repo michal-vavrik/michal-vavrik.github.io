@@ -12,9 +12,11 @@
  * lokální pomocník (js/anime-proxy.js).
  *
  * Odchylky od Python skriptu (web nemá přístup k souborům ani k cizím webům):
- *  - Položka se přidá a uloží (js/anime-data.js addItem()) až když je celá
- *    hotová; Python zapisuje data jednou na konci. Chyba tak nikdy nezanechá
- *    rozpracovanou položku a už hotové položky zůstanou.
+ *  - Položka se přidá (js/anime-data.js addItem()) až když je celá hotová,
+ *    takže chyba nikdy nezanechá rozpracovanou položku. Přidaná anime zapíše
+ *    pomocník do data/anime.json na konci jako Python WriteDataToTheFile();
+ *    při zastavení chybou zapíše ta, která už jsou hotová. Uložení do
+ *    prohlížeče a chyba zápisu se řeší jako u ČSFD hodnocení (viz níže).
  *  - Obrázek se stahuje jako poslední krok položky, aby po chybě nezůstal
  *    soubor, který žádná položka nepoužívá.
  *  - Číslo nové položky je nejvyšší dosavadní Number/Image + 1 (Python
@@ -87,10 +89,11 @@ window.AnimeSync = (function () {
 	// Název seriálu v adrese sledujserialy.io/serial/<název>; stejné pravidlo má pomocník (FETCH_RULES).
 	var SERIAL_SLUG = /^[A-Za-z0-9_.%-]+$/;
 
-	// Nejstarší verze pomocníka, která umí zapsat hodnocení nebo stav do data/anime.json.
+	// Nejstarší verze pomocníka, která umí zapsat výsledek aktualizace do data/anime.json.
 	var CSFD_MIN_HELPER_VERSION = 2;
 	var MAL_MIN_HELPER_VERSION = 3;
 	var WATCHED_MIN_HELPER_VERSION = 4;
+	var LIST_MIN_HELPER_VERSION = 5;
 
 	// Python GetNewFavoriteData() (ř. 1357) - prázdná položka, jejíž pořadí klíčů
 	// určuje pořadí v exportovaných datech.
@@ -670,17 +673,47 @@ window.AnimeSync = (function () {
 	}
 
 	/**
+	 * Nechá pomocníka zapsat výsledek aktualizace do data/anime.json (`write`).
+	 * Uložené úpravy v prohlížeči soubor přebíjí, proto se v takovém případě
+	 * data uloží i tam; když zápis do souboru selže, zůstanou aspoň v prohlížeči.
+	 * @returns {Promise<{savedTo: string, result: *, error: Object}>} savedTo
+	 *     'file' s odpovědí pomocníka, nebo 'browser' s chybou zápisu
+	 */
+	function persistUpdate(data, write) {
+		return Promise.resolve().then(write).then(function (result) {
+			if (data.hasStoredItems()) {
+				data.save(data.getItems());
+			}
+			return { savedTo: 'file', result: result };
+		}, function (error) {
+			data.save(data.getItems());
+			return { savedTo: 'browser', error: error };
+		});
+	}
+
+	// Chyba data-save-failed s kódem a detailem chyby zápisu do souboru.
+	function saveFailedError(cause) {
+		return syncError('data-save-failed', [cause.code, cause.detail].filter(Boolean).join(' '));
+	}
+
+	/**
 	 * Zjistí nové oblíbené seriály a doplní je do dat, jeden po druhém
-	 * (Python UpdateAnimeList(), ř. 520-537).
+	 * (Python UpdateAnimeList(), ř. 520-537). Přidaná anime pak pomocník
+	 * jednou zapíše do data/anime.json (Python WriteDataToTheFile()); při
+	 * zastavení chybou zapíše ta, která už jsou hotová.
 	 *
 	 * @param {Object} deps
-	 * @param {Object} deps.proxy - AnimeProxy (health, fetchPage, saveImage)
-	 * @param {Object} deps.data - AnimeData (getItems, addItem)
+	 * @param {Object} deps.proxy - AnimeProxy (health, fetchPage, saveImage, saveAnimeItems)
+	 * @param {Object} deps.data - AnimeData (getItems, addItem, save, hasStoredItems)
 	 * @param {function(number)} [deps.onTotal] - počet nových seriálů
 	 * @param {function(number)} [deps.onProgress] - průběh v procentech 0-100
 	 * @param {function(Object, Array)} [deps.onItemAdded] - hotová položka a všechny položky
 	 * @param {function(): Date} [deps.now] - aktuální datum (pro testy)
-	 * @returns {Promise<{total: number, added: Array<Object>}>}
+	 * @returns {Promise<{total: number, added: Array<Object>, savedTo: ?string}>}
+	 *     `savedTo` je 'file', nebo null, když nepřibylo žádné anime. Při
+	 *     zastavení chybou má chyba navíc `added` (počet přidaných anime)
+	 *     a `savedTo` ('file', 'browser' nebo null). Selže-li jen zápis do
+	 *     souboru, je to chyba `data-save-failed` se `savedTo` 'browser'.
 	 */
 	function updateList(deps) {
 		return exclusive(function () {
@@ -696,6 +729,7 @@ window.AnimeSync = (function () {
 		var onItemAdded = deps.onItemAdded || noop;
 		var now = deps.now || function () { return new Date(); };
 		var imageFloor = 0;
+		var added = [];
 
 		if (!data.getItems()) {
 			return Promise.reject(syncError('data-not-loaded', ''));
@@ -740,7 +774,29 @@ window.AnimeSync = (function () {
 			});
 		}
 
+		// Python UpdateAnimeList() zapisuje data jen tehdy, když nějaké anime přibylo.
+		function persist() {
+			if (added.length === 0) {
+				return Promise.resolve({ savedTo: null });
+			}
+			return persistUpdate(data, function () {
+				return proxy.saveAnimeItems(added);
+			});
+		}
+
+		function annotate(error, saved) {
+			error.added = added.length;
+			error.savedTo = saved.savedTo;
+			return error;
+		}
+
 		return proxy.health().then(function (health) {
+			if (!(health.version >= LIST_MIN_HELPER_VERSION)) {
+				throw syncError('helper-outdated', '');
+			}
+			if (!health.dataFile) {
+				throw syncError('data-file-missing', '');
+			}
 			if (!health.cookieConfigured) {
 				throw syncError('cookie-missing', '');
 			}
@@ -750,7 +806,6 @@ window.AnimeSync = (function () {
 			var fresh = getNewFavorites(parseFavorites(page.text), data.getItems());
 			onTotal(fresh.length);
 
-			var added = [];
 			var chain = Promise.resolve();
 			fresh.forEach(function (favorite, index) {
 				chain = chain.then(function () {
@@ -760,7 +815,18 @@ window.AnimeSync = (function () {
 				});
 			});
 			return chain.then(function () {
-				return { total: fresh.length, added: added };
+				return fresh.length;
+			});
+		}).then(function (total) {
+			return persist().then(function (saved) {
+				if (saved.error) {
+					throw annotate(saveFailedError(saved.error), saved);
+				}
+				return { total: total, added: added, savedTo: saved.savedTo };
+			});
+		}, function (error) {
+			return persist().then(function (saved) {
+				throw annotate(error, saved);
 			});
 		});
 	}
@@ -868,24 +934,21 @@ window.AnimeSync = (function () {
 			});
 		}
 
-		// Zapíše zjištěné hodnoty do data/anime.json. Uložené úpravy
-		// v prohlížeči soubor přebíjí, proto se v takovém případě uloží i tam;
-		// když zápis do souboru selže, zůstanou hodnoty aspoň v prohlížeči.
+		// Zapíše zjištěné hodnoty do data/anime.json (a případně do prohlížeče, viz persistUpdate()).
 		function persist() {
 			if (updated === 0) {
 				return Promise.resolve({ savedTo: null, notInFile: [] });
 			}
-			return source.save(proxy, values).then(function (result) {
-				if (data.hasStoredItems()) {
-					data.save(data.getItems());
+			return persistUpdate(data, function () {
+				return source.save(proxy, values);
+			}).then(function (saved) {
+				if (saved.error) {
+					return { savedTo: saved.savedTo, notInFile: [], error: saved.error };
 				}
-				var notInFile = result.missing.map(function (number) {
+				var notInFile = saved.result.missing.map(function (number) {
 					return { name: names[number] || number, number: number };
 				});
-				return { savedTo: 'file', notInFile: notInFile };
-			}, function (error) {
-				data.save(data.getItems());
-				return { savedTo: 'browser', notInFile: [], error: error };
+				return { savedTo: saved.savedTo, notInFile: notInFile };
 			});
 		}
 
@@ -917,8 +980,7 @@ window.AnimeSync = (function () {
 		}).then(function () {
 			return persist().then(function (saved) {
 				if (saved.error) {
-					var cause = saved.error;
-					throw annotate(syncError('data-save-failed', [cause.code, cause.detail].filter(Boolean).join(' ')), saved);
+					throw annotate(saveFailedError(saved.error), saved);
 				}
 				return {
 					total: items.length, updated: updated, changed: changed, failures: failures,

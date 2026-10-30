@@ -16,6 +16,9 @@ server proto běží na vašem počítači (jen na 127.0.0.1) a umí:
   POST /mal-ratings     totéž pro MAL hodnocení (mění jen MalRating)
   POST /watched-states  {"states": {"1": "DONE", "2": "S01E05", ...}}
                         zapíše zhlédnuté epizody (mění jen State)
+  POST /anime-items     {"items": [{"Number": "319", ...}, ...]}
+                        přidá nová anime ze Seznamu do data/anime.json (číslo,
+                        které v souboru už je, nikdy nepřepíše)
 
 Spuštění:      python tools\anime_proxy.py
 Diagnostika:   python tools\anime_proxy.py --check
@@ -51,9 +54,9 @@ import zlib
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urljoin, urlsplit
 
-# Verze 2 přidala POST /csfd-ratings, verze 3 POST /mal-ratings, verze 4 POST /watched-states;
-# stránka starší pomocník odmítne.
-VERSION = 4
+# Verze 2 přidala POST /csfd-ratings, verze 3 POST /mal-ratings, verze 4 POST /watched-states,
+# verze 5 POST /anime-items; stránka starší pomocník odmítne.
+VERSION = 5
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_IMAGES_DIR = os.path.join(os.path.dirname(HERE), "img", "anime")
 DEFAULT_DATA_FILE = os.path.join(os.path.dirname(HERE), "data", "anime.json")
@@ -76,8 +79,11 @@ MAX_BYTES = 5 * 1024 * 1024
 MAX_REDIRECTS = 5
 MAX_REQUEST_BODY = 4096
 MAX_DATA_BODY = 256 * 1024
-# Odmítnuté tělo požadavku do této velikosti se před odpovědí dočte (viz Handler._discard_body).
-MAX_DISCARD_BODY = 1024 * 1024
+# Nová anime mají i popis, proto je limit pro POST /anime-items větší.
+MAX_ITEMS_BODY = 4 * 1024 * 1024
+# Odmítnuté tělo požadavku do této velikosti se před odpovědí dočte (viz Handler._discard_body);
+# s rezervou nad největším limitem, aby i tělo těsně nad limitem dostalo odpověď 413.
+MAX_DISCARD_BODY = 2 * MAX_ITEMS_BODY
 MAX_DATA_VALUES = 10000
 MAX_IMAGE_NUMBER = 999999
 # Hodnocení jako v data/anime.json: "85%", nebo "?%" bez hodnocení.
@@ -90,6 +96,10 @@ DATA_ROUTES = {
     "/mal-ratings": ("MalRating", "ratings", RATING, "MAL hodnocení"),
     "/watched-states": ("State", "states", WATCHED_STATE, "Zhlédnuté epizody"),
 }
+# Pole nového anime v pořadí Python GetNewFavoriteData() (stejně jako ITEM_KEYS v js/anime-sync.js).
+ITEM_KEYS = ("Number", "FavoriteName", "CsfdID", "MalID", "MalName", "Image", "NameEn", "NameJa",
+             "Genres", "Description", "Date", "State", "CsfdRating", "MalRating", "MyRating")
+ITEM_NUMBER = re.compile(r"[1-9][0-9]{0,5}")
 REDIRECT_STATUSES = (301, 302, 303, 307, 308)
 EXPOSED_HEADERS = "X-Upstream-Status, X-Final-Url, X-Proxy-Error, X-Proxy-Detail"
 TARGET_SAFE = "/%+:;,@$!*'()~-._"
@@ -383,32 +393,48 @@ def _replace_file(path, data):
             pass
 
 
+def _read_data(path):
+    """Načte soubor s daty; vrací (bajty, text, objekt klíčovaný Number)."""
+    try:
+        with open(path, "rb") as handle:
+            raw = handle.read()
+    except FileNotFoundError:
+        raise ProxyError("data-file-missing", 500)
+    except OSError as error:
+        raise ProxyError("data-read-failed", 500, type(error).__name__)
+    try:
+        text = raw.decode("utf-8-sig")
+        data = json.loads(text)
+    except ValueError:
+        raise ProxyError("data-file-invalid", 500)
+    if not isinstance(data, dict):
+        raise ProxyError("data-file-invalid", 500)
+    return raw, text, data
+
+
+def _write_data(path, raw, text, data):
+    """Zapíše data jako `json.dump(..., indent=4, ensure_ascii=False)` (Python
+    WriteDataToTheFile()) se zachovaným BOM, konci řádků a koncovým odřádkováním
+    původního souboru, takže se v diffu ukážou jen skutečné změny."""
+    output = json.dumps(data, indent=4, ensure_ascii=False)
+    line_end = "\r\n" if "\r\n" in text else "\n"
+    output = output.replace("\n", line_end)
+    if text.endswith("\n"):
+        output += line_end
+    bom = codecs.BOM_UTF8 if raw.startswith(codecs.BOM_UTF8) else b""
+    _replace_file(path, bom + output.encode("utf-8"))
+
+
 def update_field(path, field, values):
     """Přepíše jedno pole anime v souboru s daty (Python UpdateCSFD()/UpdateMAL()/UpdateWatched()
     + WriteDataToTheFile()).
 
     `field` je "CsfdRating", "MalRating" nebo "State", `values` mapuje Number na novou hodnotu.
-    Soubor se zapíše jako `json.dump(..., indent=4, ensure_ascii=False)` se
-    zachovanými konci řádků, takže se v diffu ukážou jen změněné hodnoty; beze
-    změny se nezapisuje. Vrací (počet změněných hodnot, čísla anime, která
-    v souboru nejsou).
+    Formát souboru zůstane (viz _write_data()); beze změny se nezapisuje. Vrací
+    (počet změněných hodnot, čísla anime, která v souboru nejsou).
     """
     with _data_lock:
-        try:
-            with open(path, "rb") as handle:
-                raw = handle.read()
-        except FileNotFoundError:
-            raise ProxyError("data-file-missing", 500)
-        except OSError as error:
-            raise ProxyError("data-read-failed", 500, type(error).__name__)
-        try:
-            text = raw.decode("utf-8-sig")
-            data = json.loads(text)
-        except ValueError:
-            raise ProxyError("data-file-invalid", 500)
-        if not isinstance(data, dict):
-            raise ProxyError("data-file-invalid", 500)
-
+        raw, text, data = _read_data(path)
         changed = 0
         missing = []
         for number, value in values.items():
@@ -418,16 +444,30 @@ def update_field(path, field, values):
             elif item.get(field) != value:
                 item[field] = value
                 changed += 1
-
         if changed:
-            output = json.dumps(data, indent=4, ensure_ascii=False)
-            line_end = "\r\n" if "\r\n" in text else "\n"
-            output = output.replace("\n", line_end)
-            if text.endswith("\n"):
-                output += line_end
-            bom = codecs.BOM_UTF8 if raw.startswith(codecs.BOM_UTF8) else b""
-            _replace_file(path, bom + output.encode("utf-8"))
+            _write_data(path, raw, text, data)
         return changed, missing
+
+
+def add_items(path, items):
+    """Přidá nová anime ze Seznamu do souboru s daty (Python UpdateAnimeList() + WriteDataToTheFile()).
+
+    `items` jsou ověřené položky s poli ITEM_KEYS. Číslo, které v souboru už je,
+    se nikdy nepřepíše: celý zápis se pak odmítne chybou item-exists (stránka
+    a soubor se rozešly) a soubor zůstane beze změny. Anime se seřadí podle
+    čísla jako ve skriptu. Vrací počet přidaných anime.
+    """
+    with _data_lock:
+        raw, text, data = _read_data(path)
+        existing = [item["Number"] for item in items if item["Number"] in data]
+        if existing:
+            raise ProxyError("item-exists", 409, " ".join(existing[:10]))
+        for item in items:
+            data[item["Number"]] = {key: item[key] for key in ITEM_KEYS}
+        if all(re.fullmatch(r"[0-9]+", number) for number in data):
+            data = dict(sorted(data.items(), key=lambda entry: int(entry[0])))
+        _write_data(path, raw, text, data)
+        return len(items)
 
 
 def _clean_detail(detail):
@@ -512,7 +552,7 @@ class Handler(BaseHTTPRequestHandler):
             parts = urlsplit(self.path)
             route = routes.get(parts.path)
             if route is None:
-                known = parts.path in ("/health", "/fetch", "/images") or parts.path in DATA_ROUTES
+                known = parts.path in ("/health", "/fetch", "/images", "/anime-items") or parts.path in DATA_ROUTES
                 raise ProxyError("method-not-allowed" if known else "not-found", 405 if known else 404)
             route(parts)
         except ProxyError as error:
@@ -527,7 +567,7 @@ class Handler(BaseHTTPRequestHandler):
         self._handle({"/health": self._health, "/fetch": self._fetch})
 
     def do_POST(self):
-        routes = {"/images": self._images}
+        routes = {"/images": self._images, "/anime-items": self._anime_items}
         routes.update(dict.fromkeys(DATA_ROUTES, self._data_values))
         self._handle(routes)
 
@@ -614,6 +654,24 @@ class Handler(BaseHTTPRequestHandler):
         changed, missing = update_field(self.server.data_path, field, values)
         print("%s: zápis do %s (změněno %d)" % (label, self.server.data_path, changed), file=sys.stderr)
         self._send_json(200, {"ok": True, "changed": changed, "missing": missing})
+
+    def _anime_items(self, _parts):
+        items = self._read_json_body(MAX_ITEMS_BODY).get("items")
+        if not isinstance(items, list) or not 0 < len(items) <= MAX_DATA_VALUES:
+            raise ProxyError("bad-request", 400, "items")
+        numbers = set()
+        for item in items:
+            if (not isinstance(item, dict) or set(item) != set(ITEM_KEYS)
+                    or not all(isinstance(value, str) for value in item.values())):
+                raise ProxyError("bad-request", 400, "item")
+            if not ITEM_NUMBER.fullmatch(item["Number"]) or item["Number"] in numbers:
+                raise ProxyError("bad-request", 400, "number")
+            numbers.add(item["Number"])
+        if not self.server.data_path:
+            raise ProxyError("data-file-missing", 500)
+        added = add_items(self.server.data_path, items)
+        print("Seznam: zápis do %s (přidáno %d)" % (self.server.data_path, added), file=sys.stderr)
+        self._send_json(200, {"ok": True, "added": added})
 
 
 class ProxyServer(ThreadingHTTPServer):
@@ -710,7 +768,7 @@ def main(argv=None):
                         help="další povolená origin stránky (lze opakovat)")
     parser.add_argument("--images-dir", default=DEFAULT_IMAGES_DIR, help="složka pro obrázky (výchozí img/anime)")
     parser.add_argument("--data-file", default=DEFAULT_DATA_FILE,
-                        help="soubor s daty pro ČSFD a MAL hodnocení a zhlédnuté epizody (výchozí data/anime.json)")
+                        help="soubor s daty, do kterého se zapisují výsledky aktualizací (výchozí data/anime.json)")
     parser.add_argument("--check", action="store_true", help="ověří dostupnost zdrojů a skončí")
     args = parser.parse_args(argv)
 
@@ -729,7 +787,7 @@ def main(argv=None):
         parser.exit(2, "Nelze spustit na portu %d (%s) - běží pomocník už jednou?\n" % (args.port, error.strerror or type(error).__name__))
     print("Anime pomocník běží na http://127.0.0.1:%d (Ctrl+C ukončí)" % server.server_address[1])
     print("Obrázky se ukládají do %s" % args.images_dir)
-    print("ČSFD a MAL hodnocení a zhlédnuté epizody se zapisují do %s%s"
+    print("Výsledky aktualizací se zapisují do %s%s"
           % (args.data_file, "" if os.path.isfile(args.data_file) else " (SOUBOR CHYBÍ)"))
     print("Cookie sledujserialy.io: " + ("nastavena" if config.cookie else "CHYBÍ (viz README)"))
     try:
