@@ -62,6 +62,9 @@
  * zastavení, uložení do prohlížeče). Navíc se přeskočí seriál, jehož název
  * v adrese pomocník nepovoluje nebo jehož stránka přesměruje jinam než na
  * stránku seriálu (Python by vzal cílovou stránku a nejspíš zapsal "DONE").
+ *
+ * Tlačítko Push (publish()) ve skriptu obdobu nemá: pomocník na žádost
+ * uživatele commitne data/anime.json a nové obrázky a pushne je na GitHub.
  */
 window.AnimeSync = (function () {
 	'use strict';
@@ -100,6 +103,8 @@ window.AnimeSync = (function () {
 	var MAL_MIN_HELPER_VERSION = 3;
 	var WATCHED_MIN_HELPER_VERSION = 4;
 	var LIST_MIN_HELPER_VERSION = 7;
+	// Tlačítko Push (POST /publish).
+	var PUBLISH_MIN_HELPER_VERSION = 8;
 
 	// Python GetNewFavoriteData() (ř. 1357) - prázdná položka, jejíž pořadí klíčů
 	// určuje pořadí v exportovaných datech.
@@ -1006,6 +1011,25 @@ window.AnimeSync = (function () {
 		});
 	}
 
+	/**
+	 * Tlačítko Push: nechá pomocníka commitnout data/anime.json s novými
+	 * obrázky a pushnout je na GitHub (bez Python vzoru). Sdílí zámek
+	 * s aktualizacemi, takže nikdy neběží současně s nimi.
+	 * @param {Object} deps
+	 * @param {Object} deps.proxy - AnimeProxy (health, publish)
+	 * @returns {Promise<{committed: boolean, pushed: boolean, commit: string, files: number}>}
+	 */
+	function publish(deps) {
+		return exclusive(function () {
+			return deps.proxy.health().then(function (health) {
+				if (!(health.version >= PUBLISH_MIN_HELPER_VERSION)) {
+					throw syncError('helper-outdated', '');
+				}
+				return deps.proxy.publish();
+			});
+		});
+	}
+
 	return {
 		FAVORITES_URL: FAVORITES_URL,
 		EXCEPTION_ANIME: EXCEPTION_ANIME,
@@ -1028,6 +1052,7 @@ window.AnimeSync = (function () {
 		updateMal: updateMal,
 		parseSerialSeasons: parseSerialSeasons,
 		checkIfReallyNotFinished: checkIfReallyNotFinished,
-		updateWatched: updateWatched
+		updateWatched: updateWatched,
+		publish: publish
 	};
 })();

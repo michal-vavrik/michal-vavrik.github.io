@@ -20,6 +20,9 @@ server proto běží na vašem počítači (jen na 127.0.0.1) a umí:
   POST /anime-items     {"items": [{"Number": "319", ...}, ...]}
                         přidá nová anime ze Seznamu do data/anime.json (číslo,
                         které v souboru už je, nikdy nepřepíše)
+  POST /publish         {}  (jen na stisk tlačítka Push na stránce)
+                        commitne data/anime.json a img/anime/N.jpg se zprávou
+                        "feat: anime list update" a pushne větev main na origin
 
 Spuštění:      python tools\anime_proxy.py
 Diagnostika:   python tools\anime_proxy.py --check
@@ -49,8 +52,10 @@ import json
 import os
 import platform
 import re
+import signal
 import socket
 import ssl
+import subprocess
 import sys
 import threading
 import time
@@ -60,8 +65,9 @@ from urllib.parse import parse_qs, quote, unquote, urljoin, urlsplit
 
 # Verze 2 přidala POST /csfd-ratings, verze 3 POST /mal-ratings, verze 4 POST /watched-states,
 # verze 5 POST /anime-items, verze 6 stahuje obrázky ze sledujserialy.io místo serialy.sx,
-# verze 7 vrací uložený obrázek v odpovědi POST /images; stránka starší pomocník odmítne.
-VERSION = 7
+# verze 7 vrací uložený obrázek v odpovědi POST /images, verze 8 přidala POST /publish (tlačítko Push);
+# stránka starší pomocník odmítne.
+VERSION = 8
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_IMAGES_DIR = os.path.join(os.path.dirname(HERE), "img", "anime")
 DEFAULT_DATA_FILE = os.path.join(os.path.dirname(HERE), "data", "anime.json")
@@ -119,6 +125,17 @@ FETCH_RULES = {
 # serialy.sx, který teď jen přesměrovává na sledujserialy.io; povolená je jen složka /upload/.
 IMAGE_ORIGIN = "https://sledujserialy.io"
 IMAGE_RULES = {"sledujserialy.io": re.compile(r"^/upload/[^?#]*$")}
+
+# Tlačítko Push (POST /publish): commit jen dat a obrázků s pevnou zprávou a push jedné větve.
+PUBLISH_BRANCH = "main"
+PUBLISH_REMOTE = "origin"
+PUBLISH_MESSAGE = "feat: anime list update"
+GIT_TIMEOUT = 30
+# Commit spouští případné hooky, push čeká na síť.
+COMMIT_TIMEOUT = 60
+PUSH_TIMEOUT = 120
+# Jak dlouho se po ukončení gitu čeká na zavření jeho výstupu.
+GIT_KILL_WAIT = 5
 
 
 class ProxyError(Exception):
@@ -492,6 +509,354 @@ def add_items(path, items):
         return len(items)
 
 
+_publish_lock = threading.Lock()
+# Rozpracovaná operace gitu, během které se necommituje (soubory v .git).
+GIT_BUSY_MARKERS = ("MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge", "rebase-apply")
+PUSH_AUTH_ERROR = re.compile(r"Authentication failed|could not read (?:Username|Password)|terminal prompts disabled"
+                             r"|interactivity has been disabled|Permission denied|error: 40[13]|returned error: 40[13]"
+                             r"|HTTP 40[13]", re.IGNORECASE)
+
+
+def _git_env():
+    """Prostředí gitu bez jakéhokoli dotazu na přihlášení: chybějící přihlášení skončí chybou místo okna."""
+    env = dict(os.environ)
+    env.pop("LANGUAGE", None)
+    env.pop("SSH_ASKPASS", None)
+    env.update({
+        "GIT_TERMINAL_PROMPT": "0",
+        # Prázdné GIT_ASKPASS vypne i core.askPass a SSH_ASKPASS (např. okno VS Code).
+        "GIT_ASKPASS": "",
+        # Git Credential Manager: jen uložené přihlášení, žádné přihlašovací okno ani prohlížeč.
+        "GCM_INTERACTIVE": "never",
+        "SSH_ASKPASS_REQUIRE": "never",
+        "LC_ALL": "C",
+    })
+    return env
+
+
+def _windows_job(process):
+    """Windows: job object, do kterého patří `process` i všechny procesy, které spustí; jinak None.
+
+    `taskkill /T` nenajde procesy, které spustil sh (hooky): jejich rodičovský proces už neexistuje.
+    """
+    if os.name != "nt":
+        return None
+    try:
+        import ctypes
+        from ctypes import wintypes
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.CreateJobObjectW.restype = wintypes.HANDLE
+        kernel32.CreateJobObjectW.argtypes = (wintypes.LPVOID, wintypes.LPCWSTR)
+        kernel32.OpenProcess.restype = wintypes.HANDLE
+        kernel32.OpenProcess.argtypes = (wintypes.DWORD, wintypes.BOOL, wintypes.DWORD)
+        kernel32.AssignProcessToJobObject.argtypes = (wintypes.HANDLE, wintypes.HANDLE)
+        kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
+        job = kernel32.CreateJobObjectW(None, None)
+        if not job:
+            return None
+        # PROCESS_SET_QUOTA | PROCESS_TERMINATE
+        handle = kernel32.OpenProcess(0x0100 | 0x0001, False, process.pid)
+        assigned = bool(handle) and bool(kernel32.AssignProcessToJobObject(job, handle))
+        if handle:
+            kernel32.CloseHandle(handle)
+        if assigned:
+            return job
+        kernel32.CloseHandle(job)
+    except (AttributeError, OSError, ImportError):
+        pass
+    return None
+
+
+def _close_job(job, terminate=False):
+    """Zavře job z _windows_job; s `terminate` předtím ukončí všechny jeho procesy. Vrací, zda je ukončil."""
+    if job is None:
+        return False
+    import ctypes
+    from ctypes import wintypes
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    kernel32.TerminateJobObject.argtypes = (wintypes.HANDLE, wintypes.UINT)
+    kernel32.CloseHandle.argtypes = (wintypes.HANDLE,)
+    terminated = bool(kernel32.TerminateJobObject(job, 1)) if terminate else False
+    kernel32.CloseHandle(job)
+    return terminated
+
+
+def _kill_tree(process, job=None):
+    """Ukončí git i procesy, které spustil (hooky, git-remote-https, správce přihlášení).
+
+    Na Windows je `git` v PATH jen spouštěč skutečného git.exe; ukončit jen jeho
+    by nechalo git běžet (a dokončit commit nebo push) a výstup otevřený.
+    """
+    if _close_job(job, terminate=True):
+        pass
+    elif os.name == "nt":
+        try:
+            subprocess.run(["taskkill", "/T", "/F", "/PID", str(process.pid)], stdin=subprocess.DEVNULL,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=GIT_KILL_WAIT,
+                           creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+        except (OSError, subprocess.SubprocessError):
+            pass
+    else:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except OSError:
+            pass
+    try:
+        process.kill()
+    except OSError:
+        pass
+
+
+def _lock_files(git_dir):
+    """Zámky gitu (*.lock) v `git_dir`, refs/ a reftable/, které může nechat ukončený git."""
+    found = set()
+    for folder, recursive in ((git_dir, False), (os.path.join(git_dir, "refs"), True),
+                              (os.path.join(git_dir, "reftable"), False)):
+        for current, _dirs, names in os.walk(folder):
+            found.update(os.path.join(current, name) for name in names if name.endswith(".lock"))
+            if not recursive:
+                break
+    return found
+
+
+def _git(cwd, args, step, timeout=None, stdin=None, git_dir=None):
+    """Spustí git bez interaktivních dotazů; vrací (návratový kód, stdout, stderr).
+
+    Po `timeout` sekundách (výchozí GIT_TIMEOUT) git ukončí i s procesy, které spustil;
+    s `git_dir` pak smaže zámky (index.lock apod.), které ukončený git nestihl uklidit.
+    """
+    if os.name == "nt":
+        group = {"creationflags": getattr(subprocess, "CREATE_NO_WINDOW", 0)}
+    else:
+        group = {"start_new_session": True}
+    locks = _lock_files(git_dir) if git_dir else set()
+    try:
+        process = subprocess.Popen(["git", "-C", cwd] + list(args), stdin=subprocess.DEVNULL if stdin is None
+                                   else subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                   env=_git_env(), **group)
+    except FileNotFoundError:
+        raise ProxyError("git-missing", 500)
+    except OSError as error:
+        raise ProxyError("git-failed", 500, "%s %s" % (step, type(error).__name__))
+    job = _windows_job(process)
+    try:
+        stdout, stderr = process.communicate(stdin, timeout=timeout or GIT_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        _kill_tree(process, job)
+        job = None
+        try:
+            process.communicate(timeout=GIT_KILL_WAIT)
+        except subprocess.TimeoutExpired:
+            pass
+        if git_dir:
+            # Nové zámky nechal ukončený git (commit drží index.lock po celou dobu); zámek,
+            # který má otevřený jiný běžící git, Windows smazat nedovolí.
+            for path in _lock_files(git_dir) - locks:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+        raise ProxyError("git-timeout", 504, step)
+    finally:
+        _close_job(job)
+    return process.returncode, stdout.decode("utf-8", "replace"), stderr.decode("utf-8", "replace")
+
+
+def _redact(text):
+    # Adresa remote může obsahovat jméno a token (https://user:token@github.com/...).
+    return re.sub(r"//[^/@\s]+@", "//***@", text)
+
+
+def _git_message(stderr):
+    """První smysluplný řádek chybového výstupu gitu (bez "fatal:", "error:", nápověd)."""
+    for line in _redact(stderr).splitlines():
+        line = line.strip().lstrip("*").strip()
+        if not line or line.lower().startswith(("hint:", "to ")):
+            continue
+        return re.sub(r"^(?:fatal|error|remote): *", "", line, flags=re.IGNORECASE)
+    return ""
+
+
+def _git_location(path):
+    """Kořen repozitáře a cesta `path` (složky) relativně k němu s lomítky, nebo None mimo repozitář."""
+    if not os.path.isdir(path):
+        return None
+    code, out, _err = _git(path, ["rev-parse", "--show-toplevel", "--show-prefix"], "rev-parse")
+    lines = out.split("\n")
+    if code != 0 or not lines[0]:
+        return None
+    return lines[0], lines[1] if len(lines) > 1 else ""
+
+
+def _same_path(first, second):
+    return os.path.normcase(os.path.normpath(first)) == os.path.normcase(os.path.normpath(second))
+
+
+def _index_entries(root, paths):
+    """Záznamy indexu (`ls-files --stage`) pro `paths`: cesta -> "mode oid stage\\tcesta"."""
+    code, out, err = _git(root, ["--literal-pathspecs", "ls-files", "--stage", "-z", "--"] + list(paths), "ls-files")
+    if code != 0:
+        raise ProxyError("git-failed", 500, "ls-files: " + _git_message(err))
+    entries = {}
+    for record in out.split("\0"):
+        path = record.partition("\t")[2]
+        if path:
+            entries[path] = record
+    return entries
+
+
+def _restore_index(root, paths, entries):
+    """Vrátí `paths` v indexu do stavu `entries` (z _index_entries); co v indexu nebylo, z něj zase odebere.
+
+    Jen pokus: chyba (např. index zamčený jiným gitem) se nehlásí, aby nepřekryla původní chybu.
+    """
+    known = [entries[path] for path in paths if path in entries]
+    unknown = [path for path in paths if path not in entries]
+    try:
+        if known:
+            _git(root, ["update-index", "-z", "--index-info"], "restore",
+                 stdin="\0".join(known).encode("utf-8") + b"\0")
+        if unknown:
+            _git(root, ["update-index", "-z", "--force-remove", "--stdin"], "restore",
+                 stdin="\0".join(unknown).encode("utf-8") + b"\0")
+    except ProxyError:
+        pass
+
+
+def _head(root):
+    """Hash HEAD, nebo None (žádný commit, chyba gitu)."""
+    try:
+        code, out, _err = _git(root, ["rev-parse", "--verify", "--quiet", "HEAD"], "rev-parse")
+    except ProxyError:
+        return None
+    return out.strip() if code == 0 else None
+
+
+def _push_error(stdout, stderr):
+    """Převede neúspěšný `git push --porcelain` na ProxyError."""
+    for line in stdout.splitlines():
+        if line.startswith("!"):
+            reason = re.search(r"\(([^)]*)\)\s*$", line)
+            reason = reason.group(1) if reason else ""
+            if "[rejected]" in line:
+                return ProxyError("publish-rejected", 409, reason)
+            return ProxyError("publish-push-failed", 502, reason or _git_message(stderr))
+    if PUSH_AUTH_ERROR.search(stderr):
+        return ProxyError("publish-auth-failed", 502, _git_message(stderr))
+    return ProxyError("publish-push-failed", 502, _git_message(stderr))
+
+
+def publish_changes(data_path, images_dir):
+    """Commitne a pushne data/anime.json a obrázky img/anime/N.jpg (tlačítko Push na stránce).
+
+    Do commitu jdou jen tyto soubory (nové nebo změněné, ne smazané) se zprávou
+    PUBLISH_MESSAGE; jiné změny v repozitáři, včetně připravených (staged), zůstanou,
+    jak jsou. Když commit neproběhne, index se vrátí do původního stavu. Pracuje jen
+    na větvi PUBLISH_BRANCH bez rozpracovaného merge/rebase
+    a pushuje ji na PUBLISH_REMOTE (s ní i dřívější nepushnuté commity té větve);
+    nic neslučuje ani nepřepisuje. Když se push nepovede, commit zůstane a příští
+    volání ho pushne. Vrací {"committed", "pushed", "commit", "files"}.
+    """
+    if not _publish_lock.acquire(blocking=False):
+        raise ProxyError("publish-running", 409)
+    try:
+        if not os.path.isfile(data_path):
+            raise ProxyError("data-file-missing", 500)
+        location = _git_location(os.path.dirname(os.path.abspath(data_path)))
+        if location is None:
+            raise ProxyError("not-a-repository", 409)
+        root, data_prefix = location
+        data_rel = data_prefix + os.path.basename(data_path)
+        images_prefix = None
+        images = _git_location(os.path.abspath(images_dir))
+        if images is not None:
+            if not _same_path(images[0], root):
+                raise ProxyError("not-a-repository", 409, "images")
+            images_prefix = images[1]
+        elif os.path.isdir(images_dir):
+            raise ProxyError("not-a-repository", 409, "images")
+
+        code, out, _err = _git(root, ["symbolic-ref", "--quiet", "--short", "HEAD"], "branch")
+        branch = out.strip() if code == 0 else "HEAD"
+        if branch != PUBLISH_BRANCH:
+            raise ProxyError("publish-wrong-branch", 409, branch)
+        code, out, _err = _git(root, ["rev-parse", "--absolute-git-dir"], "git-dir")
+        git_dir = out.strip()
+        if code != 0 or not git_dir:
+            raise ProxyError("not-a-repository", 409)
+        for marker in GIT_BUSY_MARKERS:
+            if os.path.exists(os.path.join(git_dir, marker)):
+                raise ProxyError("publish-repo-busy", 409, marker)
+        code, out, _err = _git(root, ["config", "--get", "remote.%s.url" % PUBLISH_REMOTE], "remote")
+        if code != 0 or not out.strip():
+            raise ProxyError("publish-no-remote", 409, PUBLISH_REMOTE)
+
+        specs = [data_rel]
+        if images_prefix is not None:
+            specs.append(images_prefix.rstrip("/") or ".")
+        code, out, err = _git(root, ["--literal-pathspecs", "status", "--porcelain=v1", "-z", "--no-renames",
+                                     "--untracked-files=all", "--"] + specs, "status")
+        if code != 0:
+            raise ProxyError("git-failed", 500, "status: " + _git_message(err))
+        candidates = []
+        for entry in out.split("\0"):
+            state, path = entry[:2], entry[3:]
+            if len(entry) < 4 or "D" in state or "U" in state:
+                continue
+            name = path[len(images_prefix):] if images_prefix is not None and path.startswith(images_prefix) else None
+            if path == data_rel or (name is not None and re.fullmatch(r"[0-9]+\.jpg", name)):
+                candidates.append(path)
+
+        files = []
+        if candidates:
+            pathspecs = "\0".join(candidates).encode("utf-8") + b"\0"
+            with _data_lock:
+                # `git add` mění skutečný index; když commit neproběhne, vrátí se původní stav,
+                # aby se soubory nedostaly do příštího ručního commitu uživatele.
+                original = _index_entries(root, candidates)
+                head = _head(root)
+                code, _out, err = _git(root, ["--literal-pathspecs", "add", "--pathspec-from-file=-",
+                                              "--pathspec-file-nul"], "add", stdin=pathspecs)
+                if code != 0:
+                    raise ProxyError("git-failed", 500, "add: " + _git_message(err))
+                committed = False
+                try:
+                    code, out, _err = _git(root, ["--literal-pathspecs", "diff", "--cached", "--name-only",
+                                                  "--no-renames", "-z", "HEAD", "--"] + specs, "diff")
+                    staged = set(out.split("\0")) if code == 0 else set(candidates)
+                    files = [path for path in candidates if path in staged]
+                    if files:
+                        # --only: commit obsahuje jen tyto soubory, i když jsou připravené i jiné změny.
+                        code, _out, err = _git(root, ["--literal-pathspecs", "commit", "-q", "-m", PUBLISH_MESSAGE,
+                                                      "--only", "--pathspec-from-file=-", "--pathspec-file-nul"],
+                                               "commit", timeout=COMMIT_TIMEOUT, git_dir=git_dir,
+                                               stdin="\0".join(files).encode("utf-8") + b"\0")
+                        if code != 0:
+                            raise ProxyError("publish-commit-failed", 500, _git_message(err))
+                        committed = True
+                finally:
+                    # Když commit přece jen vznikl (vypršel čas těsně po něm), index už odpovídá HEAD.
+                    if not committed and _head(root) == head:
+                        _restore_index(root, candidates, original)
+
+        if not files:
+            code, out, _err = _git(root, ["rev-list", "--count", "refs/remotes/%s/%s..HEAD"
+                                          % (PUBLISH_REMOTE, PUBLISH_BRANCH)], "rev-list")
+            if code == 0 and out.strip() == "0":
+                return {"committed": False, "pushed": False, "commit": "", "files": 0}
+
+        code, out, err = _git(root, ["push", "--porcelain", PUBLISH_REMOTE, "refs/heads/%s:refs/heads/%s"
+                                     % (PUBLISH_BRANCH, PUBLISH_BRANCH)], "push", timeout=PUSH_TIMEOUT, git_dir=git_dir)
+        if code != 0:
+            raise _push_error(out, err)
+        pushed = any(line[:1] in (" ", "+", "*") and "\t" in line for line in out.split("\n"))
+        code, out, _err = _git(root, ["rev-parse", "--short", "HEAD"], "rev-parse")
+        commit = out.strip() if code == 0 and (files or pushed) else ""
+        return {"committed": bool(files), "pushed": pushed, "commit": commit, "files": len(files)}
+    finally:
+        _publish_lock.release()
+
+
 def _clean_detail(detail):
     return re.sub(r"[^A-Za-z0-9._:/ -]", "?", str(detail or ""))[:120]
 
@@ -574,7 +939,7 @@ class Handler(BaseHTTPRequestHandler):
             parts = urlsplit(self.path)
             route = routes.get(parts.path)
             if route is None:
-                known = parts.path in ("/health", "/fetch", "/images", "/anime-items") or parts.path in DATA_ROUTES
+                known = parts.path in ("/health", "/fetch", "/images", "/anime-items", "/publish") or parts.path in DATA_ROUTES
                 raise ProxyError("method-not-allowed" if known else "not-found", 405 if known else 404)
             route(parts)
         except ProxyError as error:
@@ -589,7 +954,7 @@ class Handler(BaseHTTPRequestHandler):
         self._handle({"/health": self._health, "/fetch": self._fetch})
 
     def do_POST(self):
-        routes = {"/images": self._images, "/anime-items": self._anime_items}
+        routes = {"/images": self._images, "/anime-items": self._anime_items, "/publish": self._publish}
         routes.update(dict.fromkeys(DATA_ROUTES, self._data_values))
         self._handle(routes)
 
@@ -696,6 +1061,24 @@ class Handler(BaseHTTPRequestHandler):
         added = add_items(self.server.data_path, items)
         print("Seznam: zápis do %s (přidáno %d)" % (self.server.data_path, added), file=sys.stderr)
         self._send_json(200, {"ok": True, "added": added})
+
+    def _publish(self, _parts):
+        self._read_json_body(MAX_REQUEST_BODY)
+        if not self.server.data_path:
+            raise ProxyError("data-file-missing", 500)
+        print("Push: commit a push %s na %s/%s" % (self.server.data_path, PUBLISH_REMOTE, PUBLISH_BRANCH), file=sys.stderr)
+        try:
+            result = publish_changes(self.server.data_path, self.server.images_dir)
+        except ProxyError as error:
+            detail = _clean_detail(error.detail)
+            print("Push: chyba %s%s" % (error.code, " (%s)" % detail if detail else ""), file=sys.stderr)
+            raise
+        if result["committed"]:
+            print("Push: commit %s (souborů %d)" % (result["commit"], result["files"]), file=sys.stderr)
+        print("Push: %s" % ("odesláno" if result["pushed"] else "není co odeslat"), file=sys.stderr)
+        payload = {"ok": True}
+        payload.update(result)
+        self._send_json(200, payload)
 
 
 class ProxyServer(ThreadingHTTPServer):

@@ -25,6 +25,7 @@ skript `AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, S
 a Všechno. Hotové jsou volby **Zhlédnuté epizody**, **ČSFD hodnocení**, **MAL
 hodnocení** a **Seznam**, Všechno je označené „Připravujeme“. Všechny potřebují
 pomocný program (viz níže), který výsledky zapisuje přímo do `data/anime.json`.
+Tlačítko **Push** pak změny na váš pokyn commitne a pushne na GitHub (viz Push).
 
 ### Aktualizovat → Seznam
 
@@ -114,7 +115,7 @@ stačí spuštěný pomocný program.
 Po zjištění všech hodnocení je pomocný program najednou zapíše přímo do
 `data/anime.json` (jako `WriteDataToTheFile` ve skriptu): změní jen `CsfdRating`,
 formát souboru zůstane stejný, takže `git diff` ukáže jen změněná hodnocení. Na
-GitHub Pages se nové hodnoty objeví až po commitu a pushi. Pomocný program starší
+GitHub Pages se nové hodnoty objeví až po commitu a pushi (tlačítko Push). Pomocný program starší
 než tato změna zápis neumí; stránka pak požádá o jeho restart.
 
 - Pokud má prohlížeč uložené úpravy z localStorage (např. z edit módu, importu nebo
@@ -174,7 +175,7 @@ funkce `UpdateWatched` ze skriptu. Stejně jako Seznam potřebuje přihlašovac�
 Všechny volby Aktualizovat zapisují výsledky přes pomocný program rovnou do
 `data/anime.json` (Seznam navíc ukládá obrázky jako `img/anime/N.jpg`). Na GitHub
 Pages se změny objeví až po commitu a pushi `data/anime.json` spolu s novými
-`img/anime/*.jpg`.
+`img/anime/*.jpg` – tlačítkem **Push** (viz níže) nebo ručně.
 
 Aby nová anime ze Seznamu do té doby nezmizela, drží si je stránka i s obrázky
 v prohlížeči (localStorage `anime-pending-additions`) a při načtení je doplní
@@ -195,8 +196,38 @@ repozitáře se dostanou takto:
 k obsahu `data/anime.json`; co v souboru není, předtím exportujte. Nová anime,
 která pomocný program do souboru zapsal a web je ještě nemá, zůstanou. V soukromém
 režimu prohlížeče se localStorage nemusí zachovat, před zavřením stránky proto
-data exportujte. Během aktualizace jsou zamčené Upravit, Importovat data a Obnovit
-původní data (Exportovat data zůstává) a prohlížeč při zavírání stránky varuje.
+data exportujte. Během aktualizace jsou zamčené Upravit, Importovat data, Obnovit
+původní data a Push (Exportovat data zůstává) a prohlížeč při zavírání stránky varuje.
+
+### Push
+
+Tlačítko **Push** (vedle Aktualizovat) nechá pomocný program publikovat výsledky
+aktualizací. Nic z toho se neděje automaticky, jen po stisku tlačítka:
+
+1. Do commitu se zahrne jen `data/anime.json` a obrázky `img/anime/N.jpg` (nové
+   i změněné). Ostatní změny v repozitáři, i ty připravené přes `git add`, zůstanou
+   mimo commit tak, jak jsou.
+2. Commit má zprávu `feat: anime list update`.
+3. Větev `main` se pushne na `origin`, s ní i dřívější commity, které na GitHubu
+   ještě nejsou.
+
+Výsledek (zkrácený hash commitu a počet souborů) se ukáže pod tlačítky; GitHub
+Pages web obvykle aktualizuje do několika minut. Když se nic nezměnilo a vše už
+na GitHubu je, stránka napíše „Není co publikovat“. Úpravy uložené jen
+v prohlížeči (edit mód, import, nezapsané výsledky) se nepublikují – stránka na
+ně upozorní; do souboru je dostanete přes Exportovat data.
+
+- Repozitář musí být na větvi `main` bez rozpracovaného merge, rebase nebo
+  cherry-picku a mít remote `origin`; jinak se nic nestane a stránka řekne proč.
+- Push používá jen uložené přihlášení gitu (Git Credential Manager, SSH klíč);
+  nikdy neotevře přihlašovací okno ani se nezeptá na heslo. Když přihlášení chybí,
+  skončí chybou přihlášení – pushněte jednou ručně (`git push`).
+- Když push selže (GitHub má novější commity, přihlášení, síť), commit zůstane
+  jen u vás a stačí problém vyřešit a stisknout Push znovu. Když selže už commit
+  (např. hook), repozitář zůstane jako před stiskem Push.
+- Git, který neodpoví včas (commit 60 s, push 120 s), pomocný program ukončí
+  i se vším, co spustil; Push pak lze stisknout znovu.
+- Potřebuje pomocný program verze 8; se starší verzí stránka požádá o jeho restart.
 
 ### Rozdíly oproti AnimeList.pyw
 
@@ -252,6 +283,13 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
 - **Výsledek se nepodařilo zapsat, podrobnosti `item-exists`:** `data/anime.json`
   už obsahuje anime se stejným číslem (soubor se změnil mimo stránku). Nová anime
   zůstala v prohlížeči; data exportujte a se souborem je sloučte ručně.
+- **Push: GitHub obsahuje novější změny:** v repozitáři spusťte `git pull --rebase`
+  a stiskněte Push znovu (váš commit se přenese na nejnovější stav).
+- **Push: přihlášení ke GitHubu se nezdařilo:** pushněte jednou ručně (`git push`),
+  aby si git přihlášení uložil, a stiskněte Push znovu.
+- **Push: repozitář není na větvi main / rozpracovaný merge nebo rebase:** přepněte
+  se na `main`, případně merge nebo rebase dokončete (nebo zrušte) a stiskněte Push
+  znovu. Průběh Push a kód chyby s podrobnostmi vypisuje i okno pomocného programu.
 
 ### Testy
 
@@ -259,7 +297,8 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
 python -m unittest discover -s tools -p "test_anime_*.py"
 ```
 
-- `tools/test_anime_proxy.py` testuje pomocný program (bez sítě).
+- `tools/test_anime_proxy.py` testuje pomocný program (bez sítě; Push s gitem
+  v dočasných repozitářích, bez git se tyto testy přeskočí).
 - `tools/test_anime_update.py` testuje stránku v prohlížeči proti atrapě webů.
   Vyžaduje `pip install playwright` a nainstalovaný Edge nebo Chrome (jinak se
   přeskočí; cestu k prohlížeči lze zadat v `ANIME_TEST_BROWSER`). Spouští i

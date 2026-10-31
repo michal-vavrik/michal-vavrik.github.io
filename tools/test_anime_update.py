@@ -37,6 +37,7 @@ TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(TOOLS_DIR)
 sys.path.insert(0, TOOLS_DIR)
 import anime_proxy as proxy  # noqa: E402
+from test_anime_proxy import GIT_INSTALLED, git, isolate_git, remove_tree  # noqa: E402
 
 COOKIE = "E2E-FAKE-COOKIE"
 # Skutečný obrázek 1x1 (WEBP jako na sledujserialy.io), aby ho prohlížeč dokázal zobrazit.
@@ -76,6 +77,10 @@ SHOW_B = {
 SHOW_B["mal_redirect"] = "https://myanimelist.net/anime/33333/New_Show_B"
 
 MAL_NOT_FOUND = "<html><body>No titles that matched your query were found.</body></html>"
+
+PUSH_TITLE_EN = ('Commits data/anime.json and new images from img/anime with the message "feat: anime list update" '
+                 'and pushes them to GitHub (branch main). Changes saved only in the browser are not published.')
+PUSH_NOTHING = "Není co publikovat: data/anime.json ani obrázky se nezměnily a vše už je na GitHubu."
 
 
 def favorites_page(entries):
@@ -734,7 +739,8 @@ class UpdateListTests(SiteBrowserCase):
         info = page.locator("#anime-update-info")
         expect(info).to_have_text("0.00% Aktualizuji anime list. Celkem 2 nové anime.")
         expect(page.locator("#anime-update-menu")).to_be_hidden()
-        for selector in ("#anime-update-toggle", "#anime-edit-toggle", "#anime-import-btn", "#anime-reset-btn"):
+        for selector in ("#anime-update-toggle", "#anime-edit-toggle", "#anime-import-btn", "#anime-reset-btn",
+                         "#anime-push-btn"):
             expect(page.locator(selector)).to_be_disabled()
         expect(page.locator("#anime-export-btn")).to_be_enabled()
         expect(page.locator("#anime-header")).to_have_class(re.compile(r"\bis-locked\b"))
@@ -751,7 +757,7 @@ class UpdateListTests(SiteBrowserCase):
         self.web.release.set()
         expect(info).to_have_text("100.00% Done. 2 new anime in total.")
         self.expect_unlocked(page)
-        for selector in ("#anime-edit-toggle", "#anime-import-btn", "#anime-reset-btn"):
+        for selector in ("#anime-edit-toggle", "#anime-import-btn", "#anime-reset-btn", "#anime-push-btn"):
             expect(page.locator(selector)).to_be_enabled()
         expect(page.locator("#anime-header")).not_to_have_class(re.compile(r"\bis-locked\b"))
         header.click()
@@ -769,6 +775,8 @@ class UpdateListTests(SiteBrowserCase):
         expect(toggle).to_be_disabled()
         expect(toggle).to_have_attribute("title", "Během úprav není aktualizace dostupná.")
         expect(page.locator("#anime-update-menu")).to_be_hidden()
+        # Push publikuje jen soubor, edit mód mu nevadí.
+        expect(page.locator("#anime-push-btn")).to_be_enabled()
 
         edit.click()
         expect(edit).to_have_attribute("aria-pressed", "false")
@@ -786,6 +794,8 @@ class UpdateListTests(SiteBrowserCase):
             ["Watched episodes", "CSFD rating", "MAL rating", "List", "All"])
         expect(page.locator("#anime-update-all-btn")).to_have_attribute("title", "Coming soon")
         expect(page.locator("#anime-update-menu")).to_have_attribute("aria-label", "Update options")
+        expect(page.locator("#anime-push-btn")).to_have_text("Push")
+        expect(page.locator("#anime-push-btn")).to_have_attribute("title", PUSH_TITLE_EN)
 
         page.locator("#anime-update-list-btn").click()
         expect(page.locator("#anime-update-info")).to_have_text("100.00% No new anime.")
@@ -1257,6 +1267,153 @@ class UpdateListTests(SiteBrowserCase):
         self.assertIn("0.00% Updating watched episodes", page.evaluate("() => window.__infoLog"))
         expect(page.locator("#anime-update-error")).to_have_text(
             "The watched episodes could not be retrieved for 1 anime; the previous state was kept: Known 9002 EN.")
+
+    # ---------------------------------- Push ----------------------------------
+
+    def make_repo(self):
+        """Data a obrázky přesune do git repozitáře s holým remote origin (oba v dočasné složce)."""
+        base = tempfile.mkdtemp()
+        self.addCleanup(remove_tree, base)
+        isolate_git(self, base)
+        work = os.path.join(base, "work")
+        self.remote = os.path.join(base, "remote.git")
+        self.data_file = os.path.join(work, "data", "anime.json")
+        self.images_dir = os.path.join(work, "img", "anime")
+        os.makedirs(os.path.dirname(self.data_file))
+        os.makedirs(self.images_dir)
+        self.write_data_file(SEED_DATA)
+        git(None, "init", "-q", "--bare", self.remote)
+        git(None, "init", "-q", work)
+        git(work, "add", ".")
+        git(work, "commit", "-q", "-m", "init")
+        git(work, "remote", "add", "origin", self.remote)
+        git(work, "push", "-q", "-u", "origin", "main")
+        return work
+
+    def remote_log(self):
+        return git(None, "--git-dir", self.remote, "log", "--format=%s", "main").split("\n")[:-1]
+
+    def remote_files(self):
+        return sorted(git(None, "--git-dir", self.remote, "show", "--name-only", "--format=", "main").split())
+
+    def run_push(self, page):
+        page.locator("#anime-push-btn").click()
+
+    @unittest.skipUnless(GIT_INSTALLED, "git není nainstalovaný")
+    def test_push_publishes_list_update(self):
+        work = self.make_repo()
+        page = self.open_page(self.start_helper(), stored=False)
+        push = page.locator("#anime-push-btn")
+        expect(push).to_have_text("Push")
+        expect(push).to_have_attribute("title", re.compile("^Commitne data/anime.json"))
+        expect(push).to_be_enabled()
+
+        self.run_list_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo. Celkem 2 nové anime.")
+        self.expect_unlocked(page)
+        self.assertEqual(self.remote_log(), ["init"])
+
+        self.run_push(page)
+        info = page.locator("#anime-update-info")
+        expect(info).to_have_text(re.compile(r"^Publikováno na GitHub"))
+        head = git(work, "rev-parse", "--short", "HEAD").strip()
+        expect(info).to_have_text("Publikováno na GitHub (commit %s, změněné soubory: 3). "
+                                  "Web se aktualizuje během několika minut." % head)
+        expect(page.locator("#anime-update-error")).to_be_hidden()
+        expect(push).to_be_enabled()
+        expect(page.locator("#anime-update-toggle")).to_be_enabled()
+        self.assertEqual(self.remote_log(), [proxy.PUBLISH_MESSAGE, "init"])
+        self.assertEqual(self.remote_files(), ["data/anime.json", "img/anime/9005.jpg", "img/anime/9006.jpg"])
+        self.assertEqual(git(work, "status", "--porcelain", "--untracked-files=all"), "")
+
+        # Druhý Push už nemá co publikovat; výsledek předchozího přepíše.
+        self.run_push(page)
+        expect(info).to_have_text(PUSH_NOTHING)
+        self.assertEqual(self.remote_log(), [proxy.PUBLISH_MESSAGE, "init"])
+
+        # Další aktualizace zprávu o publikování smaže.
+        self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE, EXCEPTION_FAVORITE]))
+        self.run_list_update(page)
+        expect(info).to_have_text("100.00% Žádné nové anime.")
+        self.expect_unlocked(page)
+        self.assertEqual(self.unexpected_console_errors(), [])
+        self.assertEqual(self.page_errors, [])
+
+    @unittest.skipUnless(GIT_INSTALLED, "git není nainstalovaný")
+    def test_push_warns_about_changes_saved_only_in_browser(self):
+        self.make_repo()
+        page = self.open_page(self.start_helper(), lang="en")
+        self.assertTrue(self.has_stored_items(page))
+
+        self.run_push(page)
+        expect(page.locator("#anime-update-info")).to_have_text(
+            "Nothing to publish: neither data/anime.json nor the images have changed and everything is already "
+            "on GitHub. Changes saved only in the browser were not published (use Export data to get them into "
+            "the file).")
+        self.assertEqual(self.remote_log(), ["init"])
+
+    @unittest.skipUnless(GIT_INSTALLED, "git není nainstalovaný")
+    def test_push_rejected_keeps_local_commit(self):
+        work = self.make_repo()
+        # Někdo mezitím pushnul jiný commit (např. z jiného počítače).
+        other = os.path.join(os.path.dirname(work), "other")
+        git(None, "clone", "-q", self.remote, other)
+        with open(os.path.join(other, "README.md"), "w", encoding="utf-8") as handle:
+            handle.write("x\n")
+        git(other, "add", "README.md")
+        git(other, "commit", "-q", "-m", "elsewhere")
+        git(other, "push", "-q", "origin", "main")
+        self.write_data_file(dict(SEED_DATA, **{"9005": seed_item(9005)}))
+        page = self.open_page(self.start_helper(), stored=False)
+
+        self.run_push(page)
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "GitHub push odmítl, protože obsahuje novější změny. Commit zůstal jen u vás: v repozitáři spusťte "
+            "„git pull --rebase“ a stiskněte Push znovu. Podrobnosti: fetch first.")
+        expect(page.locator("#anime-update-info")).to_have_text("")
+        expect(page.locator("#anime-push-btn")).to_be_enabled(timeout=1000)
+        self.assertEqual(git(work, "log", "--format=%s", "main").split("\n")[:-1], [proxy.PUBLISH_MESSAGE, "init"])
+        self.assertEqual(self.remote_log(), ["elsewhere", "init"])
+
+        # Úspěšná aktualizace chybu Push smaže.
+        self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE, EXCEPTION_FAVORITE]))
+        self.run_list_update(page)
+        expect(page.locator("#anime-update-error")).to_be_hidden()
+
+    def test_push_errors_from_helper(self):
+        page = self.open_page("http://127.0.0.1:%d" % free_port())
+        self.run_push(page)
+        expect(page.locator("#anime-update-error")).to_contain_text("Pomocný program pro aktualizaci neodpovídá.")
+        expect(page.locator("#anime-push-btn")).to_be_enabled(timeout=1000)
+        expect(page.locator("#anime-update-toggle")).to_be_enabled()
+
+        # Pomocník verze 7 Push nezná - stránka to pozná dřív, než ho zavolá.
+        with mock.patch.object(proxy, "VERSION", 7):
+            page = self.open_page(self.start_helper())
+            self.run_push(page)
+            expect(page.locator("#anime-update-error")).to_have_text(
+                "Pomocný program je zastaralý a publikovat neumí. "
+                "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
+        expect(page.locator("#anime-push-btn")).to_be_enabled()
+        self.assertEqual(self.web.urls, [])
+
+    @unittest.skipUnless(GIT_INSTALLED, "git není nainstalovaný")
+    def test_push_refuses_data_outside_git_repository(self):
+        base = tempfile.mkdtemp()
+        self.addCleanup(remove_tree, base)
+        # Strop zastaví hledání repozitáře, takže složka nad dočasnou složkou nevadí.
+        isolate_git(self, base)
+        self.data_file = os.path.join(base, "plain", "anime.json")
+        self.images_dir = os.path.join(base, "plain", "img")
+        os.makedirs(self.images_dir)
+        self.write_data_file(SEED_DATA)
+        page = self.open_page(self.start_helper())
+
+        self.run_push(page)
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "Soubor s daty nebo složka obrázků není v git repozitáři, pomocný program je nemůže publikovat.")
+        expect(page.locator("#anime-push-btn")).to_be_enabled(timeout=1000)
+        self.assertEqual(os.listdir(os.path.join(base, "plain")), ["anime.json", "img"])
 
 
 class BrowserUnitTests(SiteBrowserCase):

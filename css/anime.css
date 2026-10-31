@@ -476,6 +476,22 @@
 }
 
 /*
+ * Tlačítko Push (bez Python vzoru): pomocný program commitne data/anime.json
+ * s novými obrázky a pushne je na GitHub.
+ */
+.anime__edit-btn--push {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.18);
+	color: #e8edf5;
+	margin-right: 12px;
+}
+
+.anime__edit-btn--push:hover:not(:disabled) {
+	background: rgba(167, 139, 250, 0.2);
+	border-color: rgba(167, 139, 250, 0.55);
+}
+
+/*
  * Zamčená hlavička během aktualizace - Python v EnableButtonsWhileUpdate()
  * (ř. 610-628) zablokuje řazení a popisky ztmaví na šedou.
  */

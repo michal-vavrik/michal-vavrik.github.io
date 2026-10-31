@@ -55,7 +55,7 @@ window.AnimeProxy = (function () {
 		var timer = setTimeout(function () {
 			timedOut = true;
 			controller.abort();
-		}, TIMEOUT_MS);
+		}, options.timeoutMs || TIMEOUT_MS);
 
 		var headers = {};
 		headers[REQUEST_HEADER] = '1';
@@ -201,11 +201,12 @@ window.AnimeProxy = (function () {
 	 * Odpověď bez `ok: true` nebo neprošlá kontrolou `isValid` je chyba
 	 * `unexpected-response` s cestou bez lomítka v detailu.
 	 */
-	function postData(path, body, isValid) {
+	function postData(path, body, isValid, timeoutMs) {
 		return call(path, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify(body)
+			body: JSON.stringify(body),
+			timeoutMs: timeoutMs
 		}).then(function (result) {
 			if (result.response.status !== 200) {
 				throw errorFromResponse(result.response);
@@ -274,6 +275,31 @@ window.AnimeProxy = (function () {
 		});
 	}
 
+	// Commit a push čekají na git, hooky a síť (pomocník je po svém limitu ukončí).
+	var PUBLISH_TIMEOUT_MS = 180000;
+	var COMMIT_HASH = /^[0-9a-f]{4,40}$/;
+
+	/**
+	 * Tlačítko Push: pomocník (od verze 8) commitne data/anime.json a nové
+	 * img/anime/N.jpg se zprávou "feat: anime list update" a pushne větev main.
+	 * Bez Python vzoru - AnimeList.pyw do gitu nezapisoval.
+	 * @returns {Promise<{committed: boolean, pushed: boolean, commit: string, files: number}>}
+	 *     commit je zkrácený hash posledního commitu (prázdný, když se nic nestalo)
+	 */
+	function publish() {
+		return postData('/publish', {}, function (payload) {
+			return typeof payload.committed === 'boolean' && typeof payload.pushed === 'boolean'
+				&& typeof payload.files === 'number';
+		}, PUBLISH_TIMEOUT_MS).then(function (payload) {
+			return {
+				committed: payload.committed,
+				pushed: payload.pushed,
+				commit: typeof payload.commit === 'string' && COMMIT_HASH.test(payload.commit) ? payload.commit : '',
+				files: payload.files
+			};
+		});
+	}
+
 	return {
 		DEFAULT_URL: DEFAULT_URL,
 		URL_STORAGE_KEY: URL_STORAGE_KEY,
@@ -284,6 +310,7 @@ window.AnimeProxy = (function () {
 		saveCsfdRatings: saveCsfdRatings,
 		saveMalRatings: saveMalRatings,
 		saveWatchedStates: saveWatchedStates,
-		saveAnimeItems: saveAnimeItems
+		saveAnimeItems: saveAnimeItems,
+		publish: publish
 	};
 })();

@@ -9,9 +9,12 @@ import http.client
 import json
 import os
 import shutil
+import stat
+import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 import zlib
 from unittest import mock
@@ -866,6 +869,367 @@ class DataFileTests(ProxyTestCase):
         status, _, _ = self.post_items([self.new_item("3")], headers={"Origin": "https://evil.example"})
         self.assertEqual(status, 403)
         self.assertEqual(self.read_data(), before)
+
+
+GIT_INSTALLED = shutil.which("git") is not None
+
+
+def git(cwd, *args):
+    """Spustí git (cwd None = bez -C) a vrátí stdout; chyba testu, když git selže."""
+    command = ["git"] + (["-C", cwd] if cwd else []) + list(args)
+    completed = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL)
+    if completed.returncode != 0:
+        raise AssertionError("%s: %s" % (" ".join(args), completed.stderr.decode("utf-8", "replace")))
+    return completed.stdout.decode("utf-8")
+
+
+def isolate_git(test, tmp):
+    """Git v testu nečte uživatelovu ani systémovou konfiguraci a nehledá repozitář nad `tmp`."""
+    config = os.path.join(tmp, "gitconfig")
+    with open(config, "w", encoding="utf-8") as handle:
+        handle.write("[user]\n\tname = Test\n\temail = test@example.com\n[init]\n\tdefaultBranch = main\n"
+                     "[commit]\n\tgpgsign = false\n[core]\n\tautocrlf = false\n")
+    environ = mock.patch.dict(os.environ, {"GIT_CONFIG_GLOBAL": config, "GIT_CONFIG_NOSYSTEM": "1",
+                                           "GIT_CEILING_DIRECTORIES": tmp})
+    environ.start()
+    test.addCleanup(environ.stop)
+    for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL",
+                 "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL"):
+        os.environ.pop(name, None)
+
+
+def remove_tree(path):
+    # Objekty v .git jsou na Windows jen pro čtení a shutil.rmtree by je nesmazal.
+    for root, _dirs, files in os.walk(path):
+        for name in files:
+            try:
+                os.chmod(os.path.join(root, name), stat.S_IREAD | stat.S_IWRITE)
+            except OSError:
+                pass
+    shutil.rmtree(path, True)
+
+
+@unittest.skipUnless(GIT_INSTALLED, "git není nainstalovaný")
+class PublishTests(ProxyTestCase):
+    """POST /publish (tlačítko Push) s reálným gitem: pracovní repozitář a holý remote v dočasné složce."""
+
+    def make_server(self):
+        quiet = mock.patch("builtins.print")
+        quiet.start()
+        self.addCleanup(quiet.stop)
+        self.addCleanup(remove_tree, self.tmp)
+        isolate_git(self, self.tmp)
+        self.work = os.path.join(self.tmp, "work")
+        self.remote = os.path.join(self.tmp, "remote.git")
+        self.data_path = os.path.join(self.work, "data", "anime.json")
+        self.images = os.path.join(self.work, "img", "anime")
+        os.makedirs(os.path.dirname(self.data_path))
+        os.makedirs(self.images)
+        self.write(self.data_path, '{\n    "1": {}\n}\n')
+        self.write(self.image(1), "jpg 1")
+        self.write(os.path.join(self.work, "other.txt"), "a\n")
+        git(None, "init", "-q", "--bare", self.remote)
+        git(None, "init", "-q", self.work)
+        git(self.work, "add", ".")
+        git(self.work, "commit", "-q", "-m", "init")
+        git(self.work, "remote", "add", "origin", self.remote)
+        git(self.work, "push", "-q", "-u", "origin", "main")
+        return proxy.ProxyServer(0, proxy.DEFAULT_ORIGINS, self.images, proxy.Config(cookie=COOKIE), self.transport,
+                                 data_path=self.data_path)
+
+    @staticmethod
+    def write(path, text):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "wb") as handle:
+            handle.write(text.encode("utf-8"))
+
+    def image(self, number):
+        return os.path.join(self.images, "%d.jpg" % number)
+
+    def add_anime(self):
+        self.write(self.data_path, '{\n    "1": {},\n    "2": {}\n}\n')
+
+    def publish(self, headers=None, body=b"{}"):
+        merged = {"Content-Type": "application/json"}
+        merged.update(headers or {})
+        status, response_headers, data = self.request("POST", "/publish", headers=merged, body=body)
+        return status, response_headers, json.loads(data)
+
+    def local_log(self):
+        return git(self.work, "log", "--format=%s", "main").split("\n")[:-1]
+
+    def remote_log(self):
+        return git(None, "--git-dir", self.remote, "log", "--format=%s", "main").split("\n")[:-1]
+
+    def remote_files(self):
+        return sorted(git(None, "--git-dir", self.remote, "show", "--name-only", "--format=", "main").split())
+
+    def status_lines(self):
+        return sorted(git(self.work, "status", "--porcelain", "--untracked-files=all").splitlines())
+
+    def assert_error(self, response, status, code, detail=None):
+        self.assertEqual((response[0], response[1].get("x-proxy-error")), (status, code))
+        if detail is not None:
+            self.assertEqual(response[1].get("x-proxy-detail"), detail)
+
+    def test_commits_and_pushes_only_data_and_new_images(self):
+        self.add_anime()
+        self.write(self.image(2), "jpg 2")
+        self.write(os.path.join(self.images, "notes.txt"), "n")
+        self.write(os.path.join(self.images, "sub", "3.jpg"), "jpg 3")
+        self.write(os.path.join(self.work, "other.txt"), "b\n")
+        self.write(os.path.join(self.work, "staged.txt"), "s\n")
+        git(self.work, "add", "staged.txt")
+
+        status, _, payload = self.publish()
+
+        head = git(self.work, "rev-parse", "--short", "HEAD").strip()
+        self.assertEqual((status, payload), (200, {"ok": True, "committed": True, "pushed": True, "commit": head, "files": 2}))
+        self.assertEqual(self.remote_log(), [proxy.PUBLISH_MESSAGE, "init"])
+        self.assertEqual(self.remote_files(), ["data/anime.json", "img/anime/2.jpg"])
+        self.assertEqual(git(self.work, "rev-parse", "main").strip(), git(None, "--git-dir", self.remote, "rev-parse", "main").strip())
+        self.assertEqual(self.status_lines(), [" M other.txt", "?? img/anime/notes.txt", "?? img/anime/sub/3.jpg", "A  staged.txt"])
+
+    def test_nothing_to_publish(self):
+        self.write(os.path.join(self.work, "other.txt"), "b\n")
+        status, _, payload = self.publish()
+        self.assertEqual((status, payload), (200, {"ok": True, "committed": False, "pushed": False, "commit": "", "files": 0}))
+        self.assertEqual(self.remote_log(), ["init"])
+        self.assertEqual(self.local_log(), ["init"])
+
+    def test_staged_data_without_changes_is_not_committed(self):
+        self.add_anime()
+        git(self.work, "add", "data/anime.json")
+        self.write(self.data_path, '{\n    "1": {}\n}\n')
+        status, _, payload = self.publish()
+        self.assertEqual((status, payload["committed"], payload["pushed"]), (200, False, False))
+        self.assertEqual(self.local_log(), ["init"])
+        self.assertEqual(self.status_lines(), ["MM data/anime.json"])
+
+    def test_pushes_earlier_unpushed_commit(self):
+        self.add_anime()
+        git(self.work, "commit", "-q", "-am", "local only")
+        status, _, payload = self.publish()
+        head = git(self.work, "rev-parse", "--short", "HEAD").strip()
+        self.assertEqual((status, payload), (200, {"ok": True, "committed": False, "pushed": True, "commit": head, "files": 0}))
+        self.assertEqual(self.remote_log(), ["local only", "init"])
+
+    def test_rejected_push_keeps_the_commit_for_the_next_push(self):
+        clone = os.path.join(self.tmp, "clone")
+        git(None, "clone", "-q", self.remote, clone)
+        self.write(os.path.join(clone, "other.txt"), "z\n")
+        git(clone, "commit", "-q", "-am", "elsewhere")
+        git(clone, "push", "-q", "origin", "main")
+        self.add_anime()
+
+        self.assert_error(self.publish(), 409, "publish-rejected", "fetch first")
+        self.assertEqual(self.local_log(), [proxy.PUBLISH_MESSAGE, "init"])
+        self.assertEqual(self.remote_log(), ["elsewhere", "init"])
+
+        git(self.work, "pull", "-q", "--rebase", "origin", "main")
+        status, _, payload = self.publish()
+        self.assertEqual((status, payload["committed"], payload["pushed"], payload["files"]), (200, False, True, 0))
+        self.assertEqual(self.remote_log(), [proxy.PUBLISH_MESSAGE, "elsewhere", "init"])
+
+    def test_failed_push_keeps_the_commit(self):
+        self.add_anime()
+        remove_tree(self.remote)
+        self.assert_error(self.publish(), 502, "publish-push-failed")
+        self.assertEqual(self.local_log(), [proxy.PUBLISH_MESSAGE, "init"])
+        self.assertEqual(self.status_lines(), [])
+
+    def test_deleted_image_is_not_committed(self):
+        self.add_anime()
+        os.remove(self.image(1))
+        status, _, payload = self.publish()
+        self.assertEqual((status, payload["files"]), (200, 1))
+        self.assertEqual(self.remote_files(), ["data/anime.json"])
+        self.assertEqual(self.status_lines(), [" D img/anime/1.jpg"])
+
+    def test_refuses_other_branch_and_detached_head(self):
+        self.add_anime()
+        git(self.work, "checkout", "-q", "-b", "feature")
+        self.assert_error(self.publish(), 409, "publish-wrong-branch", "feature")
+        git(self.work, "checkout", "-q", "--detach", "main")
+        self.assert_error(self.publish(), 409, "publish-wrong-branch", "HEAD")
+        self.assertEqual(self.local_log(), ["init"])
+        self.assertEqual(self.remote_log(), ["init"])
+        self.assertEqual(self.status_lines(), [" M data/anime.json"])
+
+    def test_refuses_during_merge(self):
+        self.add_anime()
+        head = git(self.work, "rev-parse", "HEAD")
+        self.write(os.path.join(self.work, ".git", "MERGE_HEAD"), head)
+        self.assert_error(self.publish(), 409, "publish-repo-busy", "MERGE_HEAD")
+        self.assertEqual(self.local_log(), ["init"])
+
+    def test_refuses_without_remote(self):
+        self.add_anime()
+        git(self.work, "remote", "remove", "origin")
+        self.assert_error(self.publish(), 409, "publish-no-remote", "origin")
+        self.assertEqual(self.local_log(), ["init"])
+
+    def hook(self, name, script):
+        path = os.path.join(self.work, ".git", "hooks", name)
+        self.write(path, "#!/bin/sh\n" + script)
+        os.chmod(path, 0o755)
+        return path
+
+    def locks(self):
+        return sorted(os.path.relpath(os.path.join(root, name), self.work) for root, _dirs, names
+                      in os.walk(os.path.join(self.work, ".git")) for name in names if name.endswith(".lock"))
+
+    def test_failed_commit_hook_is_reported(self):
+        self.hook("pre-commit", "echo 'hook says no' >&2\nexit 1\n")
+        self.add_anime()
+        self.write(self.image(2), "jpg 2")
+        self.write(os.path.join(self.work, "other.txt"), "b\n")
+        git(self.work, "add", "other.txt")
+        before = self.status_lines()
+        self.assert_error(self.publish(), 500, "publish-commit-failed", "hook says no")
+        self.assertEqual(self.local_log(), ["init"])
+        self.assertEqual(self.remote_log(), ["init"])
+        # Soubory, které Push připravil pro commit, nezůstanou v indexu pro příští ruční commit.
+        self.assertEqual(self.status_lines(), before)
+        self.assertEqual(before, [" M data/anime.json", "?? img/anime/2.jpg", "M  other.txt"])
+
+    def test_hanging_commit_is_stopped_and_leaves_the_repository_as_it_was(self):
+        hook = self.hook("pre-commit", "sleep 30\n")
+        self.add_anime()
+        self.write(self.image(2), "jpg 2")
+        self.write(os.path.join(self.work, "other.txt"), "b\n")
+        git(self.work, "add", "other.txt")
+        before = self.status_lines()
+        started = time.monotonic()
+        # Velké GIT_KILL_WAIT: kdyby hook po ukončení gitu běžel dál, test by na něj čekal.
+        with mock.patch.object(proxy, "COMMIT_TIMEOUT", 2), mock.patch.object(proxy, "GIT_KILL_WAIT", 25):
+            self.assert_error(self.publish(), 504, "git-timeout", "commit")
+        self.assertLess(time.monotonic() - started, 15)
+        self.assertEqual(self.locks(), [])
+        self.assertEqual(self.status_lines(), before)
+        self.assertEqual(self.local_log(), ["init"])
+
+        os.remove(hook)
+        status, _, payload = self.publish()
+        self.assertEqual((status, payload["committed"], payload["pushed"], payload["files"]), (200, True, True, 2))
+        self.assertEqual(self.status_lines(), ["M  other.txt"])
+
+    def test_hanging_push_is_stopped_and_the_commit_waits_for_the_next_push(self):
+        hook = self.hook("pre-push", "sleep 30\n")
+        self.add_anime()
+        started = time.monotonic()
+        with mock.patch.object(proxy, "PUSH_TIMEOUT", 2), mock.patch.object(proxy, "GIT_KILL_WAIT", 25):
+            self.assert_error(self.publish(), 504, "git-timeout", "push")
+        self.assertLess(time.monotonic() - started, 15)
+        self.assertEqual(self.locks(), [])
+        self.assertEqual(self.local_log(), [proxy.PUBLISH_MESSAGE, "init"])
+        self.assertEqual(self.remote_log(), ["init"])
+
+        os.remove(hook)
+        status, _, payload = self.publish()
+        self.assertEqual((status, payload["committed"], payload["pushed"]), (200, False, True))
+        self.assertEqual(self.remote_log(), [proxy.PUBLISH_MESSAGE, "init"])
+
+    def test_outside_repository(self):
+        outside = os.path.join(self.tmp, "outside")
+        os.makedirs(os.path.join(outside, "img"))
+        path = os.path.join(outside, "anime.json")
+        self.write(path, "{}\n")
+        with self.assertRaises(proxy.ProxyError) as caught:
+            proxy.publish_changes(path, os.path.join(outside, "img"))
+        self.assertEqual((caught.exception.code, caught.exception.status), ("not-a-repository", 409))
+        with self.assertRaises(proxy.ProxyError) as caught:
+            proxy.publish_changes(self.data_path, os.path.join(outside, "img"))
+        self.assertEqual((caught.exception.code, caught.exception.detail), ("not-a-repository", "images"))
+        self.add_anime()
+        result = proxy.publish_changes(self.data_path, os.path.join(self.work, "missing"))
+        self.assertEqual((result["committed"], result["files"]), (True, 1))
+        self.assertEqual(self.local_log(), [proxy.PUBLISH_MESSAGE, "init"])
+
+    def test_missing_data_file(self):
+        os.remove(self.data_path)
+        self.assert_error(self.publish(), 500, "data-file-missing")
+
+    def test_needs_the_api_header_origin_and_json(self):
+        self.add_anime()
+        self.assertEqual(self.publish(headers={proxy.REQUEST_HEADER: None})[0], 403)
+        self.assertEqual(self.publish(headers={"Origin": "https://evil.example"})[0], 403)
+        self.assertEqual(self.request("GET", "/publish")[0], 405)
+        self.assertEqual(self.publish(headers={"Content-Type": "text/plain"})[0], 415)
+        self.assertEqual(self.local_log(), ["init"])
+
+    def test_git_missing_and_timeout(self):
+        with mock.patch.object(proxy.subprocess, "Popen", side_effect=FileNotFoundError()):
+            self.assert_error(self.publish(), 500, "git-missing")
+        late = os.path.join(self.work, "late.txt")
+        started = time.monotonic()
+        with mock.patch.object(proxy, "GIT_TIMEOUT", 1), mock.patch.object(proxy, "GIT_KILL_WAIT", 25):
+            with self.assertRaises(proxy.ProxyError) as caught:
+                proxy._git(self.work, ["-c", "alias.slow=!sleep 4; echo late > late.txt", "slow"], "slow")
+        self.assertEqual((caught.exception.code, caught.exception.status, caught.exception.detail),
+                         ("git-timeout", 504, "slow"))
+        self.assertLess(time.monotonic() - started, 4)
+        # Ukončí se i to, co git spustil: příkaz po `sleep` už neproběhne.
+        time.sleep(5)
+        self.assertFalse(os.path.exists(late))
+
+    def test_git_runs_without_prompts(self):
+        calls = []
+        real_popen = subprocess.Popen
+
+        def spy(*args, **kwargs):
+            calls.append(kwargs)
+            return real_popen(*args, **kwargs)
+
+        askpass = {"GIT_ASKPASS": "askpass.exe", "SSH_ASKPASS": "askpass.exe", "GCM_INTERACTIVE": "always"}
+        with mock.patch.dict(os.environ, askpass), mock.patch.object(proxy.subprocess, "Popen", side_effect=spy):
+            self.add_anime()
+            self.assertEqual(self.publish()[0], 200)
+        self.assertTrue(calls)
+        for kwargs in calls:
+            env = kwargs["env"]
+            self.assertEqual((env["GIT_TERMINAL_PROMPT"], env["GIT_ASKPASS"], env["GCM_INTERACTIVE"]), ("0", "", "never"))
+            self.assertNotIn("SSH_ASKPASS", env)
+            self.assertIn(kwargs.get("stdin"), (subprocess.DEVNULL, subprocess.PIPE))
+
+    def test_only_one_publish_at_a_time(self):
+        self.assertTrue(proxy._publish_lock.acquire(blocking=False))
+        try:
+            self.assert_error(self.publish(), 409, "publish-running")
+        finally:
+            proxy._publish_lock.release()
+        self.add_anime()
+        self.assertEqual(self.publish()[0], 200)
+
+
+class PushErrorTests(unittest.TestCase):
+    def classify(self, stdout, stderr):
+        error = proxy._push_error(stdout, stderr)
+        return error.code, error.status, error.detail
+
+    def test_rejected_and_remote_rejected(self):
+        rejected = "To https://github.com/a/b.git\n!\trefs/heads/main:refs/heads/main\t[rejected] (fetch first)\nDone\n"
+        self.assertEqual(self.classify(rejected, "error: failed to push some refs\n"), ("publish-rejected", 409, "fetch first"))
+        hook = "!\trefs/heads/main:refs/heads/main\t[remote rejected] (protected branch hook declined)\n"
+        self.assertEqual(self.classify(hook, ""), ("publish-push-failed", 502, "protected branch hook declined"))
+
+    def test_authentication(self):
+        prompt = "fatal: could not read Username for 'https://github.com': terminal prompts disabled\n"
+        self.assertEqual(self.classify("", prompt)[:2], ("publish-auth-failed", 502))
+        forbidden = ("remote: Permission to a/b.git denied to c.\nfatal: unable to access "
+                     "'https://user:SECRET-TOKEN@github.com/a/b.git/': The requested URL returned error: 403\n")
+        code, _status, detail = self.classify("", forbidden)
+        self.assertEqual((code, detail), ("publish-auth-failed", "Permission to a/b.git denied to c."))
+        ssh = "git@github.com: Permission denied (publickey).\nfatal: Could not read from remote repository.\n"
+        self.assertEqual(self.classify("", ssh)[0], "publish-auth-failed")
+
+    def test_other_failures_and_redaction(self):
+        offline = "fatal: unable to access 'https://user:SECRET-TOKEN@github.com/a/b.git/': Could not resolve host: github.com\n"
+        code, status, detail = self.classify("", offline)
+        self.assertEqual((code, status), ("publish-push-failed", 502))
+        self.assertNotIn("SECRET-TOKEN", detail)
+        self.assertIn("Could not resolve host", detail)
+        self.assertEqual(self.classify("", "hint: x\n\n")[2], "")
 
 
 class CheckTests(unittest.TestCase):

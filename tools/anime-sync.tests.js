@@ -1775,6 +1775,173 @@ window.AnimeSyncTests = (function () {
 		]);
 	}
 
+	/* ---------------------------------- Push ---------------------------------- */
+
+	/**
+	 * Sync.publish() s atrapou pomocníka.
+	 * @param {Object} setup - version (výchozí 8), healthError, publishError, result, gate (Promise před výsledkem publish)
+	 */
+	function runPublish(setup) {
+		var events = [];
+		var proxy = {
+			health: function () {
+				events.push('health');
+				if (setup.healthError) {
+					return Promise.reject(setup.healthError);
+				}
+				var version = setup.version === undefined ? 8 : setup.version;
+				return Promise.resolve({ version: version, cookieConfigured: false, maxImageNumber: 0, dataFile: true });
+			},
+			publish: function () {
+				events.push('publish');
+				if (setup.publishError) {
+					return Promise.reject(setup.publishError);
+				}
+				var result = setup.result || { committed: true, pushed: true, commit: 'abc1234', files: 2 };
+				return setup.gate ? setup.gate.then(function () { return result; }) : Promise.resolve(result);
+			}
+		};
+		return Sync.publish({ proxy: proxy }).then(function (result) {
+			return { result: result, error: null, events: events };
+		}, function (error) {
+			return { result: null, error: error, events: events };
+		});
+	}
+
+	function publishTests(runner) {
+		var base = Client.baseUrl();
+
+		return sequence([
+			function () {
+				var body = JSON.stringify({ ok: true, committed: true, pushed: true, commit: 'abc1234', files: 3 });
+				return withFetch(function () { return reply(body, 200); }, function (stub) {
+					return Client.publish().then(function (result) {
+						runner.equal('publish: výsledek', result, { committed: true, pushed: true, commit: 'abc1234', files: 3 });
+						runner.equal('publish: požadavek', [
+							stub.calls[0].url, stub.calls[0].init.method, stub.calls[0].init.headers['Content-Type'],
+							stub.calls[0].init.headers['X-Anime-Proxy'], stub.calls[0].init.body, stub.calls.length
+						], [base + '/publish', 'POST', 'application/json', '1', '{}', 1]);
+					});
+				});
+			},
+			function () {
+				var bodies = [
+					{ ok: true, committed: false, pushed: false, commit: '', files: 0 },
+					{ ok: true, committed: false, pushed: true, commit: '<b>x</b>', files: 0 },
+					{ ok: true, committed: false, pushed: false, files: 0 }
+				];
+				var index = 0;
+				return withFetch(function () { return reply(JSON.stringify(bodies[index++]), 200); }, function () {
+					return sequence(bodies.map(function () {
+						return function (results) {
+							return Client.publish().then(function (result) {
+								return (results || []).concat([result.commit]);
+							});
+						};
+					}));
+				}).then(function (commits) {
+					runner.equal('publish: neplatný nebo chybějící commit je prázdný', commits, ['', '', '']);
+				});
+			},
+			function () {
+				var invalid = [{ ok: true, committed: 'yes', pushed: false, files: 0 }, { ok: true, committed: true, pushed: true },
+					{ committed: true, pushed: true, files: 1 }];
+				var index = 0;
+				return withFetch(function () { return reply(JSON.stringify(invalid[index++]), 200); }, function () {
+					return Promise.all(invalid.map(function () { return summarizeError(Client.publish()); }));
+				}).then(function (errors) {
+					var expected = { code: 'unexpected-response', detail: 'publish', status: 0 };
+					runner.equal('publish: neplatná odpověď', errors, [expected, expected, expected]);
+				});
+			},
+			function () {
+				return withFetch(function () {
+					return reply('{}', 409, { 'X-Proxy-Error': 'publish-rejected', 'X-Proxy-Detail': 'fetch first' });
+				}, function () {
+					return summarizeError(Client.publish()).then(function (error) {
+						runner.equal('publish: chyba pomocníka', error, { code: 'publish-rejected', detail: 'fetch first', status: 409 });
+					});
+				});
+			},
+			function () {
+				// Push čeká na git a GitHub déle než stahování stránek.
+				var originalSetTimeout = window.setTimeout;
+				var delays = [];
+				window.setTimeout = function (callback, delay) {
+					delays.push(delay);
+					return originalSetTimeout.call(window, callback, 0);
+				};
+				return withFetch(function (url, init) {
+					return new Promise(function (resolve, reject) {
+						init.signal.addEventListener('abort', function () {
+							reject(new DOMException('Aborted', 'AbortError'));
+						});
+					});
+				}, function () {
+					return summarizeError(Client.publish());
+				}).then(function (error) {
+					window.setTimeout = originalSetTimeout;
+					runner.equal('publish: vypršel časový limit', error, { code: 'timeout', detail: base, status: 0 });
+					runner.equal('publish: časový limit jsou tři minuty', delays, [180000]);
+				}, function (failure) {
+					window.setTimeout = originalSetTimeout;
+					throw failure;
+				});
+			},
+			function () {
+				return runPublish({}).then(function (run) {
+					runner.equal('Sync.publish: zjistí verzi a publikuje', [run.result, run.events],
+						[{ committed: true, pushed: true, commit: 'abc1234', files: 2 }, ['health', 'publish']]);
+				});
+			},
+			function () {
+				return runPublish({ version: 7 }).then(function (run) {
+					runner.equal('Sync.publish: pomocník verze 7 Push neumí', [errorSummary(run.error), run.events],
+						[{ code: 'helper-outdated', detail: '' }, ['health']]);
+				});
+			},
+			function () {
+				return runPublish({ healthError: makeError('unreachable', base) }).then(function (run) {
+					runner.equal('Sync.publish: pomocník neodpovídá', [errorSummary(run.error), run.events],
+						[{ code: 'unreachable', detail: base }, ['health']]);
+					return runPublish({ publishError: makeError('publish-wrong-branch', 'feature', 409) });
+				}).then(function (run) {
+					runner.equal('Sync.publish: chyba publikování se předá a zámek se uvolní',
+						[errorSummary(run.error), run.events], [{ code: 'publish-wrong-branch', detail: 'feature' }, ['health', 'publish']]);
+					return runPublish({});
+				}).then(function (run) {
+					runner.equal('Sync.publish: po chybě lze Push zopakovat', run.events, ['health', 'publish']);
+				});
+			},
+			function () {
+				// Push sdílí zámek s aktualizacemi v obou směrech.
+				var release;
+				var gate = new Promise(function (resolve) { release = resolve; });
+				var update = runMalUpdate({ routes: {}, items: ratingItems(1), healthGate: gate });
+				return Promise.resolve().then(function () {
+					return runPublish({});
+				}).then(function (blocked) {
+					runner.equal('Push během aktualizace se odmítne', [errorSummary(blocked.error), blocked.events],
+						[{ code: 'already-running', detail: '' }, []]);
+					release();
+					return update;
+				}).then(function () {
+					var releasePush;
+					var pushGate = new Promise(function (resolve) { releasePush = resolve; });
+					var push = runPublish({ gate: pushGate });
+					return Promise.all([runMalUpdate({ routes: {}, items: ratingItems(1) }), runPublish({})]).then(function (others) {
+						runner.equal('během Push se aktualizace i druhý Push odmítnou', others.map(function (other) { return errorSummary(other.error); }),
+							[{ code: 'already-running', detail: '' }, { code: 'already-running', detail: '' }]);
+						releasePush();
+						return push;
+					});
+				}).then(function (pushed) {
+					runner.equal('původní Push doběhne', [pushed.result && pushed.result.committed, pushed.events], [true, ['health', 'publish']]);
+				});
+			}
+		]);
+	}
+
 	/* ---------------------------------- spuštění ---------------------------------- */
 
 	/** @returns {Promise<Object>} souhrn ve tvaru NV194TestRunner.summarize() */
@@ -1791,7 +1958,8 @@ window.AnimeSyncTests = (function () {
 			['tok aktualizace', flows],
 			['tok ČSFD hodnocení', csfdFlows],
 			['tok MAL hodnocení', malFlows],
-			['tok zhlédnutých epizod', watchedFlows]
+			['tok zhlédnutých epizod', watchedFlows],
+			['Push', publishTests]
 		];
 		return sequence(groups.map(function (group) {
 			return function () {

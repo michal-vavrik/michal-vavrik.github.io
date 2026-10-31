@@ -20,17 +20,22 @@
  * ...) se zobrazí v liště a ovládání se hned odemkne. Výsledky zjištěné před
  * chybou (přidaná anime, hodnocení, zhlédnuté epizody) se zapíšou do
  * data/anime.json, případně zůstanou v prohlížeči. Během aktualizace jsou
- * navíc zamčené Upravit, Importovat a Obnovit, protože by měnily stejná data;
- * Aktualizovat je neaktivní v edit módu.
+ * navíc zamčené Upravit, Importovat, Obnovit a Push, protože by měnily stejná
+ * data; Aktualizovat je neaktivní v edit módu.
+ *
+ * Tlačítko Push (bez Python vzoru) nechá pomocný program commitnout
+ * data/anime.json s novými obrázky a pushnout je na GitHub. Spouští se jen
+ * kliknutím, zamyká ovládání jako aktualizace a výsledek zůstane
+ * v informačním řádku až do další akce.
  */
 window.AnimeUpdate = (function () {
 	'use strict';
 
 	var DEFAULT_DONE_DELAY_MS = 2000;
 
-	// Tlačítka, která se během aktualizace zamykají. Řazení hlavičky zamyká
+	// Tlačítka, která se během aktualizace a Push zamykají. Řazení hlavičky zamyká
 	// třída is-locked a kontrola isBusy() v js/anime-page.js.
-	var LOCKED_IDS = ['anime-edit-toggle', 'anime-import-btn', 'anime-reset-btn'];
+	var LOCKED_IDS = ['anime-edit-toggle', 'anime-import-btn', 'anime-reset-btn', 'anime-push-btn'];
 
 	var i18n = window.I18n;
 
@@ -46,10 +51,12 @@ window.AnimeUpdate = (function () {
 	var menuOpen = false;
 	var unlockTimer = null;
 
-	// Právě spuštěná aktualizace: 'list', 'csfd', 'mal' nebo 'watched'.
+	// Právě spuštěná akce: 'list', 'csfd', 'mal', 'watched' nebo 'push'.
 	var currentAction = null;
 	// {action, kind: 'start' | 'progress' | 'done', percent, count} - text v informačním řádku.
 	var progress = null;
+	// Výsledek posledního Push ({committed, pushed, commit, files, browserOnly}); zůstane vidět do další akce.
+	var pushResult = null;
 	// {action, error, kept, keptKey, skipped, notInFile} - poslední chyba, počet
 	// anime uložených před ní a anime přeskočená nebo nezapsaná do souboru.
 	var failure = null;
@@ -66,16 +73,24 @@ window.AnimeUpdate = (function () {
 		return base + (count >= 1 && count <= 4 ? '.few' : '.many');
 	}
 
+	function pushMessage(result) {
+		var key = result.committed ? 'anime.push.done' : (result.pushed ? 'anime.push.donePushed' : 'anime.push.nothing');
+		var text = i18n.t(key, { commit: result.commit, count: result.files });
+		return result.browserOnly ? text + ' ' + i18n.t('anime.push.browserOnly') : text;
+	}
+
 	function renderInfo() {
 		if (!els || !els.info) {
 			return;
 		}
 		if (!progress) {
-			els.info.textContent = '';
+			els.info.textContent = pushResult ? pushMessage(pushResult) : '';
 			return;
 		}
 		var key;
-		if (progress.action !== 'list') {
+		if (progress.action === 'push') {
+			key = 'anime.push.running';
+		} else if (progress.action !== 'list') {
 			key = 'anime.update.' + progress.action + '.' + progress.kind;
 		} else if (progress.kind === 'start') {
 			key = 'anime.update.list.start';
@@ -107,13 +122,28 @@ window.AnimeUpdate = (function () {
 		return parts.join(' ');
 	}
 
+	// Text chyby: u Push má přednost klíč anime.push.error.<kód>, jinak platí texty aktualizace.
+	function errorText(action, code) {
+		var keys = ['anime.update.error.' + code];
+		if (action === 'push') {
+			keys.unshift('anime.push.error.' + code);
+		}
+		for (var index = 0; code && index < keys.length; index += 1) {
+			var translated = i18n.t(keys[index]);
+			if (translated !== keys[index]) {
+				return translated;
+			}
+		}
+		return null;
+	}
+
 	function errorMessage(current) {
 		var error = current.error || {};
 		var code = typeof error.code === 'string' ? error.code : '';
-		var key = 'anime.update.error.' + code;
-		var translated = code ? i18n.t(key) : key;
-		var known = code !== '' && translated !== key;
-		var parts = [known ? translated : i18n.t('anime.update.error.generic')];
+		var translated = errorText(current.action, code);
+		var known = translated !== null;
+		var generic = current.action === 'push' ? 'anime.push.error.generic' : 'anime.update.error.generic';
+		var parts = [known ? translated : i18n.t(generic)];
 		if (error.favorite) {
 			parts.push(i18n.t('anime.update.error.favorite', { name: error.favorite }));
 		}
@@ -181,11 +211,12 @@ window.AnimeUpdate = (function () {
 		}
 	}
 
-	// Po sbalení nabídky ztratí fokus tlačítko, které aktualizaci spustilo.
+	// Po sbalení nabídky ztratí fokus tlačítko, které akci spustilo (u Push zamčené tlačítko Push).
 	function restoreFocus() {
+		var target = currentAction === 'push' && els.push ? els.push : els.toggle;
 		var active = document.activeElement;
-		if ((!active || active === document.body) && !els.toggle.disabled) {
-			els.toggle.focus({ preventScroll: true });
+		if ((!active || active === document.body) && !target.disabled) {
+			target.focus({ preventScroll: true });
 		}
 	}
 
@@ -196,6 +227,7 @@ window.AnimeUpdate = (function () {
 		currentAction = action;
 		failure = null;
 		skippedNotice = null;
+		pushResult = null;
 		progress = { action: action, kind: 'start', percent: 0, count: 0 };
 		renderError();
 		renderInfo();
@@ -325,6 +357,32 @@ window.AnimeUpdate = (function () {
 	}
 
 	/**
+	 * Push (bez Python vzoru): commit a push data/anime.json a nových obrázků
+	 * přes pomocný program. Data stránky se nemění, proto nevadí edit mód
+	 * ani nenačtená data; výsledek zůstane vidět do další akce.
+	 */
+	function runPush() {
+		if (busy) {
+			return;
+		}
+		begin('push');
+		window.AnimeSync.publish({ proxy: window.AnimeProxy }).then(function (result) {
+			pushResult = {
+				committed: result.committed, pushed: result.pushed, commit: result.commit, files: result.files,
+				// Úpravy jen v prohlížeči (edit mód, import, nezapsané výsledky) se do repozitáře nedostanou.
+				browserOnly: Boolean(options.data && options.data.hasStoredItems && options.data.hasStoredItems())
+			};
+			progress = null;
+			renderInfo();
+			busy = false;
+			refreshControls();
+			restoreFocus();
+		}, function (error) {
+			fail(error, 0, '');
+		});
+	}
+
+	/**
 	 * @param {Object} opts
 	 * @param {Object} opts.data - AnimeData
 	 * @param {function(Array)} opts.onItemsChanged - zavolá se po každém přidaném anime
@@ -339,11 +397,15 @@ window.AnimeUpdate = (function () {
 			menu: byId('anime-update-menu'),
 			info: byId('anime-update-info'),
 			error: byId('anime-update-error'),
-			header: byId('anime-header')
+			header: byId('anime-header'),
+			push: byId('anime-push-btn')
 		};
 		if (!els.toggle || !els.menu) {
 			els = null;
 			return false;
+		}
+		if (els.push) {
+			els.push.addEventListener('click', runPush);
 		}
 
 		// "Všechno" zatím zapojené není; jeho tlačítko je neaktivní.
