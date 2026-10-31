@@ -886,5 +886,121 @@ class CheckTests(unittest.TestCase):
         self.assertIn("chybí sekce oblíbených", text)
 
 
+class DiagTests(unittest.TestCase):
+    KOKOORE_IMAGE = "https://serialy.sx/upload/serial/kokoore.jpg"
+    KOKOORE_DIRECT = "https://sledujserialy.io/upload/serial/kokoore.jpg"
+
+    def setUp(self):
+        self.tmp = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.tmp, True)
+        self.data_path = os.path.join(self.tmp, "anime.json")
+        with open(self.data_path, "w", encoding="utf-8") as handle:
+            json.dump({"1": {"Number": "1", "FavoriteName": "Known Show"}}, handle)
+
+    @staticmethod
+    def favorites_page(*entries):
+        rows = "".join(
+            '<div class="a-favorites__item"><a href="/episode/%s-s01e05/"><img src="%s" alt="" loading="lazy">'
+            '<h2 class="a-favorites__title">%s</h2><span>Pokračuj</span></a></div>' % entry for entry in entries)
+        return ('<html><head><title>Účet uživatele tajny-ucet</title></head><body>'
+                '<div id="favorites">%s</div><div id="planned"></div></body></html>' % rows).encode("utf-8")
+
+    def routes(self, **overrides):
+        routes = {
+            UCET: (200, {}, self.favorites_page(("known-show", "/upload/serial/known.jpg", "Known Show"),
+                                                ("kokoore", "/upload/serial/kokoore.jpg", "Kokoore"))),
+            "https://serialy.sx/": (301, {"location": "https://sledujserialy.io/"}, b""),
+            "https://sledujserialy.io/": (200, {"server": "cloudflare"}, b"<html><title>SledujSerialy</title></html>"),
+            "https://www.csfd.cz/hledat/?q=naruto": (200, {}, b"<html></html>"),
+            "https://myanimelist.net/anime.php?cat=anime&q=naruto": (200, {}, b"<html></html>"),
+            self.KOKOORE_IMAGE: (301, {"location": self.KOKOORE_DIRECT, "server": "cloudflare"}, b""),
+            self.KOKOORE_DIRECT: (200, {"content-type": "image/jpeg"}, JPEG),
+        }
+        routes.update(overrides)
+        return routes
+
+    def run_diag(self, routes, names=(), config=proxy.Config(cookie=COOKIE, cf_clearance="CF-SENTINEL")):
+        self.transport = FakeTransport()
+        self.transport.routes = routes
+        lines = []
+        proxy.run_diag(config, names, self.data_path, self.transport, lines.append)
+        text = "\n".join(lines)
+        self.assertNotIn(COOKIE, text)
+        self.assertNotIn("CF-SENTINEL", text)
+        self.assertNotIn("tajny-ucet", text)
+        return text
+
+    def test_traces_image_redirect_of_new_favorite(self):
+        text = self.run_diag(self.routes())
+        self.assertIn("Oblíbených: 2 (varianta: uvozovky), z toho nových (nejsou v datovém souboru): 1", text)
+        self.assertIn("nové: Kokoore", text)
+        self.assertNotIn("--- Obrázek: Known Show", text)
+        self.assertIn('<img>: <img src="/upload/serial/kokoore.jpg" alt="" loading="lazy">', text)
+        self.assertIn("1. GET https://serialy.sx/upload/serial/kokoore.jpg\n"
+                      "       HTTP 301, server: cloudflare, -> https://sledujserialy.io/upload/serial/kokoore.jpg", text)
+        self.assertIn("2. GET https://sledujserialy.io/upload/serial/kokoore.jpg\n"
+                      "       HTTP 200, content-type: image/jpeg, obrázek JPEG (%d B)" % len(JPEG), text)
+        self.assertIn("Pomocník: ZASTAVÍ SE na kroku 2: redirect-blocked (sledujserialy.io)", text)
+        self.assertIn("Pro srovnání přímo ze sledujserialy.io:", text)
+        self.assertIn('HTML „SledujSerialy“', text)
+        # Obrázek se stáhl i bez cookie, proto se s ní nezkouší; cookie dostal jen účet.
+        self.assertNotIn("Totéž s cookie", text)
+        self.assertEqual([url for url, headers in self.transport.calls if "Cookie" in headers], [UCET])
+        self.assertIn("1. GET https://sledujserialy.io/ucet/ (s cookie)\n       HTTP 200, HTML (", text)
+
+    def test_retries_with_cookie_and_hides_foreign_query(self):
+        challenge = (403, {"server": "cloudflare", "cf-mitigated": "challenge"}, b"<title>Just a moment...</title>")
+        text = self.run_diag(self.routes(**{
+            self.KOKOORE_DIRECT: [challenge, (200, {}, JPEG), challenge],
+            "https://serialy.sx/": (307, {"location": "https://zscalernotification.abb.com/?url=x&user=a@b.example"}, b""),
+            "https://zscalernotification.abb.com/?url=x&user=a@b.example": (200, {}, b"<title>Blocked</title>"),
+        }), names=["kokoORE"])
+        self.assertNotIn("a@b.example", text)
+        self.assertIn("-> https://zscalernotification.abb.com/?…", text)
+        self.assertIn("Pomocník: ZASTAVÍ SE na kroku 2: redirect-blocked (zscalernotification.abb.com)", text)
+        self.assertIn("výzva Cloudflare", text)
+        self.assertIn("Totéž s cookie a nastavením Cloudflare pro sledujserialy.io:", text)
+        self.assertIn("2. GET https://sledujserialy.io/upload/serial/kokoore.jpg (s cookie)\n"
+                      "       HTTP 200, obrázek JPEG", text)
+        cookie_urls = [url for url, headers in self.transport.calls if "Cookie" in headers]
+        self.assertEqual(cookie_urls, [UCET, self.KOKOORE_DIRECT])
+        self.assertTrue(all("Cookie" not in headers for url, headers in self.transport.calls if "serialy.sx" in url))
+
+    def test_named_favorite_and_errors(self):
+        text = self.run_diag(self.routes(**{
+            "https://myanimelist.net/anime.php?cat=anime&q=naruto": proxy.ProxyError("timeout", 504),
+            "https://serialy.sx/upload/serial/known.jpg": (404, {}, b"<html><title>Nenalezeno</title></html>"),
+            "https://sledujserialy.io/upload/serial/known.jpg": (200, {}, JPEG),
+        }), names=["known"])
+        self.assertIn("chyba: timeout", text)
+        self.assertIn("Pomocník: chyba timeout", text)
+        self.assertIn("--- Obrázek: Known Show ---", text)
+        self.assertNotIn("--- Obrázek: Kokoore", text)
+        self.assertIn("HTTP 404, HTML „Nenalezeno“", text)
+        self.assertIn("Pomocník: image-download-failed (HTTP 404)", text)
+        self.assertIn("Totéž s cookie a nastavením Cloudflare pro sledujserialy.io:", text)
+
+    def test_unmatched_name_and_missing_section(self):
+        text = self.run_diag(self.routes(), names=["nic takového"])
+        self.assertIn("Žádný oblíbený neodpovídá: nic takového", text)
+        self.assertNotIn("--- Obrázek:", text)
+
+        text = self.run_diag(self.routes(**{UCET: (200, {}, b"<html><title>Prihlaseni</title></html>")}), config=proxy.Config())
+        self.assertIn("Nastavení: cookie CHYBÍ", text)
+        self.assertIn("Sekce oblíbených chybí", text)
+        self.assertIn("Konec diagnostiky.", text)
+
+    def test_image_verdicts(self):
+        image = [{"url": "https://serialy.sx/a.jpg", "status": 200, "headers": {}, "body": JPEG}]
+        self.assertEqual(proxy._diag_verdict(image, proxy.IMAGE_RULES, True), "OK, obrázek by se uložil")
+        html = [dict(image[0], body=b"<html>")]
+        self.assertEqual(proxy._diag_verdict(html, proxy.IMAGE_RULES, True), "not-an-image")
+        missing = [dict(image[0], status=404)]
+        self.assertEqual(proxy._diag_verdict(missing, proxy.IMAGE_RULES, True), "image-download-failed (HTTP 404)")
+        loop = [{"url": "https://serialy.sx/a.jpg", "status": 301, "headers": {"location": "/a.jpg"}, "body": b""}] * 6
+        self.assertEqual(proxy._diag_verdict(loop, proxy.IMAGE_RULES, True), "too-many-redirects")
+        self.assertEqual(proxy._diag_url("https://user:pw@evil.example/x?token=1"), "https://evil.example/x?…")
+
+
 if __name__ == "__main__":
     unittest.main()

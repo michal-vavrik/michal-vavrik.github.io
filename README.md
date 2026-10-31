@@ -52,7 +52,7 @@ Poslouchá jen na `127.0.0.1:8787`. Parametry: `--port`, `--allow-origin ORIGIN`
 (další adresa stránky; výchozí jsou GitHub Pages a `http://127.0.0.1:8765`,
 `http://localhost:8765`), `--images-dir` (výchozí `img/anime`), `--data-file`
 (soubor, do kterého se zapisují výsledky aktualizací; výchozí
-`data/anime.json` vedle složky `tools`) a `--check`. Při
+`data/anime.json` vedle složky `tools`), `--check` a `--diag` (viz Diagnostika). Při
 jiném portu nastavte v konzoli prohlížeče
 `localStorage.setItem('anime-proxy-url', 'http://127.0.0.1:PORT')`.
 
@@ -91,6 +91,15 @@ než prohlížeč.
 platnosti cookie), ČSFD, MyAnimeList a serialy.sx (obrázky) a vypíše stav každého
 z nich. Ve firemní síti (např. Zscaler) mohou být weby blokované nebo přesměrované
 (`redirect-blocked`, chyba TLS), použijte jinou síť.
+
+Podrobnější výpis dá `python tools/anime_proxy.py --diag ["název anime" ...]`.
+U stejných stránek ukáže každý krok přesměrování (adresa, HTTP stav, server,
+`content-type`, výzva Cloudflare) a odhadne, kde a s jakou chybou by pomocný
+program skončil. Potom načte oblíbené ze sledujserialy.io. U zadaných anime
+(část názvu, bez rozlišení velikosti písmen), nebo jinak u oblíbených, která
+ještě nejsou v datovém souboru, sleduje stažení obrázku stejně jako tlačítko
+Seznam. Nic neukládá a nevypisuje cookie ani obsah stránky účtu. U adres mimo
+povolené weby skrývá parametry dotazu. Výpis tedy můžete celý poslat k rozboru.
 
 ### Aktualizovat → ČSFD hodnocení
 
@@ -217,7 +226,9 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
 - **Požadavek byl přesměrován na nepovolenou adresu:** firemní filtr (např. Zscaler)
   blokuje obrázkový server serialy.sx. Nové anime se v takové síti nedokončí ani
   po vyřešení Cloudflare, protože se nepodaří stáhnout jeho obrázek. Pomocný program
-  spusťte na zařízení mimo firemní síť a VPN.
+  spusťte na zařízení mimo firemní síť a VPN. Pokud se chyba objevuje i mimo firemní
+  síť, spusťte `python tools/anime_proxy.py --diag "název anime"` a podívejte se,
+  kam přesměrování vede.
 - **Anime se na MyAnimeList nepodařilo najít:** MAL nenajde názvy s českou
   diakritikou (např. „Naruto: šippúden“). Protože běh u chyby končí, přidejte takové
   anime ručně (Exportovat data, doplnit položku v JSONu, Importovat data) a spusťte

@@ -22,6 +22,7 @@ server proto běží na vašem počítači (jen na 127.0.0.1) a umí:
 
 Spuštění:      python tools\anime_proxy.py
 Diagnostika:   python tools\anime_proxy.py --check
+Podrobně:      python tools\anime_proxy.py --diag ["název anime" ...]
 
 Přihlašovací cookie (hodnota "user_logged_in" ze sledujserialy.io) se čte z
 proměnné prostředí SLEDUJ_SERIALY_LOGIN_COOKIE nebo ze souboru
@@ -44,6 +45,7 @@ import dataclasses
 import http.client
 import json
 import os
+import platform
 import re
 import socket
 import ssl
@@ -307,13 +309,20 @@ def fetch_page(url, config, rules=FETCH_RULES, transport=http_get_once):
     raise ProxyError("too-many-redirects", 502)
 
 
+def _image_kind(data):
+    if data.startswith(b"\xff\xd8\xff"):
+        return "JPEG"
+    if data.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "PNG"
+    if data[:6] in (b"GIF87a", b"GIF89a"):
+        return "GIF"
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "WEBP"
+    return None
+
+
 def looks_like_image(data):
-    return (
-        data.startswith(b"\xff\xd8\xff")
-        or data.startswith(b"\x89PNG\r\n\x1a\n")
-        or data[:6] in (b"GIF87a", b"GIF89a")
-        or (data[:4] == b"RIFF" and data[8:12] == b"WEBP")
-    )
+    return _image_kind(data) is not None
 
 
 def download_image(url, transport=http_get_once):
@@ -751,6 +760,247 @@ def run_check(config, transport=http_get_once, out=print):
     return all_ok
 
 
+# --diag: podrobný výpis pro hledání potíží (přesměrování, Cloudflare, obrázky).
+# Adresa obrázku jako ve stránce (IMAGE_ORIGIN v js/anime-sync.js) i ve skriptu ("https://serialy.sx" + Image).
+DIAG_IMAGE_ORIGIN = "https://serialy.sx"
+DIAG_MAX_FAVORITES = 3
+DIAG_MAX_NAMED = 5
+# Python EXCEPTION_ANIME (AnimeList.pyw ř. 63), stejně jako v js/anime-sync.js.
+DIAG_EXCEPTION_ANIME = ("Owari no Seraph: Nagoja kessen hen",)
+# Python GetFavorites() (AnimeList.pyw ř. 1299-1303) ve tvaru parseFavorites() z js/anime-sync.js.
+_DIAG_FAVORITES_SECTIONS = (
+    re.compile(r'<div id="favorites"[\s\S]*?<div id="planned"'),
+    re.compile(r"<div id='favorites'[\s\S]*?<div id='planned'"),
+)
+_DIAG_FAVORITE_ROWS = (
+    re.compile(r'<a href="/episode/([\s\S]+?)-[sS]([0-9]+)[eE]([0-9]+)[\s\S]+?"[\s\S]+?<img src="([\s\S]+?)"[\s\S]+?'
+               r'<h2 class="a-favorites__title">[\s]*([\s\S]+?)[\s]*<[\s\S]+?(Pokračuj|>[sS][0-9])'),
+    re.compile(r"<a href='/episode/([\s\S]+?)-[sS]([0-9]+)[eE]([0-9]+)[\s\S]+?'[\s\S]+?<img src='([\s\S]+?)'[\s\S]+?"
+               r"<h2 class='a-favorites__title'>[\s]*([\s\S]+?)[\s]*<[\s\S]+?(Pokračuj|>[sS][0-9])"),
+)
+# Dotaz v adrese se vypíše jen u těchto webů; jinde (např. stránka firemního filtru) může obsahovat osobní údaje.
+_DIAG_PUBLIC_QUERY_HOSTS = frozenset(FETCH_RULES) | frozenset(IMAGE_RULES)
+
+
+def _diag_text(value, limit=200):
+    text = re.sub(r"[\x00-\x1f\x7f]", "?", str(value))
+    return text if len(text) <= limit else text[:limit] + "…"
+
+
+def _diag_url(url):
+    """Adresa do výpisu: bez jména a hesla a bez dotazu u neznámých webů."""
+    try:
+        parts = urlsplit(url)
+        host = parts.hostname or ""
+    except ValueError:
+        return "(neplatná adresa)"
+    text = "%s://%s%s" % (parts.scheme, host, parts.path)
+    if parts.query:
+        text += "?" + (parts.query if host in _DIAG_PUBLIC_QUERY_HOSTS else "…")
+    return _diag_text(text)
+
+
+def _diag_trace(url, config, transport):
+    """Stáhne adresu a sleduje přesměrování kamkoli (jen https, cookie jen pro
+    sledujserialy.io); vrací kroky pro výpis a pro _diag_verdict()."""
+    hops = []
+    current = url
+    while len(hops) <= MAX_REDIRECTS:
+        hop = {"url": current}
+        hops.append(hop)
+        try:
+            parts = urlsplit(current)
+            secure = parts.scheme == "https" and bool(parts.hostname)
+        except ValueError:
+            secure = False
+        if not secure:
+            hop["error"] = "adresa není https, dál se nepokračuje"
+            break
+        headers = build_headers(parts.hostname, config)
+        hop["cookie"] = "Cookie" in headers
+        try:
+            hop["status"], hop["headers"], hop["body"] = transport(current, headers, TIMEOUT, MAX_BYTES)
+        except ProxyError as error:
+            hop["error"] = ("%s %s" % (error.code, _diag_text(error.detail or "", 120))).strip()
+            break
+        location = hop["headers"].get("location")
+        if hop["status"] not in REDIRECT_STATUSES or not location:
+            break
+        current = urljoin(current, location)
+    return hops
+
+
+def _diag_body(hop):
+    status, headers, body = hop["status"], hop["headers"], hop["body"]
+    if is_challenge(status, headers, body):
+        return "výzva Cloudflare (%d B)" % len(body)
+    kind = _image_kind(body)
+    if kind:
+        return "obrázek %s (%d B)" % (kind, len(body))
+    if not body:
+        return "prázdné tělo"
+    text = body.decode("utf-8", "replace")
+    title = re.search(r"<title[^>]*>([\s\S]*?)</title>", text, re.I)
+    # Stránka s přihlášením může v titulku obsahovat jméno účtu.
+    if title and not hop.get("cookie"):
+        return "HTML „%s“ (%d B)" % (_diag_text(" ".join(title.group(1).split()), 100), len(body))
+    if re.search(r"<html|<!doctype", text[:2048], re.I):
+        return "HTML (%d B)" % len(body)
+    return "jiný obsah, začátek %s (%d B)" % (body[:8].hex(" "), len(body))
+
+
+def _diag_print_hops(hops, out):
+    for index, hop in enumerate(hops, 1):
+        out("    %d. GET %s%s" % (index, _diag_url(hop["url"]), " (s cookie)" if hop.get("cookie") else ""))
+        if "error" in hop:
+            out("       chyba: %s" % hop["error"])
+            continue
+        headers = hop["headers"]
+        details = ["HTTP %d" % hop["status"]]
+        for name in ("server", "content-type", "cf-mitigated"):
+            if headers.get(name):
+                details.append("%s: %s" % (name, _diag_text(headers[name], 80)))
+        location = headers.get("location")
+        if hop["status"] in REDIRECT_STATUSES and location:
+            details.append("-> %s" % _diag_url(urljoin(hop["url"], location)))
+        else:
+            details.append(_diag_body(hop))
+        out("       " + ", ".join(details))
+
+
+def _diag_verdict(hops, rules, image):
+    """Co by s těmito kroky udělal fetch_page() pomocníka (stejné kontroly, bez dalšího stahování)."""
+    for index, hop in enumerate(hops):
+        try:
+            check_url(hop["url"], rules)
+        except ProxyError as error:
+            if index == 0:
+                return "adresu odmítne (%s %s)" % (error.code, _diag_text(error.detail or "", 120))
+            return "ZASTAVÍ SE na kroku %d: redirect-blocked (%s)" % (index + 1, _diag_text(error.detail or error.code, 120))
+        if "error" in hop:
+            return "chyba %s" % hop["error"]
+        if is_challenge(hop["status"], hop["headers"], hop["body"]):
+            return "cloudflare-challenge"
+        if hop["status"] in REDIRECT_STATUSES and hop["headers"].get("location"):
+            continue
+        if not image:
+            return "OK (HTTP %d)" % hop["status"]
+        if hop["status"] != 200:
+            return "image-download-failed (HTTP %d)" % hop["status"]
+        if not looks_like_image(hop["body"]):
+            return "not-an-image"
+        return "OK, obrázek by se uložil"
+    return "too-many-redirects"
+
+
+def _diag_final_image(hops):
+    last = hops[-1]
+    return "error" not in last and last["status"] == 200 and looks_like_image(last["body"])
+
+
+def _diag_favorites(html):
+    """Oblíbené jako parseFavorites() v js/anime-sync.js -> (varianta, [(název, src, <img>)]); None bez sekce."""
+    for pattern in _DIAG_FAVORITES_SECTIONS:
+        section = pattern.search(html)
+        if section:
+            break
+    else:
+        return None
+    for variant, pattern in zip(("uvozovky", "apostrofy"), _DIAG_FAVORITE_ROWS):
+        rows = []
+        for match in pattern.finditer(section.group(0)):
+            tag = re.search(r"<img\b[^>]*>", match.group(0))
+            rows.append((match.group(5).replace(";", ","), match.group(4), tag.group(0) if tag else ""))
+        if rows:
+            return variant, rows
+    return "žádná", []
+
+
+def _diag_known_names(data_path, out):
+    try:
+        _raw, _text, data = _read_data(data_path)
+    except ProxyError as error:
+        out("Datový soubor: chyba %s, všechny oblíbené se berou jako nové" % error.code)
+        return set()
+    out("Datový soubor: %d anime" % len(data))
+    return {item.get("FavoriteName") for item in data.values() if isinstance(item, dict)}
+
+
+def run_diag(config, names=(), data_path=DEFAULT_DATA_FILE, transport=http_get_once, out=print):
+    """Podrobná diagnostika (--diag): kroky přesměrování, Cloudflare a stažení obrázků
+    nových oblíbených (nebo oblíbených podle `names`). Nevypisuje cookie ani obsah
+    stránky účtu, výpis lze poslat dál."""
+    out("=== Diagnostika anime pomocníka (verze %d) ===" % VERSION)
+    out("Python %s, %s" % (platform.python_version(), platform.platform(terse=True)))
+    out("Nastavení: cookie %s, cfClearance %s, userAgent %s" % (
+        "ano" if config.cookie else "CHYBÍ",
+        "ano" if config.cf_clearance else "ne",
+        "vlastní" if config.user_agent else "výchozí (%s)" % USER_AGENT))
+    known = _diag_known_names(data_path, out)
+
+    out("")
+    out("--- Stránky (stejné kontroly jako pomocník) ---")
+    favorites_hops = None
+    for index, (label, url, rules, page_config) in enumerate((
+        ("sledujserialy.io, účet", "https://sledujserialy.io/ucet/", FETCH_RULES, config),
+        ("serialy.sx, úvodní stránka", DIAG_IMAGE_ORIGIN + "/", IMAGE_RULES, Config()),
+        ("ČSFD, hledání", "https://www.csfd.cz/hledat/?q=naruto", FETCH_RULES, config),
+        ("MyAnimeList, hledání", "https://myanimelist.net/anime.php?cat=anime&q=naruto", FETCH_RULES, config),
+    )):
+        hops = _diag_trace(url, page_config, transport)
+        out("  %s:" % label)
+        _diag_print_hops(hops, out)
+        out("    Pomocník: %s" % _diag_verdict(hops, rules, image=False))
+        if index == 0:
+            favorites_hops = hops
+
+    out("")
+    out("--- Oblíbené na sledujserialy.io ---")
+    last = favorites_hops[-1]
+    favorites = None
+    if "error" not in last and last["status"] == 200:
+        favorites = _diag_favorites(last["body"].decode("utf-8", "replace"))
+    if favorites is None:
+        out("  Sekce oblíbených chybí (cookie chybí nebo vypršela, výzva Cloudflare, nebo se změnila stránka).")
+        out("")
+        out("Konec diagnostiky.")
+        return
+    variant, rows = favorites
+    new = [row for row in rows if row[0] not in known and row[0] not in DIAG_EXCEPTION_ANIME]
+    out("  Oblíbených: %d (varianta: %s), z toho nových (nejsou v datovém souboru): %d" % (len(rows), variant, len(new)))
+    for name in [row[0] for row in new[:20]]:
+        out("    nové: %s" % _diag_text(name, 120))
+    if names:
+        wanted = [name.casefold() for name in names]
+        targets = [row for row in rows if any(name in row[0].casefold() for name in wanted)][:DIAG_MAX_NAMED]
+        if not targets:
+            out("  Žádný oblíbený neodpovídá: %s" % _diag_text(", ".join(names), 200))
+    elif new:
+        targets = new[:DIAG_MAX_FAVORITES]
+    else:
+        out("  Žádné nové anime, pro ukázku zkouším první oblíbený.")
+        targets = rows[:1]
+
+    for name, src, tag in targets:
+        out("")
+        out("--- Obrázek: %s ---" % _diag_text(name, 120))
+        out("  <img>: %s" % _diag_text(tag, 300))
+        url = DIAG_IMAGE_ORIGIN + src
+        out("  Stránka i AnimeList.pyw stahují: %s" % _diag_url(url))
+        hops = _diag_trace(url, Config(), transport)
+        _diag_print_hops(hops, out)
+        out("    Pomocník: %s" % _diag_verdict(hops, IMAGE_RULES, image=True))
+        if not _diag_final_image(hops) and (config.cookie or config.cf_clearance):
+            out("  Totéž s cookie a nastavením Cloudflare pro sledujserialy.io:")
+            _diag_print_hops(_diag_trace(url, config, transport), out)
+        if src.startswith("/") and not src.startswith("//"):
+            out("  Pro srovnání přímo ze sledujserialy.io:")
+            _diag_print_hops(_diag_trace("https://sledujserialy.io" + src, Config(), transport), out)
+
+    out("")
+    out("Konec diagnostiky. Výpis neobsahuje cookie ani obsah stránky účtu.")
+
+
 def _origin(value):
     if not re.fullmatch(r"https?://[^/\s*]+", value):
         raise argparse.ArgumentTypeError("očekávám originu ve tvaru https://example.com nebo http://127.0.0.1:8765")
@@ -770,6 +1020,9 @@ def main(argv=None):
     parser.add_argument("--data-file", default=DEFAULT_DATA_FILE,
                         help="soubor s daty, do kterého se zapisují výsledky aktualizací (výchozí data/anime.json)")
     parser.add_argument("--check", action="store_true", help="ověří dostupnost zdrojů a skončí")
+    parser.add_argument("--diag", nargs="*", metavar="NÁZEV",
+                        help="podrobná diagnostika (přesměrování, Cloudflare, obrázky nových anime, nebo anime, "
+                             "jejichž název obsahuje NÁZEV) a konec; výpis neobsahuje cookie")
     args = parser.parse_args(argv)
 
     try:
@@ -777,6 +1030,9 @@ def main(argv=None):
     except ConfigError as error:
         parser.exit(2, "%s\n" % error)
 
+    if args.diag is not None:
+        run_diag(config, args.diag, args.data_file)
+        return 0
     if args.check:
         return 0 if run_check(config) else 1
 
