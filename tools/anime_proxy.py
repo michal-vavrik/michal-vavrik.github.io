@@ -9,7 +9,8 @@ server proto běží na vašem počítači (jen na 127.0.0.1) a umí:
   GET  /fetch?url=...   stáhne stránku z povoleného webu; cookie se přidává jen
                         pro sledujserialy.io
   POST /images          {"url": "https://sledujserialy.io/upload/...", "number": 319}
-                        stáhne obrázek a uloží ho jako img/anime/319.jpg
+                        stáhne obrázek, uloží ho jako img/anime/319.jpg a vrátí
+                        ho stránce (type, data v base64)
   POST /csfd-ratings    {"ratings": {"1": "77%", ...}}
                         zapíše ČSFD hodnocení do data/anime.json (mění jen
                         CsfdRating, formát jako Python WriteDataToTheFile())
@@ -40,6 +41,7 @@ certifikáty, takže funguje i za firemním proxy s vlastní certifikační auto
 """
 
 import argparse
+import base64
 import codecs
 import dataclasses
 import http.client
@@ -57,9 +59,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urljoin, urlsplit
 
 # Verze 2 přidala POST /csfd-ratings, verze 3 POST /mal-ratings, verze 4 POST /watched-states,
-# verze 5 POST /anime-items, verze 6 stahuje obrázky ze sledujserialy.io místo serialy.sx;
-# stránka starší pomocník odmítne.
-VERSION = 6
+# verze 5 POST /anime-items, verze 6 stahuje obrázky ze sledujserialy.io místo serialy.sx,
+# verze 7 vrací uložený obrázek v odpovědi POST /images; stránka starší pomocník odmítne.
+VERSION = 7
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_IMAGES_DIR = os.path.join(os.path.dirname(HERE), "img", "anime")
 DEFAULT_DATA_FILE = os.path.join(os.path.dirname(HERE), "data", "anime.json")
@@ -322,6 +324,9 @@ def _image_kind(data):
     if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
         return "WEBP"
     return None
+
+
+IMAGE_TYPES = {"JPEG": "image/jpeg", "PNG": "image/png", "GIF": "image/gif", "WEBP": "image/webp"}
 
 
 def looks_like_image(data):
@@ -656,7 +661,9 @@ class Handler(BaseHTTPRequestHandler):
 
         data = download_image(payload.get("url"), self.server.config, self.server.transport)
         save_image(self.server.images_dir, number, data)
-        self._send_json(201, {"ok": True, "number": number, "bytes": len(data)})
+        # Stránka obrázek ukáže hned, i když ho web (GitHub Pages) ještě nemá.
+        self._send_json(201, {"ok": True, "number": number, "bytes": len(data),
+                              "type": IMAGE_TYPES[_image_kind(data)], "data": base64.b64encode(data).decode("ascii")})
 
     def _data_values(self, parts):
         field, key, allowed, label = DATA_ROUTES[parts.path]

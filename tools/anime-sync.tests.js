@@ -1,13 +1,14 @@
 /**
  * Automatické testy aktualizace anime listu (Aktualizovat -> Seznam, ČSFD
  * hodnocení, MAL hodnocení a Zhlédnuté epizody):
- * js/anime-sync.js, js/anime-proxy.js a addItem() v js/anime-data.js.
+ * js/anime-sync.js, js/anime-proxy.js, addItem() a nepublikovaná anime v js/anime-data.js.
  *
  * Vzorové stránky sledujserialy.io, ČSFD a MyAnimeList jsou zjednodušené, ale
  * mají stejnou strukturu, jakou čtou regulární výrazy převzaté z AnimeList.pyw.
  * Aktualizace se spouští s atrapou pomocníka a atrapou dat, takže testy
  * nepotřebují síť ani soubory. Jediné, na co sahají v localStorage, je
- * nastavení adresy pomocníka (po testu se vrátí původní hodnota).
+ * nastavení adresy pomocníka a nepublikovaná anime (po testu se vrátí
+ * původní hodnoty).
  */
 window.AnimeSyncTests = (function () {
 	'use strict';
@@ -338,6 +339,52 @@ window.AnimeSyncTests = (function () {
 
 	function dataLayer(runner) {
 		runner.equal('addItem před načtením dat vyhodí chybu', Boolean(thrown(function () { Data.addItem({ Number: '1' }); })), true);
+
+		var image = 'data:image/webp;base64,UklGRg==';
+		var fileItems = [
+			{ Number: '1', FavoriteName: 'One', Image: '1', NameEn: 'One' },
+			{ Number: '20', FavoriteName: 'Twenty', Image: '20', NameEn: 'Twenty' }
+		];
+		var pendingItem = { Number: '10', FavoriteName: 'Ten', Image: '10', NameEn: 'Ten' };
+		var merged = Data.mergePending(fileItems, {
+			items: { 10: pendingItem, 20: { Number: '20', FavoriteName: 'Old', Image: '20', NameEn: 'Old' } },
+			images: { 10: { name: 'Ten', src: image }, 20: { name: 'Old', src: image } }
+		});
+		runner.equal('mergePending: nepublikované anime se doplní podle Number, soubor má přednost',
+			merged.items.map(function (item) { return item.FavoriteName; }), ['One', 'Ten', 'Twenty']);
+		runner.equal('mergePending: co soubor obsahuje (anime i obrázek), z prohlížeče vypadne', merged.pending,
+			{ items: { 10: pendingItem }, images: { 10: { name: 'Ten', src: image } } });
+		runner.equal('mergePending: pole ze souboru se nemění', fileItems.length, 2);
+
+		runner.equal('imageSource: bez uloženého obrázku null', Data.imageSource({ Image: '9013', FavoriteName: 'New A' }), null);
+		Data.setImage('9013', 'New A', image);
+		Data.setImage('9014', 'New B', 'https://example.com/b.jpg');
+		Data.setImage('9015', 'New C', 'data:text/html;base64,PGI+');
+		runner.equal('imageSource: obrázek nového anime, jen pro stejné anime a jen data: URL obrázku', [
+			Data.imageSource({ Image: '9013', FavoriteName: 'New A' }), Data.imageSource({ Image: '9013', FavoriteName: 'Jiné' }),
+			Data.imageSource({ Image: '9014', FavoriteName: 'New B' }), Data.imageSource({ Image: '9015', FavoriteName: 'New C' })
+		], [image, null, null, null]);
+
+		var key = 'anime-pending-additions';
+		var previous = window.localStorage.getItem(key);
+		try {
+			window.localStorage.removeItem(key);
+			var itemA = { Number: '9013', FavoriteName: 'New A', Image: '9013', NameEn: 'New A EN' };
+			var itemB = { Number: '9014', FavoriteName: 'New B', Image: '9014', NameEn: 'New B EN' };
+			Data.keepAdded([itemA], true);
+			runner.equal('keepAdded: anime zapsané do souboru se uloží i s obrázkem', JSON.parse(window.localStorage.getItem(key)),
+				{ items: { 9013: itemA }, images: { 9013: { name: 'New A', src: image } } });
+			Data.setImage('9014', 'New B', image);
+			Data.keepAdded([itemB], false);
+			runner.equal('keepAdded: bez zápisu do souboru jen obrázek (anime drží uložené úpravy)', JSON.parse(window.localStorage.getItem(key)),
+				{ items: { 9013: itemA }, images: { 9013: { name: 'New A', src: image }, 9014: { name: 'New B', src: image } } });
+		} finally {
+			if (previous === null) {
+				window.localStorage.removeItem(key);
+			} else {
+				window.localStorage.setItem(key, previous);
+			}
+		}
 	}
 
 	/* ------------------------------ klient pomocníka ------------------------------ */
@@ -488,11 +535,39 @@ window.AnimeSyncTests = (function () {
 			function () {
 				return withFetch(function () { return reply(JSON.stringify({ ok: true, number: 12, bytes: 99 }), 201); }, function (stub) {
 					return Client.saveImage('https://sledujserialy.io/upload/a.jpg', 12).then(function (saved) {
-						runner.equal('saveImage: výsledek', saved, { number: 12, bytes: 99 });
+						runner.equal('saveImage: výsledek', saved, { number: 12, bytes: 99, dataUrl: null });
 						runner.equal('saveImage: požadavek', [
 							stub.calls[0].url, stub.calls[0].init.method, stub.calls[0].init.headers['Content-Type'],
 							JSON.parse(stub.calls[0].init.body)
 						], [base + '/images', 'POST', 'application/json', { url: 'https://sledujserialy.io/upload/a.jpg', number: 12 }]);
+					});
+				});
+			},
+			function () {
+				var body = JSON.stringify({ ok: true, number: 12, bytes: 4, type: 'image/webp', data: 'UklGRg==' });
+				return withFetch(function () { return reply(body, 201); }, function () {
+					return Client.saveImage('https://sledujserialy.io/upload/a.webp', 12).then(function (saved) {
+						runner.equal('saveImage: uložený obrázek jako data: URL', saved,
+							{ number: 12, bytes: 4, dataUrl: 'data:image/webp;base64,UklGRg==' });
+					});
+				});
+			},
+			function () {
+				var replies = [
+					{ ok: true, number: 12, bytes: 4, type: 'text/html', data: 'PGI+' },
+					{ ok: true, number: 12, bytes: 4, type: 'image/png', data: 'a"b' },
+					{ ok: true, number: 12, bytes: 4, type: 'image/png', data: 5 }
+				];
+				return withFetch(function () { return reply(JSON.stringify(replies.shift()), 201); }, function () {
+					var urls = [];
+					return sequence([0, 1, 2].map(function () {
+						return function () {
+							return Client.saveImage('https://sledujserialy.io/upload/a.png', 12).then(function (saved) {
+								urls.push(saved.dataUrl);
+							});
+						};
+					})).then(function () {
+						runner.equal('saveImage: jiný typ nebo neplatná data obrázek nevrátí', urls, [null, null, null]);
 					});
 				});
 			},
@@ -704,8 +779,8 @@ window.AnimeSyncTests = (function () {
 	 * Spustí aktualizaci s atrapou pomocníka a dat.
 	 * @param {Object} setup - routes (adresa -> text | {text, finalUrl} | Error), items (null = data nejsou načtená),
 	 *   health, imageError (number -> Error | null), writeError (chyba zápisu do souboru),
-	 *   storedItems (jsou uložené úpravy v prohlížeči)
-	 * @returns {Promise<{result, error, events, calls, images, items, writes, saves}>}
+	 *   storedItems (jsou uložené úpravy v prohlížeči), noImageData (pomocník obrázek nevrátí)
+	 * @returns {Promise<{result, error, events, calls, images, items, writes, saves, kept}>}
 	 */
 	function runUpdate(setup) {
 		var events = [];
@@ -713,6 +788,7 @@ window.AnimeSyncTests = (function () {
 		var images = [];
 		var writes = [];
 		var saves = [];
+		var kept = [];
 		var items = setup.items === null ? null : (setup.items || knownItems());
 		var proxy = {
 			health: function () {
@@ -745,7 +821,10 @@ window.AnimeSyncTests = (function () {
 				images.push({ url: url, number: number });
 				var failure = setup.imageError ? setup.imageError(number) : null;
 				events.push('image:' + number);
-				return failure ? Promise.reject(failure) : Promise.resolve({ number: number, bytes: 10 });
+				if (failure) {
+					return Promise.reject(failure);
+				}
+				return Promise.resolve({ number: number, bytes: 10, dataUrl: setup.noImageData ? null : 'data:image/jpeg;base64,' + number });
 			},
 			saveAnimeItems: function (added) {
 				writes.push(JSON.parse(JSON.stringify(added)));
@@ -770,6 +849,12 @@ window.AnimeSyncTests = (function () {
 			},
 			hasStoredItems: function () {
 				return Boolean(setup.storedItems);
+			},
+			setImage: function (image, name, src) {
+				events.push('show:' + image + '/' + name + '/' + src);
+			},
+			keepAdded: function (added, inFile) {
+				kept.push([added.map(function (item) { return item.Number; }), inFile]);
 			}
 		};
 		return Sync.updateList({
@@ -782,15 +867,15 @@ window.AnimeSyncTests = (function () {
 				events.push('added:' + item.Number + '/' + all.length);
 			}
 		}).then(function (result) {
-			return { result: result, error: null, events: events, calls: calls, images: images, items: items, writes: writes, saves: saves };
+			return { result: result, error: null, events: events, calls: calls, images: images, items: items, writes: writes, saves: saves, kept: kept };
 		}, function (error) {
-			return { result: null, error: error, events: events, calls: calls, images: images, items: items, writes: writes, saves: saves };
+			return { result: null, error: error, events: events, calls: calls, images: images, items: items, writes: writes, saves: saves, kept: kept };
 		});
 	}
 
-	// Odpověď /health pomocníka, který umí Seznam (obrázky ze sledujserialy.io, zápis do data/anime.json).
+	// Odpověď /health pomocníka, který umí Seznam (obrázky ze sledujserialy.io i pro stránku, zápis do data/anime.json).
 	function listHealth(overrides) {
-		var health = { version: 6, cookieConfigured: true, maxImageNumber: 12, dataFile: true };
+		var health = { version: 7, cookieConfigured: true, maxImageNumber: 12, dataFile: true };
 		Object.keys(overrides || {}).forEach(function (key) {
 			health[key] = overrides[key];
 		});
@@ -815,10 +900,13 @@ window.AnimeSyncTests = (function () {
 				return runUpdate({ routes: twoNewFavorites() }).then(function (run) {
 					runner.equal('tok: bez chyby', run.error && run.error.message, null);
 					runner.equal('tok: výsledek', run.result && [run.result.total, run.result.added.length], [2, 2]);
+					// Obrázek z pomocníka dostane řádek hned při přidání, i když ho web ještě nemá.
 					runner.equal('tok: pořadí kroků, průběh, obrázek jako poslední krok položky a jeden zápis do souboru na konci', run.events, [
 						'health', 'total:2',
-						'progress:10.00', 'progress:20.00', 'progress:30.00', 'progress:40.00', 'image:13', 'progress:50.00', 'added:13/3',
-						'progress:60.00', 'progress:70.00', 'progress:80.00', 'progress:90.00', 'image:14', 'progress:100.00', 'added:14/4',
+						'progress:10.00', 'progress:20.00', 'progress:30.00', 'progress:40.00', 'image:13', 'show:13/New A/data:image/jpeg;base64,13',
+						'progress:50.00', 'added:13/3',
+						'progress:60.00', 'progress:70.00', 'progress:80.00', 'progress:90.00', 'image:14', 'show:14/New B/data:image/jpeg;base64,14',
+						'progress:100.00', 'added:14/4',
 						'write'
 					]);
 					runner.equal('tok: stahované stránky', run.calls, [
@@ -833,14 +921,22 @@ window.AnimeSyncTests = (function () {
 					runner.equal('tok: původní položky zůstanou', run.items.slice(0, 2), knownItems());
 					runner.equal('tok: vrácené položky', run.result && run.result.added, [expectedItemA(13), expectedItemB(14)]);
 					runner.equal('tok: do souboru jdou jen přidaná anime', run.writes, [[expectedItemA(13), expectedItemB(14)]]);
-					runner.equal('tok: bez uložených úprav se do prohlížeče neukládá', run.saves, []);
+					runner.equal('tok: bez uložených úprav se do prohlížeče neukládá, jen nepublikovaná anime', [run.saves, run.kept],
+						[[], [[['13', '14'], true]]]);
 					runner.equal('tok: zapsáno do souboru', run.result && [run.result.total, run.result.savedTo], [2, 'file']);
 				});
 			},
 			function () {
+				return runUpdate({ routes: twoNewFavorites(), noImageData: true }).then(function (run) {
+					runner.equal('pomocník obrázek nevrátí: anime se přidají bez obrázku z prohlížeče', [
+						run.events.filter(function (event) { return event.indexOf('show:') === 0; }), numbersOf(run.items), run.kept
+					], [[], ['3', '10', '13', '14'], [[['13', '14'], true]]]);
+				});
+			},
+			function () {
 				return runUpdate({ routes: twoNewFavorites(), storedItems: true }).then(function (run) {
-					runner.equal('s uloženými úpravami: zapíše soubor i prohlížeč', [run.events.slice(-2), run.saves, run.result && run.result.savedTo],
-						[['write', 'save'], [['3', '10', '13', '14']], 'file']);
+					runner.equal('s uloženými úpravami: zapíše soubor i prohlížeč', [run.events.slice(-2), run.saves, run.result && run.result.savedTo, run.kept],
+						[['write', 'save'], [['3', '10', '13', '14']], 'file', [[['13', '14'], true]]]);
 				});
 			},
 			function () {
@@ -851,6 +947,7 @@ window.AnimeSyncTests = (function () {
 						[run.error && run.error.savedTo, run.error && run.error.added, run.saves, numbersOf(run.items)],
 						['browser', 2, [['3', '10', '13', '14']], ['3', '10', '13', '14']]);
 					runner.equal('zápis do souboru selže: chyba nemá anime', Boolean(run.error && run.error.favorite), false);
+					runner.equal('zápis do souboru selže: z nepublikovaných jen obrázky', run.kept, [[['13', '14'], false]]);
 				});
 			},
 			function () {
@@ -858,7 +955,8 @@ window.AnimeSyncTests = (function () {
 				routes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE, EXCEPTION_FAVORITE]);
 				return runUpdate({ routes: routes }).then(function (run) {
 					runner.equal('bez nových anime: výsledek', run.result, { total: 0, added: [], savedTo: null });
-					runner.equal('bez nových anime: jen seznam oblíbených, žádný průběh ani zápis', [run.calls, run.events], [[Sync.FAVORITES_URL], ['health', 'total:0']]);
+					runner.equal('bez nových anime: jen seznam oblíbených, žádný průběh ani zápis', [run.calls, run.events, run.kept],
+						[[Sync.FAVORITES_URL], ['health', 'total:0'], []]);
 				});
 			},
 			function () {
@@ -906,10 +1004,11 @@ window.AnimeSyncTests = (function () {
 				});
 			},
 			function () {
-				// Starší pomocník by obrázky ze sledujserialy.io nestáhl; kontroly jdou ve stejném pořadí jako u ostatních voleb.
-				var outdated = listHealth({ version: 5, cookieConfigured: false, dataFile: false });
+				// Starší pomocník nevrací uložený obrázek (verze 5 by ho ani nestáhla ze sledujserialy.io);
+				// kontroly jdou ve stejném pořadí jako u ostatních voleb.
+				var outdated = listHealth({ version: 6, cookieConfigured: false, dataFile: false });
 				return runUpdate({ routes: twoNewFavorites(), health: outdated }).then(function (run) {
-					runner.equal('pomocník verze 5: zastaralý, nic se nestahuje', [errorSummary(run.error), run.calls, run.events],
+					runner.equal('pomocník verze 6: zastaralý, nic se nestahuje', [errorSummary(run.error), run.calls, run.events],
 						[{ code: 'helper-outdated', detail: '' }, [], ['health']]);
 				});
 			},
@@ -935,7 +1034,8 @@ window.AnimeSyncTests = (function () {
 					runner.equal('chyba uprostřed: první anime zůstane, druhé se nepřidá a nemá obrázek',
 						[run.items.map(function (item) { return item.Number; }), run.images.length], [['3', '10', '13'], 1]);
 					runner.equal('chyba uprostřed: hotové anime se zapíše do souboru',
-						[run.writes, run.error && run.error.added, run.error && run.error.savedTo, run.saves], [[[expectedItemA(13)]], 1, 'file', []]);
+						[run.writes, run.error && run.error.added, run.error && run.error.savedTo, run.saves, run.kept],
+						[[[expectedItemA(13)]], 1, 'file', [], [[['13'], true]]]);
 				});
 			},
 			function () {
@@ -952,8 +1052,8 @@ window.AnimeSyncTests = (function () {
 				routes[Sync.malSearchUrl('New A')] = { text: MAL_NOT_FOUND, status: 404 };
 				return runUpdate({ routes: routes }).then(function (run) {
 					runner.equal('chyba u prvního anime: nic se nezapisuje',
-						[run.error && run.error.code, run.writes, run.saves, run.error && run.error.added, run.error && run.error.savedTo],
-						['mal-not-found', [], [], 0, null]);
+						[run.error && run.error.code, run.writes, run.saves, run.error && run.error.added, run.error && run.error.savedTo, run.kept],
+						['mal-not-found', [], [], 0, null, []]);
 				});
 			},
 			function () {

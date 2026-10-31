@@ -3,6 +3,7 @@
 Spuštění:  python -m unittest discover -s tools -p "test_anime_proxy.py" -v
 """
 
+import base64
 import gzip
 import http.client
 import json
@@ -335,7 +336,9 @@ class ImageTests(ProxyTestCase):
         self.transport.routes[IMAGE_URL] = (200, {}, WEBP)
         status, _, body = self.post_image({"url": IMAGE_URL, "number": 319})
         self.assertEqual(status, 201)
-        self.assertEqual(json.loads(body), {"ok": True, "number": 319, "bytes": len(WEBP)})
+        # Odpověď nese i uložený obrázek, aby ho stránka ukázala dřív, než bude na webu.
+        self.assertEqual(json.loads(body), {"ok": True, "number": 319, "bytes": len(WEBP), "type": "image/webp",
+                                            "data": base64.b64encode(WEBP).decode("ascii")})
         # Jako skript: data beze změny pod <číslo>.jpg (prohlížeč pozná WEBP podle obsahu).
         with open(os.path.join(self.images, "319.jpg"), "rb") as handle:
             self.assertEqual(handle.read(), WEBP)
@@ -352,7 +355,8 @@ class ImageTests(ProxyTestCase):
 
     def test_number_may_be_a_digit_string(self):
         self.transport.routes[IMAGE_URL] = (200, {}, JPEG)
-        self.assertEqual(self.post_image({"url": IMAGE_URL, "number": "320"})[0], 201)
+        status, _, body = self.post_image({"url": IMAGE_URL, "number": "320"})
+        self.assertEqual((status, json.loads(body)["type"]), (201, "image/jpeg"))
         self.assertTrue(os.path.exists(os.path.join(self.images, "320.jpg")))
 
     def test_existing_file_is_never_overwritten(self):

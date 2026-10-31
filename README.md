@@ -38,7 +38,9 @@ Nová anime pomocný program na konci najednou zapíše do `data/anime.json` (ja
 `git diff` ukáže jen přidaná anime) a jejich obrázky uloží jako `img/anime/N.jpg`.
 Když běh zastaví chyba, zapíšou se anime přidaná do té doby. Uložené úpravy
 v prohlížeči a chyba zápisu se řeší stejně jako u ČSFD hodnocení (viz níže).
-Potřebuje pomocný program verze 6; se starší verzí stránka požádá o jeho restart.
+Nová anime i s obrázky se ukazují hned, i když stránku otevíráte z GitHub Pages,
+kde ještě nejsou (viz Uložení a publikace dat).
+Potřebuje pomocný program verze 7; se starší verzí stránka požádá o jeho restart.
 
 Stránka na GitHub Pages si tyto weby sama stáhnout nemůže (CORS, přihlašovací
 cookie) ani zapisovat soubory, proto potřebuje **pomocný program**, který běží na
@@ -174,6 +176,13 @@ Všechny volby Aktualizovat zapisují výsledky přes pomocný program rovnou do
 Pages se změny objeví až po commitu a pushi `data/anime.json` spolu s novými
 `img/anime/*.jpg`.
 
+Aby nová anime ze Seznamu do té doby nezmizela, drží si je stránka i s obrázky
+v prohlížeči (localStorage `anime-pending-additions`) a při načtení je doplní
+k `data/anime.json`. Jakmile načtený `data/anime.json` dané anime obsahuje, z
+prohlížeče se smaže a obrázek se bere z `img/anime`. Platí to jen pro prohlížeč,
+ve kterém aktualizace proběhla; změněná hodnocení a epizody se na GitHub Pages
+ukážou až po pushi.
+
 Úpravy z edit módu a importu a výsledky, které se do souboru zapsat nepodařilo, se
 ukládají do localStorage prohlížeče a mají přednost před `data/anime.json`. Do
 repozitáře se dostanou takto:
@@ -183,7 +192,8 @@ repozitáře se dostanou takto:
 3. Commitněte ho spolu s novými `img/anime/*.jpg`.
 
 **Obnovit původní data** smaže úpravy uložené v prohlížeči a vrátí stránku
-k obsahu `data/anime.json`; co v souboru není, předtím exportujte. V soukromém
+k obsahu `data/anime.json`; co v souboru není, předtím exportujte. Nová anime,
+která pomocný program do souboru zapsal a web je ještě nemá, zůstanou. V soukromém
 režimu prohlížeče se localStorage nemusí zachovat, před zavřením stránky proto
 data exportujte. Během aktualizace jsou zamčené Upravit, Importovat data a Obnovit
 původní data (Exportovat data zůstává) a prohlížeč při zavírání stránky varuje.
@@ -197,7 +207,8 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
   je bral ze serialy.sx, který teď na sledujserialy.io jen přesměrovává. Obrázek
   dostane `cf_clearance` a User-Agent z nastavení, přihlašovací cookie ne. Ukládá se
   beze změny jako `N.jpg` i ve formátu WEBP, stejně jako ve skriptu. Prohlížeč ho
-  zobrazí podle obsahu.
+  zobrazí podle obsahu. Pomocný program ho navíc vrátí stránce, aby ho ukázala
+  i před nahráním na web.
 - Pomocný program nikdy nepřepíše anime, jehož číslo už v `data/anime.json` je;
   zápis pak odmítne (`item-exists`) a nová anime zůstanou v prohlížeči.
 - Nová anime přijdou na konec aktuálního pořadí. Číslo je největší dosud použité

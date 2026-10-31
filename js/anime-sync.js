@@ -19,6 +19,10 @@
  *    prohlížeče a chyba zápisu se řeší jako u ČSFD hodnocení (viz níže).
  *  - Obrázek se stahuje jako poslední krok položky, aby po chybě nezůstal
  *    soubor, který žádná položka nepoužívá.
+ *  - Web (GitHub Pages) ukáže nová anime a obrázky až po nahrání souborů do
+ *    repozitáře. Pomocník proto vrátí i uložený obrázek a stránka si přidaná
+ *    anime zapsaná do souboru i s obrázky drží v prohlížeči
+ *    (js/anime-data.js keepAdded()), dokud je web nemá.
  *  - Číslo nové položky je nejvyšší dosavadní Number/Image + 1 (Python
  *    počítá `len(AnimeData) + 1 + len(EXCEPTION_ANIME)`, což u dat bez děr
  *    vyjde stejně) a bere v úvahu i obrázky, které už na disku jsou.
@@ -91,11 +95,11 @@ window.AnimeSync = (function () {
 	var SERIAL_SLUG = /^[A-Za-z0-9_.%-]+$/;
 
 	// Nejstarší verze pomocníka, která danou aktualizaci zvládne (zápis do data/anime.json;
-	// Seznam navíc od verze 6 stahuje obrázky ze sledujserialy.io).
+	// Seznam navíc od verze 6 stahuje obrázky ze sledujserialy.io a od verze 7 je vrací stránce).
 	var CSFD_MIN_HELPER_VERSION = 2;
 	var MAL_MIN_HELPER_VERSION = 3;
 	var WATCHED_MIN_HELPER_VERSION = 4;
-	var LIST_MIN_HELPER_VERSION = 6;
+	var LIST_MIN_HELPER_VERSION = 7;
 
 	// Python GetNewFavoriteData() (ř. 1357) - prázdná položka, jejíž pořadí klíčů
 	// určuje pořadí v exportovaných datech.
@@ -706,7 +710,7 @@ window.AnimeSync = (function () {
 	 *
 	 * @param {Object} deps
 	 * @param {Object} deps.proxy - AnimeProxy (health, fetchPage, saveImage, saveAnimeItems)
-	 * @param {Object} deps.data - AnimeData (getItems, addItem, save, hasStoredItems)
+	 * @param {Object} deps.data - AnimeData (getItems, addItem, save, hasStoredItems, setImage, keepAdded)
 	 * @param {function(number)} [deps.onTotal] - počet nových seriálů
 	 * @param {function(number)} [deps.onProgress] - průběh v procentech 0-100
 	 * @param {function(Object, Array)} [deps.onItemAdded] - hotová položka a všechny položky
@@ -761,7 +765,10 @@ window.AnimeSync = (function () {
 				malRating = rating;
 				report(0.8);
 				var number = nextNumber(data.getItems(), imageFloor);
-				return proxy.saveImage(IMAGE_ORIGIN + favorite.Image, number).then(function () {
+				return proxy.saveImage(IMAGE_ORIGIN + favorite.Image, number).then(function (saved) {
+					if (saved && saved.dataUrl) {
+						data.setImage(String(number), favorite.Name, saved.dataUrl);
+					}
 					return number;
 				});
 			}).then(function (number) {
@@ -783,6 +790,9 @@ window.AnimeSync = (function () {
 			}
 			return persistUpdate(data, function () {
 				return proxy.saveAnimeItems(added);
+			}).then(function (saved) {
+				data.keepAdded(added, saved.savedTo === 'file');
+				return saved;
 			});
 		}
 

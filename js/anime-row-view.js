@@ -7,8 +7,9 @@
  * Krok 12 přidal edit mód - editovatelné sloupce (column.editable) se v edit
  * módu vykreslí jako <textarea> místo textu/odkazu (Python SwitchEditMode, ř. 793-808).
  * Krok 20 (bez Python vzoru): obrázek nového anime existuje jen ve složce
- * img/anime, dokud se nenahraje do repozitáře - chybějící obrázek nahradí
- * popisek (anime.row.imageMissing).
+ * img/anime, dokud se nenahraje do repozitáře - do té doby se ukáže obrázek
+ * uložený v prohlížeči (AnimeData.imageSource()), a když ani ten není,
+ * nahradí chybějící obrázek popisek (anime.row.imageMissing).
  *
  * Struktura:
  *   <article class="anime-row" data-number="1">
@@ -42,7 +43,8 @@ window.AnimeRow = (function () {
 		img.decoding = 'async';
 		// Obrázek nového anime (Aktualizovat -> Seznam) vzniká jen ve složce
 		// img/anime, na webu se objeví až po nahrání do repozitáře - do té doby
-		// ukáže místo rozbitého obrázku popisek (web-only).
+		// se vezme z prohlížeče, a když tam není, ukáže se místo rozbitého
+		// obrázku popisek (web-only).
 		img.addEventListener('error', function () {
 			var placeholder = document.createElement('span');
 			placeholder.className = 'anime-row__image-missing';
@@ -54,7 +56,10 @@ window.AnimeRow = (function () {
 				window.I18n.applyStatic(cell);
 			}
 		});
-		img.src = IMAGE_BASE + String(item.Image) + '.jpg';
+		var pending = window.AnimeData && typeof window.AnimeData.imageSource === 'function'
+			? window.AnimeData.imageSource(item)
+			: null;
+		img.src = pending || IMAGE_BASE + String(item.Image) + '.jpg';
 		cell.appendChild(img);
 		return cell;
 	}

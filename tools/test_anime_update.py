@@ -13,6 +13,7 @@ Vyžaduje:  pip install playwright a nainstalovaný Microsoft Edge nebo Google C
            (jinak se testy přeskočí; jiný prohlížeč lze zadat proměnnou ANIME_TEST_BROWSER).
 """
 
+import base64
 import functools
 import http.server
 import json
@@ -38,7 +39,8 @@ sys.path.insert(0, TOOLS_DIR)
 import anime_proxy as proxy  # noqa: E402
 
 COOKIE = "E2E-FAKE-COOKIE"
-JPEG = b"\xff\xd8\xff\xe0" + b"\x00" * 32
+# Skutečný obrázek 1x1 (WEBP jako na sledujserialy.io), aby ho prohlížeč dokázal zobrazit.
+WEBP = base64.b64decode("UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA")
 WINDOWS_EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 
 ITEM_KEYS = ["Number", "FavoriteName", "CsfdID", "MalID", "MalName", "Image", "NameEn", "NameJa",
@@ -202,7 +204,7 @@ class FakeWeb:
         else:
             self.serve(show["mal_search"], mal_search_page(show["mal_id"], show["mal_slug"]))
         self.serve("https://myanimelist.net/anime/" + show["mal_id"], mal_anime_page(show["mal_score"]))
-        self.serve(IMAGE_ORIGIN + show["image"], JPEG)
+        self.serve(IMAGE_ORIGIN + show["image"], WEBP)
 
     def __call__(self, url, headers, timeout, max_bytes):
         with self._lock:
@@ -303,6 +305,8 @@ class UpdateListTests(SiteBrowserCase):
         # Pomocník zapisuje do kopie dat a stránka ji načítá místo data/anime.json repozitáře.
         self.data_file = os.path.join(self.tmp, "anime.json")
         self.write_data_file(SEED_DATA)
+        # S hodnotou stránka dostane tato data místo souboru pomocníka (web bez nahraných změn).
+        self.served_data = None
         self.web = FakeWeb()
         self.web.serve(FAVORITES_URL, favorites_page([
             KNOWN_FAVORITE,
@@ -343,7 +347,8 @@ class UpdateListTests(SiteBrowserCase):
             return handle.read()
 
     def serve_data_file(self, route):
-        route.fulfill(status=200, content_type="application/json; charset=utf-8", body=self.read_data_file())
+        body = self.read_data_file() if self.served_data is None else self.python_json(self.served_data)
+        route.fulfill(status=200, content_type="application/json; charset=utf-8", body=body)
 
     def open_page(self, helper_url, lang="cs", seed=None, stored=True):
         """Otevře stránku; se `stored=False` nemá prohlížeč uložené úpravy a data čte ze souboru."""
@@ -382,6 +387,20 @@ class UpdateListTests(SiteBrowserCase):
 
     def has_stored_items(self, page):
         return page.evaluate("() => localStorage.getItem('anime-data-overrides') !== null")
+
+    def pending(self, page):
+        """Nepublikovaná anime v prohlížeči (js/anime-data.js PENDING_KEY), nebo None."""
+        raw = page.evaluate("() => localStorage.getItem('anime-pending-additions')")
+        return None if raw is None else json.loads(raw)
+
+    def expect_shown_image(self, page, number):
+        """Řádek ukazuje obrázek uložený v prohlížeči a prohlížeč ho dokázal zobrazit."""
+        row = page.locator('.anime-row[data-number="%s"]' % number)
+        row.scroll_into_view_if_needed()
+        image = row.locator("img.anime-row__image")
+        expect(image).to_have_attribute("src", "data:image/webp;base64," + base64.b64encode(WEBP).decode("ascii"))
+        page.wait_for_function("image => image.complete && image.naturalWidth === 1", arg=image.element_handle())
+        expect(row.locator(".anime-row__image-missing")).to_have_count(0)
 
     def unexpected_console_errors(self):
         # 404 na obrázky chybějící v repozitáři je v těchto testech očekávané.
@@ -472,7 +491,7 @@ class UpdateListTests(SiteBrowserCase):
         # Obrázky uložil pomocník pod stejným číslem, jaké má anime.
         self.assertEqual(sorted(os.listdir(self.images_dir)), ["9005.jpg", "9006.jpg"])
         with open(os.path.join(self.images_dir, "9005.jpg"), "rb") as handle:
-            self.assertEqual(handle.read(), JPEG)
+            self.assertEqual(handle.read(), WEBP)
 
         row = page.locator('.anime-row[data-number="9005"]')
         expect(row.locator(".anime-row__cell--NameEn")).to_have_text("New Show A EN")
@@ -482,9 +501,14 @@ class UpdateListTests(SiteBrowserCase):
         expect(row.locator(".anime-row__cell--MalRating")).to_have_text("79%")
         expect(row.locator(".anime-row__cell--MyRating")).to_have_text("?%")
         expect(page.locator('.anime-row[data-number="9006"] .anime-row__cell--State')).to_have_text("DONE")
-        # Obrázek je v repozitáři až po nahrání souboru, do té doby se ukáže popisek.
-        row.scroll_into_view_if_needed()
-        expect(row.locator(".anime-row__image-missing")).to_have_text("Obrázek chybí")
+        # Obrázek je na webu až po nahrání souboru, řádek ukáže ten, který pomocník vrátil.
+        self.expect_shown_image(page, "9005")
+        self.expect_shown_image(page, "9006")
+        # Do nahrání souborů si stránka nová anime drží v prohlížeči i s obrázky.
+        pending = self.pending(page)
+        self.assertEqual(pending["items"], {"9005": saved["9005"], "9006": saved["9006"]})
+        self.assertEqual(sorted(pending["images"]), ["9005", "9006"])
+        self.assertEqual(pending["images"]["9005"]["name"], SHOW_A["name"])
 
         # Pořadí kroků jako ve skriptu; přihlašovací cookie dostala jen stránka účtu (obrázek ne).
         self.assertEqual(self.web.urls, [
@@ -497,11 +521,50 @@ class UpdateListTests(SiteBrowserCase):
         ])
         self.assertEqual([url for url, headers in self.web.calls if "Cookie" in headers], [FAVORITES_URL])
 
-        # Data zapsaná do souboru přežijí znovunačtení stránky.
+        # Data zapsaná do souboru přežijí znovunačtení stránky. Soubor nová anime už má, takže je
+        # stránka z prohlížeče smaže a obrázky čeká v img/anime (tady chybí, proto popisek).
         page.reload()
         expect(page.locator("#anime-list-wrap")).to_be_visible()
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
         self.assertFalse(self.has_stored_items(page))
+        self.assertIsNone(self.pending(page))
+        row = page.locator('.anime-row[data-number="9005"]')
+        row.scroll_into_view_if_needed()
+        expect(row.locator(".anime-row__image-missing")).to_have_text("Obrázek chybí")
+        self.assertEqual(self.page_errors, [])
+        self.assertEqual(self.unexpected_console_errors(), [])
+
+    def test_new_anime_stay_visible_until_the_web_has_them(self):
+        # Web (GitHub Pages) má starou verzi data/anime.json a img/anime, dokud se změny nenahrají.
+        self.served_data = SEED_DATA
+        page = self.open_page(self.start_helper(), stored=False)
+        self.run_list_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo. Celkem 2 nové anime.")
+        self.expect_unlocked(page)
+        saved = json.loads(self.read_data_file())
+
+        for _attempt in range(2):
+            page.reload()
+            expect(page.locator("#anime-list-wrap")).to_be_visible()
+            self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
+            expect(page.locator('.anime-row[data-number="9005"] .anime-row__cell--NameEn')).to_have_text("New Show A EN")
+            self.expect_shown_image(page, "9005")
+            self.expect_shown_image(page, "9006")
+            self.assertFalse(self.has_stored_items(page))
+            self.assertEqual(self.pending(page)["items"], {"9005": saved["9005"], "9006": saved["9006"]})
+
+        # Nová anime jsou v datech, takže je další Seznam nepřidá znovu.
+        self.run_list_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Žádné nové anime.")
+        self.expect_unlocked(page)
+        self.assertEqual(json.loads(self.read_data_file()), saved)
+
+        # Po nahrání na web je soubor má a prohlížeč je zapomene.
+        self.served_data = None
+        page.reload()
+        expect(page.locator("#anime-list-wrap")).to_be_visible()
+        self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
+        self.assertIsNone(self.pending(page))
         self.assertEqual(self.page_errors, [])
         self.assertEqual(self.unexpected_console_errors(), [])
 
@@ -525,6 +588,8 @@ class UpdateListTests(SiteBrowserCase):
         expect(page.locator("#anime-list-wrap")).to_be_visible()
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
         expect(page.locator('.anime-row[data-number="9001"] .anime-row__cell--MyRating')).to_have_text("95%")
+        # Uložené úpravy anime už obsahují, z prohlížeče se berou obrázky.
+        self.expect_shown_image(page, "9005")
 
     def test_list_update_keeps_anime_in_browser_when_data_file_cannot_be_written(self):
         page = self.open_page(self.start_helper(), stored=False)
@@ -540,10 +605,13 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
         self.assertEqual(list(self.stored_items(page)), ["9001", "9002", "9004", "9005", "9006"])
         self.assertEqual(sorted(os.listdir(self.images_dir)), ["9005.jpg", "9006.jpg"])
+        # Anime nejsou v souboru, drží je uložené úpravy; z nepublikovaných jsou jen obrázky.
+        pending = self.pending(page)
+        self.assertEqual((pending["items"], sorted(pending["images"])), ({}, ["9005", "9006"]))
 
     def test_list_update_requires_helper_that_can_write_data_file(self):
-        # Pomocník verze 5 by obrázky stahoval ze serialy.sx.
-        with mock.patch.object(proxy, "VERSION", 5):
+        # Pomocník verze 6 nevrací uložený obrázek (verze 5 by ho stahovala ze serialy.sx).
+        with mock.patch.object(proxy, "VERSION", 6):
             page = self.open_page(self.start_helper(), stored=False)
             self.run_list_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(

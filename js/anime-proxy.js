@@ -151,10 +151,24 @@ window.AnimeProxy = (function () {
 		});
 	}
 
+	var IMAGE_TYPE = /^image\/(jpeg|png|gif|webp)$/;
+	var BASE64 = /^[A-Za-z0-9+\/]+={0,2}$/;
+
+	// Uložený obrázek z odpovědi pomocníka jako data: URL, nebo null bez platných dat.
+	function imageDataUrl(payload) {
+		if (typeof payload.type !== 'string' || !IMAGE_TYPE.test(payload.type)
+			|| typeof payload.data !== 'string' || !BASE64.test(payload.data)) {
+			return null;
+		}
+		return 'data:' + payload.type + ';base64,' + payload.data;
+	}
+
 	/**
 	 * Nechá pomocníka stáhnout obrázek a uložit ho jako img/anime/<number>.jpg.
 	 * Existující soubor se nikdy nepřepíše (chyba `image-exists`).
-	 * @returns {Promise<{number: number, bytes: number}>}
+	 * `dataUrl` je uložený obrázek, aby ho stránka ukázala, i když ho web
+	 * ještě nemá (null, když ho odpověď nenese).
+	 * @returns {Promise<{number: number, bytes: number, dataUrl: ?string}>}
 	 */
 	function saveImage(url, number) {
 		return call('/images', {
@@ -178,7 +192,7 @@ window.AnimeProxy = (function () {
 			if (!payload || payload.ok !== true) {
 				throw createError('unexpected-response', 'images');
 			}
-			return { number: payload.number, bytes: payload.bytes };
+			return { number: payload.number, bytes: payload.bytes, dataUrl: imageDataUrl(payload) };
 		});
 	}
 
