@@ -5455,5 +5455,22 @@
         "CsfdRating": "52%",
         "MalRating": "77%",
         "MyRating": "?%"
+    },
+    "323": {
+        "Number": "323",
+        "FavoriteName": "Tensei Goblin dakedo Shitsumon Aru",
+        "CsfdID": "1897405",
+        "MalID": "63712",
+        "MalName": "Tensei Goblin dakedo Shitsumon Aru",
+        "Image": "323",
+        "NameEn": "So What's Wrong with Getting Reborn as a Goblin?",
+        "NameJa": "転生ゴブリンだけど質問ある？",
+        "Genres": "Animovaný\nFantasy\nKomedie\nDobrodružný\nAkční\nDrama\nRomantický",
+        "Description": "None",
+        "Date": "31.10.2026",
+        "State": "DONE",
+        "CsfdRating": "?%",
+        "MalRating": "66%",
+        "MyRating": "?%"
     }
 }
