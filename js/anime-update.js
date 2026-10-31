@@ -11,8 +11,11 @@
  * Zapojené jsou "Zhlédnuté epizody" (Python UpdateWatched), "ČSFD
  * hodnocení" (Python UpdateCSFD), "MAL hodnocení" (Python UpdateMAL) a
  * "Seznam" (js/anime-sync.js, Python UpdateAnimeList); "Všechno" je vidět,
- * ale neaktivní. Anime přeskočená při aktualizaci hodnocení nebo zhlédnutých
- * epizod (bez Python vzoru) a anime, jejichž hodnota se nezapsala do
+ * ale neaktivní. Nové anime (Seznam) i nová hodnocení a zhlédnuté epizody se
+ * na stránce ukážou hned u každého anime, ne až po skončení celé aktualizace
+ * (Python překreslí řádky až v Update*Done()); po dokončení se seznam ještě
+ * jednou celý překreslí. Anime přeskočená při aktualizaci hodnocení nebo
+ * zhlédnutých epizod (bez Python vzoru) a anime, jejichž hodnota se nezapsala do
  * data/anime.json, se vypíšou v liště a souhrn zůstane vidět až do další
  * aktualizace.
  *
@@ -320,10 +323,16 @@ window.AnimeUpdate = (function () {
 			onProgress: function (percent) {
 				progress = { action: action, kind: 'progress', percent: percent, count: 0 };
 				renderInfo();
+			},
+			// Řádek anime se překreslí hned po zjištění jeho hodnoty, ne až po zápisu do souboru.
+			onItemUpdated: function (item, field) {
+				if (typeof options.onItemUpdated === 'function') {
+					options.onItemUpdated(item, field);
+				}
 			}
 		}).then(function (result) {
 			// Python po dokončení jen přepíše hodnoty v řádcích, pořadí se nemění.
-			options.onItemsChanged(options.data.getItems());
+			renderAllItems();
 			if (result.failures.length > 0 || result.notInFile.length > 0) {
 				if (window.console && typeof window.console.warn === 'function') {
 					window.console.warn(label + ' not updated for:', result.failures, 'not in data file:', result.notInFile);
@@ -334,11 +343,22 @@ window.AnimeUpdate = (function () {
 			finish(result.total);
 		}, function (error) {
 			if (error && error.updated > 0) {
-				options.onItemsChanged(options.data.getItems());
+				renderAllItems();
 			}
 			var keptKey = keptBase + (error && error.savedTo === 'file' ? 'File' : 'Browser');
 			fail(error, (error && error.updated) || 0, keptKey);
 		});
+	}
+
+	// Překreslí celý seznam; chyba vykreslení nesmí nechat ovládání zamčené.
+	function renderAllItems() {
+		try {
+			options.onItemsChanged(options.data.getItems());
+		} catch (error) {
+			if (window.console && typeof window.console.error === 'function') {
+				window.console.error('Anime list render failed:', error);
+			}
+		}
 	}
 
 	/** Aktualizovat -> Zhlédnuté epizody. */
@@ -385,7 +405,10 @@ window.AnimeUpdate = (function () {
 	/**
 	 * @param {Object} opts
 	 * @param {Object} opts.data - AnimeData
-	 * @param {function(Array)} opts.onItemsChanged - zavolá se po každém přidaném anime
+	 * @param {function(Array)} opts.onItemsChanged - překreslí seznam: po každém
+	 *     přidaném anime (Seznam) a po dokončení ostatních aktualizací
+	 * @param {function(Object, string)} [opts.onItemUpdated] - překreslí jednu
+	 *     hodnotu (položka, název pole) hned po jejím zjištění (hodnocení, zhlédnuté epizody)
 	 * @param {number} [opts.doneDelayMs] - jak dlouho zůstane vidět výsledek (výchozí 2000)
 	 * @returns {boolean} false, pokud stránka nemá potřebné prvky
 	 */

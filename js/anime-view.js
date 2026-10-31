@@ -117,9 +117,68 @@ window.AnimeView = (function () {
 		}
 	}
 
+	/**
+	 * Překreslí jednu buňku už vykresleného řádku, aniž by se měnily ostatní
+	 * (obrázky se znovu nenačítají, skrytí hledáním zůstane). Bez Python
+	 * vzoru - Python řádky překreslí až po skončení aktualizace.
+	 * @param {number} index - pozice položky v seznamu (rychlé hledání řádku)
+	 * @param {Object} item - záznam z data/anime.json
+	 * @param {string} key - klíč sloupce (např. 'State', 'CsfdRating')
+	 * @param {boolean} [editing] - edit mód
+	 * @returns {boolean} false, když řádek nebo sloupec na stránce není
+	 */
+	function updateCell(index, item, key, editing) {
+		var host = document.getElementById('anime-list');
+		var columns = window.AnimeColumns && window.AnimeColumns.COLUMNS;
+		if (!host || !item || !columns || !window.AnimeRow || typeof window.AnimeRow.createCell !== 'function') {
+			return false;
+		}
+		var column = null;
+		columns.forEach(function (col) {
+			if (col.key === key) {
+				column = col;
+			}
+		});
+		if (!column) {
+			return false;
+		}
+		var number = String(item.Number);
+		var row = index >= 0 ? host.children[index] : null;
+		if (!row || row.getAttribute('data-number') !== number) {
+			row = null;
+			for (var i = 0; i < host.children.length; i++) {
+				if (host.children[i].getAttribute('data-number') === number) {
+					row = host.children[i];
+					break;
+				}
+			}
+		}
+		if (!row) {
+			return false;
+		}
+		var className = 'anime-row__cell--' + key;
+		var old = null;
+		for (var j = 0; j < row.children.length; j++) {
+			if (row.children[j].classList.contains(className)) {
+				old = row.children[j];
+				break;
+			}
+		}
+		if (!old) {
+			return false;
+		}
+		var cell = window.AnimeRow.createCell(column, item, editing);
+		row.replaceChild(cell, old);
+		if (window.I18n && typeof window.I18n.applyStatic === 'function') {
+			window.I18n.applyStatic(cell);
+		}
+		return true;
+	}
+
 	return {
 		renderHeader: renderHeader,
 		renderList: renderList,
+		updateCell: updateCell,
 		showList: showList
 	};
 })();

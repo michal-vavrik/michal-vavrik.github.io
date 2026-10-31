@@ -27,8 +27,9 @@
  * editovatelných polích (js/anime-row-view.js) a aria-invalid na neplatných
  * hodnotách po kliknutí na ULOŽIT.
  * Krok 20: tlačítko AKTUALIZOVAT s podtlačítky (js/anime-update.js, mirror
- * Python aUpdate*PBClicked()) - každé nově přidané anime se hned vykreslí
- * a během aktualizace je zamčené řazení hlavičky.
+ * Python aUpdate*PBClicked()) - každé nově přidané anime, nové hodnocení
+ * i zhlédnutá epizoda se hned vykreslí a během aktualizace je zamčené
+ * řazení hlavičky.
  */
 (function () {
 	'use strict';
@@ -246,6 +247,12 @@
 						applySearch();
 					}
 					setStatus('loaded', items.length);
+				},
+				// Nové hodnocení nebo zhlédnutá epizoda se ukáže v řádku hned po zjištění.
+				onItemUpdated: function (item, field) {
+					if (view && typeof view.updateCell === 'function') {
+						view.updateCell(data.getItems().indexOf(item), item, field, editMode);
+					}
 				}
 			});
 		}

@@ -142,6 +142,16 @@ window.AnimeRow = (function () {
 	}
 
 	/**
+	 * Vytvoří buňku jednoho sloupce (obrázek nebo text/odkaz/pole).
+	 * @param {Object} column - sloupec z window.AnimeColumns.COLUMNS
+	 * @param {Object} item - záznam z data/anime.json
+	 * @param {boolean} [editing] - zda vykreslit editovatelný sloupec jako <textarea>
+	 */
+	function createCell(column, item, editing) {
+		return column.key === 'Image' ? buildImageCell(item) : buildTextCell(column, item, editing);
+	}
+
+	/**
 	 * Vytvoří DOM řádek pro jedno anime.
 	 * @param {Object} item - záznam z data/anime.json
 	 * @param {number} index - pozice v seznamu (pro zebra stripe, Python ř. 770-771)
@@ -162,17 +172,14 @@ window.AnimeRow = (function () {
 		}
 
 		columns.forEach(function (col) {
-			if (col.key === 'Image') {
-				el.appendChild(buildImageCell(item));
-			} else {
-				el.appendChild(buildTextCell(col, item, editing));
-			}
+			el.appendChild(createCell(col, item, editing));
 		});
 
 		return el;
 	}
 
 	return {
-		create: create
+		create: create,
+		createCell: createCell
 	};
 })();

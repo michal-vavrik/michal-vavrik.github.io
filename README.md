@@ -109,7 +109,8 @@ povolené weby skrývá parametry dotazu. Výpis tedy můžete celý poslat k ro
 Projde všechna anime v seznamu (i DROPPED a DONE, funkce `UpdateCSFD` ze skriptu),
 načte jejich stránku na ČSFD podle `CsfdID` a přepíše `CsfdRating`. Anime se
 zpracovávají jedno po druhém (u ~300 anime to trvá i několik minut), průběh se ukazuje
-pod tlačítky a pořadí řádků se nemění. ČSFD nepotřebuje cookie ani řešení Cloudflare,
+pod tlačítky a pořadí řádků se nemění. Nové hodnocení se v řádku anime ukáže hned po
+zjištění (skript řádky překreslí až na konci). ČSFD nepotřebuje cookie ani řešení Cloudflare,
 stačí spuštěný pomocný program.
 
 Po zjištění všech hodnocení je pomocný program najednou zapíše přímo do
@@ -137,9 +138,10 @@ než tato změna zápis neumí; stránka pak požádá o jeho restart.
 Funguje stejně jako ČSFD hodnocení (funkce `UpdateMAL` ze skriptu): projde všechna
 anime, načte jejich stránku na MyAnimeList podle `MalID`, převede skóre na procenta
 (`7.65` → `76%`, zaokrouhlení jako `round` v Pythonu) a po zjištění všech je pomocný
-program najednou zapíše do `data/anime.json`, kde změní jen `MalRating`. Přeskočení
-anime při chybě, výpis anime mimo soubor i chování při chybě zápisu jsou stejné
-jako u ČSFD. MyAnimeList nepotřebuje cookie.
+program najednou zapíše do `data/anime.json`, kde změní jen `MalRating`. Zobrazení
+hodnocení v řádku hned po zjištění, přeskočení anime při chybě, výpis anime mimo
+soubor i chování při chybě zápisu jsou stejné jako u ČSFD. MyAnimeList nepotřebuje
+cookie.
 
 - Anime s `MalID` `0` (na MyAnimeList není) dostane `?%` bez stahování, jako ve
   skriptu.
@@ -160,6 +162,10 @@ funkce `UpdateWatched` ze skriptu. Stejně jako Seznam potřebuje přihlašovac�
   je řada a epizoda z odkazu (`S02E07`); je-li nezhlédnutá jiná řada, je to tato
   řada bez epizody (`S03E--`). Když jsou všechny řady zhlédnuté nebo stránka žádné
   řady nemá, stav je `DONE` (jako ve skriptu).
+- Zjištěný stav se v řádku anime ukáže hned (stejně jako hodnocení), ne až po
+  zpracování všech anime. Průběh u zhlédnutých epizod počítá jako skript už
+  zahájené anime, takže „100.00% Aktualizuji…“ znamená, že se ještě zpracovává
+  poslední anime a zapisuje soubor; hotovo je až při „100.00% Hotovo“.
 - Po zpracování všech anime pomocný program zapíše zjištěné stavy najednou do
   `data/anime.json` (změní jen `State`). Uložené úpravy v prohlížeči, anime mimo
   soubor a chyba zápisu se řeší stejně jako u ČSFD hodnocení.

@@ -856,6 +856,40 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.csfd_cells(page), ["81%", "70%", "?%"])
         self.assertEqual(self.unexpected_console_errors(), [])
 
+    def test_csfd_update_shows_each_rating_in_row_immediately_and_keeps_search(self):
+        self.serve_rating("9001", "96 %")
+        self.serve_rating("9002", "45%")
+        self.serve_rating("9004", "81%")
+        self.web.hold_prefix = CSFD_FILM_PREFIX + "9004"
+        page = self.open_page(self.start_helper(proxy.Config()), stored=False)
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        page.locator("#anime-search").fill("9001")
+        rows = page.locator("#anime-list .anime-row")
+        expect(rows.nth(1)).to_be_hidden()
+        cells = page.locator("#anime-list .anime-row__cell--CsfdRating")
+
+        self.run_csfd_update(page)
+        self.assertTrue(self.web.reached.wait(10), "aktualizace se nedostala k poslednímu anime")
+        # Hodnocení i jeho barva se změní hned, hledání dál skrývá ostatní řádky.
+        expect(cells).to_have_text(["96%", "45%", "70%"])
+        expect(cells.nth(0)).to_have_class(re.compile(r"\banime-row__rating--ge95\b"))
+        expect(cells.nth(1)).to_have_class(re.compile(r"\banime-row__rating--lt50\b"))
+        expect(rows.nth(0)).to_be_visible()
+        expect(rows.nth(1)).to_be_hidden()
+        expect(rows.nth(2)).to_be_hidden()
+        expect(page.locator("#anime-update-toggle")).to_be_disabled()
+
+        self.web.release.set()
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+        expect(cells).to_have_text(["96%", "45%", "81%"])
+        expect(rows.nth(0)).to_be_visible()
+        expect(rows.nth(1)).to_be_hidden()
+        expect(rows.nth(2)).to_be_hidden()
+        self.assertEqual(self.read_data_file(),
+                         self.python_json(self.expected_data({"9001": "96%", "9002": "45%", "9004": "81%"})))
+        self.assertEqual(self.unexpected_console_errors(), [])
+
     def test_csfd_update_with_browser_edits_writes_file_and_browser(self):
         self.serve_rating("9001", "81%")
         self.serve_rating("9002", "70%")
@@ -1179,6 +1213,38 @@ class UpdateListTests(SiteBrowserCase):
         page.reload()
         expect(page.locator("#anime-list .anime-row")).to_have_count(3)
         self.assertEqual(self.state_cells(page), ["DONE", "S02E--", "DROPPED"])
+        self.assertEqual(self.unexpected_console_errors(), [])
+
+    def test_watched_update_shows_each_state_in_row_immediately(self):
+        seed = self.with_states({"9001": "S01E03", "9002": "S01E01", "9004": "S01E01"})
+        self.write_data_file(seed)
+        before = self.read_data_file()
+        self.serve_favorites(watched_favorite(9001, True), watched_favorite(9002, False, "s01e12"),
+                             watched_favorite(9004, False, "s02e07"))
+        self.web.serve(SERIAL_PREFIX + "known-9002", serial_page([("1", "Videné"), ("2", "Označiť")]))
+        self.web.serve(SERIAL_PREFIX + "known-9004", serial_page([("1", "Videné"), ("2", "Označiť")]))
+        self.web.hold_prefix = SERIAL_PREFIX + "known-9004"
+        page = self.open_page(self.start_helper(), stored=False)
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        page.evaluate("() => document.querySelectorAll('#anime-list .anime-row').forEach(row => { row.__live = true; })")
+
+        self.run_watched_update(page)
+        self.assertTrue(self.web.reached.wait(10), "aktualizace se nedostala k poslednímu seriálu")
+        # Zjištěné stavy jsou v řádcích ještě před koncem aktualizace a zápisem do souboru.
+        expect(page.locator("#anime-list .anime-row__cell--State")).to_have_text(["DONE", "S02E--", "S01E01"])
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Aktualizuji zhlédnuté epizody")
+        expect(page.locator("#anime-update-toggle")).to_be_disabled()
+        self.assertEqual(self.read_data_file(), before)
+        # Mění se jen buňka stavu, řádky (a jejich obrázky) zůstanou.
+        self.assertTrue(page.evaluate(
+            "() => [...document.querySelectorAll('#anime-list .anime-row')].every(row => row.__live === true)"))
+
+        self.web.release.set()
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
+        self.expect_unlocked(page)
+        self.assertEqual(self.state_cells(page), ["DONE", "S02E--", "S02E07"])
+        self.assertEqual(self.read_data_file(),
+                         self.python_json(self.with_states({"9001": "DONE", "9002": "S02E--", "9004": "S02E07"}, seed)))
         self.assertEqual(self.unexpected_console_errors(), [])
 
     def test_watched_update_skips_failing_anime_and_lists_them(self):

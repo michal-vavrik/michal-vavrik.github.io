@@ -1193,6 +1193,8 @@ window.AnimeSyncTests = (function () {
 		var calls = [];
 		var saves = [];
 		var writes = [];
+		// [Number, pole, hodnota, počet stažených stránek v tu chvíli] - překreslení řádku během aktualizace.
+		var rowUpdates = [];
 		var items = setup.items === null ? null : (setup.items || ratingItems(3));
 		var proxy = {
 			health: function () {
@@ -1247,11 +1249,17 @@ window.AnimeSyncTests = (function () {
 		return kind.update({
 			proxy: proxy,
 			data: data,
-			onProgress: function (percent) { events.push('progress:' + percent.toFixed(2)); }
+			onProgress: function (percent) { events.push('progress:' + percent.toFixed(2)); },
+			onItemUpdated: function (item, field) {
+				rowUpdates.push([String(item.Number), field, item[field], calls.length]);
+				if (setup.rowUpdateError) {
+					throw setup.rowUpdateError;
+				}
+			}
 		}).then(function (result) {
-			return { result: result, error: null, events: events, calls: calls, saves: saves, writes: writes, items: items };
+			return { result: result, error: null, events: events, calls: calls, saves: saves, writes: writes, items: items, rowUpdates: rowUpdates };
 		}, function (error) {
-			return { result: null, error: error, events: events, calls: calls, saves: saves, writes: writes, items: items };
+			return { result: null, error: error, events: events, calls: calls, saves: saves, writes: writes, items: items, rowUpdates: rowUpdates };
 		});
 	}
 
@@ -1276,10 +1284,23 @@ window.AnimeSyncTests = (function () {
 					runner.equal('ČSFD: průběh jako Python (100 * index / počet) a jeden zápis do souboru na konci', run.events,
 						['health', 'progress:0.00', 'progress:33.33', 'progress:66.67', 'write']);
 					runner.equal('ČSFD: nové hodnoty', ratingsOf(run.items), ['81%', '50%', '?%']);
+					runner.equal('ČSFD: řádek se překreslí hned po zjištění hodnocení, před stažením dalšího', run.rowUpdates,
+						[['1', 'CsfdRating', '81%', 1], ['2', 'CsfdRating', '50%', 2], ['3', 'CsfdRating', '?%', 3]]);
 					runner.equal('ČSFD: do souboru jdou všechna zjištěná hodnocení', run.writes, [{ 1: '81%', 2: '50%', 3: '?%' }]);
 					runner.equal('ČSFD: bez uložených úprav se do prohlížeče neukládá', run.saves, []);
 					runner.equal('ČSFD: výsledek', run.result,
 						{ total: 3, updated: 3, changed: 2, failures: [], savedTo: 'file', notInFile: [] });
+				});
+			},
+			function () {
+				var routes = {};
+				routes[filmUrl(101)] = ratingPage('81%');
+				routes[filmUrl(102)] = ratingPage('82%');
+				routes[filmUrl(103)] = ratingPage('83%');
+				return runCsfdUpdate({ routes: routes, rowUpdateError: new Error('render failed') }).then(function (run) {
+					runner.equal('ČSFD: chyba překreslení řádku aktualizaci nezastaví',
+						[run.error && run.error.message, run.calls.length, run.rowUpdates.length, run.writes, run.result && run.result.updated],
+						[null, 3, 3, [{ 1: '81%', 2: '82%', 3: '83%' }], 3]);
 				});
 			},
 			function () {
@@ -1474,6 +1495,8 @@ window.AnimeSyncTests = (function () {
 						['health', 'progress:0.00', 'progress:25.00', 'progress:50.00', 'progress:75.00', 'write']);
 					runner.equal('MAL: nové hodnoty (MalID 0 i N/A mají ?%)', ratingsOf(run.items, 'MalRating'), ['76%', '?%', '?%', '60%']);
 					runner.equal('MAL: ČSFD hodnocení zůstane', ratingsOf(run.items), ['50%', '50%', '50%', '50%']);
+					runner.equal('MAL: řádek se překreslí hned po zjištění hodnocení', run.rowUpdates,
+						[['1', 'MalRating', '76%', 1], ['2', 'MalRating', '?%', 1], ['3', 'MalRating', '?%', 2], ['4', 'MalRating', '60%', 3]]);
 					runner.equal('MAL: do souboru jdou všechna zjištěná hodnocení', run.writes, [{ 1: '76%', 2: '?%', 3: '?%', 4: '60%' }]);
 					runner.equal('MAL: bez uložených úprav se do prohlížeče neukládá', run.saves, []);
 					runner.equal('MAL: výsledek', run.result,
@@ -1622,6 +1645,11 @@ window.AnimeSyncTests = (function () {
 							'progress:66.67', 'progress:77.78', 'progress:88.89', 'progress:100.00', 'write']);
 					runner.equal('Zhlédnuté: nové stavy (mimo oblíbené a DROPPED beze změny)', statesOf(run.items),
 						['DONE', 'S02E05', 'S02E01', 'DROPPED', 'S02E--', 'S02E--', 'DONE', 'DONE', 'DONE']);
+					// Číslo na konci: kolik stránek bylo staženo, když se řádek překresloval (tedy hned, ne až na konci).
+					runner.equal('Zhlédnuté: řádek se překreslí hned po zjištění stavu, jen u zjištěných', run.rowUpdates, [
+						['1', 'State', 'DONE', 1], ['2', 'State', 'S02E05', 2], ['5', 'State', 'S02E--', 3], ['6', 'State', 'S02E--', 4],
+						['7', 'State', 'DONE', 5], ['8', 'State', 'DONE', 6], ['9', 'State', 'DONE', 6]
+					]);
 					runner.equal('Zhlédnuté: hodnocení zůstanou', run.items.map(function (item) { return item.CsfdRating + item.MalRating; }),
 						['50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%']);
 					runner.equal('Zhlédnuté: do souboru jdou jen zjištěné stavy', run.writes,
@@ -1675,6 +1703,7 @@ window.AnimeSyncTests = (function () {
 					]);
 					runner.equal('Zhlédnuté přeskočení: selhaná anime si nechají původní stav', statesOf(run.items),
 						['S01E01', 'S01E01', 'S01E01', 'S01E01', 'S01E01', 'S01E01', 'S01E02']);
+					runner.equal('Zhlédnuté přeskočení: překreslí se jen zjištěný stav', run.rowUpdates, [['7', 'State', 'S01E02', 6]]);
 					runner.equal('Zhlédnuté přeskočení: do souboru jen zjištěné', [run.writes, run.result && run.result.updated], [[{ 7: 'S01E02' }], 1]);
 				});
 			},

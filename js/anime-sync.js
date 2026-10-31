@@ -858,6 +858,9 @@ window.AnimeSync = (function () {
 	 * @param {Object} deps.proxy - AnimeProxy (health, fetchPage, saveCsfdRatings)
 	 * @param {Object} deps.data - AnimeData (getItems, save, hasStoredItems)
 	 * @param {function(number)} [deps.onProgress] - průběh v procentech 0-100
+	 * @param {function(Object, string)} [deps.onItemUpdated] - zavolá se hned po
+	 *     zjištění hodnoty jednoho anime (položka, název pole), aby šel řádek
+	 *     překreslit ještě před koncem aktualizace; jeho chyba aktualizaci nezastaví
 	 * @returns {Promise<{total: number, updated: number, changed: number,
 	 *     failures: Array<{name: string, number: string, code: string, detail: string}>,
 	 *     savedTo: ?string, notInFile: Array<{name: string, number: string}>}>}
@@ -903,6 +906,7 @@ window.AnimeSync = (function () {
 		var proxy = deps.proxy;
 		var data = deps.data;
 		var onProgress = deps.onProgress || noop;
+		var onItemUpdated = deps.onItemUpdated || noop;
 		var progress = source.progress || function (index, total) {
 			return 100 * index / total;
 		};
@@ -942,6 +946,14 @@ window.AnimeSync = (function () {
 				values[String(item.Number)] = value;
 				names[String(item.Number)] = itemName(item);
 				updated += 1;
+				// Chyba při překreslení řádku nesmí zastavit aktualizaci (hodnota je už zjištěná).
+				try {
+					onItemUpdated(item, source.field);
+				} catch (renderError) {
+					if (window.console && typeof window.console.error === 'function') {
+						window.console.error('Anime row update failed:', renderError);
+					}
+				}
 			}, function (error) {
 				error.favorite = itemName(item);
 				if (!isSkippable(error)) {
