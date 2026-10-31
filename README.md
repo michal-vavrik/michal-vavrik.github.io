@@ -38,7 +38,7 @@ Nová anime pomocný program na konci najednou zapíše do `data/anime.json` (ja
 `git diff` ukáže jen přidaná anime) a jejich obrázky uloží jako `img/anime/N.jpg`.
 Když běh zastaví chyba, zapíšou se anime přidaná do té doby. Uložené úpravy
 v prohlížeči a chyba zápisu se řeší stejně jako u ČSFD hodnocení (viz níže).
-Potřebuje pomocný program verze 5; se starší verzí stránka požádá o jeho restart.
+Potřebuje pomocný program verze 6; se starší verzí stránka požádá o jeho restart.
 
 Stránka na GitHub Pages si tyto weby sama stáhnout nemůže (CORS, přihlašovací
 cookie) ani zapisovat soubory, proto potřebuje **pomocný program**, který běží na
@@ -88,9 +88,9 @@ i s vyplněnými hodnotami, povolení vypršelo nebo pomocný program běží v 
 než prohlížeč.
 
 **Diagnostika.** `python tools/anime_proxy.py --check` zkusí sledujserialy.io (včetně
-platnosti cookie), ČSFD, MyAnimeList a serialy.sx (obrázky) a vypíše stav každého
-z nich. Ve firemní síti (např. Zscaler) mohou být weby blokované nebo přesměrované
-(`redirect-blocked`, chyba TLS), použijte jinou síť.
+platnosti cookie), ČSFD a MyAnimeList a vypíše stav každého z nich. Ve firemní síti
+(např. Zscaler) mohou být weby blokované nebo přesměrované (`redirect-blocked`,
+chyba TLS), použijte jinou síť.
 
 Podrobnější výpis dá `python tools/anime_proxy.py --diag ["název anime" ...]`.
 U stejných stránek ukáže každý krok přesměrování (adresa, HTTP stav, server,
@@ -193,6 +193,11 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
 - Anime se přidá až celé hotové, obrázek se stahuje jako poslední krok. Chyba běh
   zastaví a zobrazí se (včetně názvu anime); anime přidaná do té doby se zapíšou do
   `data/anime.json` (skript by při chybě nezapsal nic).
+- Obrázky se stahují rovnou ze sledujserialy.io (jen ze složky `/upload/`). Skript
+  je bral ze serialy.sx, který teď na sledujserialy.io jen přesměrovává. Obrázek
+  dostane `cf_clearance` a User-Agent z nastavení, přihlašovací cookie ne. Ukládá se
+  beze změny jako `N.jpg` i ve formátu WEBP, stejně jako ve skriptu. Prohlížeč ho
+  zobrazí podle obsahu.
 - Pomocný program nikdy nepřepíše anime, jehož číslo už v `data/anime.json` je;
   zápis pak odmítne (`item-exists`) a nová anime zůstanou v prohlížeči.
 - Nová anime přijdou na konec aktuálního pořadí. Číslo je největší dosud použité
@@ -223,12 +228,12 @@ původní data (Exportovat data zůstává) a prohlížeč při zavírání str�
 - **Pomocný program je zastaralý:** ukončete ho (Ctrl+C) a spusťte znovu, aby se
   načetla jeho nová verze.
 - **Web vyžaduje ověření Cloudflare:** viz část o Cloudflare výše.
-- **Požadavek byl přesměrován na nepovolenou adresu:** firemní filtr (např. Zscaler)
-  blokuje obrázkový server serialy.sx. Nové anime se v takové síti nedokončí ani
-  po vyřešení Cloudflare, protože se nepodaří stáhnout jeho obrázek. Pomocný program
-  spusťte na zařízení mimo firemní síť a VPN. Pokud se chyba objevuje i mimo firemní
-  síť, spusťte `python tools/anime_proxy.py --diag "název anime"` a podívejte se,
-  kam přesměrování vede.
+- **Požadavek byl přesměrován na adresu, kterou pomocný program nepovoluje:** firemní
+  filtr (např. Zscaler) přesměrovává blokované weby na svou stránku. Pomocný program
+  pak spusťte na zařízení mimo firemní síť a VPN. Pokud se chyba objevuje i mimo
+  firemní síť, web nejspíš změnil adresy (tak se ze serialy.sx stal
+  sledujserialy.io). `python tools/anime_proxy.py --diag "název anime"` ukáže, kam
+  přesměrování vede.
 - **Anime se na MyAnimeList nepodařilo najít:** MAL nenajde názvy s českou
   diakritikou (např. „Naruto: šippúden“). Protože běh u chyby končí, přidejte takové
   anime ručně (Exportovat data, doplnit položku v JSONu, Importovat data) a spusťte

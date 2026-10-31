@@ -2,7 +2,7 @@
 (anime.html, js/anime-*.js a tools/anime_proxy.py).
 
 Stránku řídí Playwright, pomocník běží ve stejném procesu a weby, ze kterých
-stahuje (sledujserialy.io, ČSFD, MyAnimeList, serialy.sx), nahrazuje atrapa -
+stahuje (sledujserialy.io, ČSFD, MyAnimeList), nahrazuje atrapa -
 testy nepoužívají síť ani přihlašovací cookie. Pomocník zapisuje do dočasné
 kopie data/anime.json, kterou stránka načítá místo souboru v repozitáři.
 Třída BrowserUnitTests navíc spouští tools/anime-sync-tests.html (testy
@@ -49,7 +49,7 @@ SEED_NUMBERS = (9001, 9002, 9004)
 
 FAVORITES_URL = "https://sledujserialy.io/ucet/"
 SERIAL_PREFIX = "https://sledujserialy.io/serial/"
-IMAGE_ORIGIN = "https://serialy.sx"
+IMAGE_ORIGIN = "https://sledujserialy.io"
 CSFD_SEARCH_PREFIX = "https://www.csfd.cz/hledat/"
 CSFD_FILM_PREFIX = "https://www.csfd.cz/film/"
 MAL_ANIME_PREFIX = "https://myanimelist.net/anime/"
@@ -486,7 +486,7 @@ class UpdateListTests(SiteBrowserCase):
         row.scroll_into_view_if_needed()
         expect(row.locator(".anime-row__image-missing")).to_have_text("Obrázek chybí")
 
-        # Pořadí kroků jako ve skriptu; cookie dostal jen sledujserialy.io.
+        # Pořadí kroků jako ve skriptu; přihlašovací cookie dostala jen stránka účtu (obrázek ne).
         self.assertEqual(self.web.urls, [
             FAVORITES_URL,
             SHOW_A["csfd_search"], "https://www.csfd.cz/film/111111",
@@ -542,11 +542,12 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(sorted(os.listdir(self.images_dir)), ["9005.jpg", "9006.jpg"])
 
     def test_list_update_requires_helper_that_can_write_data_file(self):
-        with mock.patch.object(proxy, "VERSION", 4):
+        # Pomocník verze 5 by obrázky stahoval ze serialy.sx.
+        with mock.patch.object(proxy, "VERSION", 5):
             page = self.open_page(self.start_helper(), stored=False)
             self.run_list_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
-                "Pomocný program je zastaralý a výsledek této aktualizace neumí zapsat do data/anime.json. "
+                "Pomocný program je zastaralý a tuto aktualizaci neumí provést. "
                 "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
         self.expect_unlocked(page)
 
@@ -833,7 +834,7 @@ class UpdateListTests(SiteBrowserCase):
             page = self.open_page(self.start_helper(), stored=False)
             self.run_csfd_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
-                "Pomocný program je zastaralý a výsledek této aktualizace neumí zapsat do data/anime.json. "
+                "Pomocný program je zastaralý a tuto aktualizaci neumí provést. "
                 "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
         self.expect_unlocked(page)
 
@@ -1004,7 +1005,7 @@ class UpdateListTests(SiteBrowserCase):
             page = self.open_page(self.start_helper(), stored=False)
             self.run_mal_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
-                "Pomocný program je zastaralý a výsledek této aktualizace neumí zapsat do data/anime.json. "
+                "Pomocný program je zastaralý a tuto aktualizaci neumí provést. "
                 "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
         self.expect_unlocked(page)
         self.assertEqual(self.web.urls, [])
@@ -1170,7 +1171,7 @@ class UpdateListTests(SiteBrowserCase):
             page = self.open_page(self.start_helper(), stored=False)
             self.run_watched_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
-                "Pomocný program je zastaralý a výsledek této aktualizace neumí zapsat do data/anime.json. "
+                "Pomocný program je zastaralý a tuto aktualizaci neumí provést. "
                 "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
         self.expect_unlocked(page)
         self.assertEqual(self.web.urls, [])

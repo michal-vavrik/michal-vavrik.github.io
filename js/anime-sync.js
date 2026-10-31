@@ -64,7 +64,8 @@ window.AnimeSync = (function () {
 
 	var FAVORITES_URL = 'https://sledujserialy.io/ucet/';
 	var SERIAL_URL = 'https://sledujserialy.io/serial/';
-	var IMAGE_ORIGIN = 'https://serialy.sx';
+	// Skript bral obrázky ze serialy.sx, který teď jen přesměrovává sem (pomocník povoluje jen tento web).
+	var IMAGE_ORIGIN = 'https://sledujserialy.io';
 	var CSFD_SEARCH_URL = 'https://www.csfd.cz/hledat/?q=';
 	var CSFD_FILM_URL = 'https://www.csfd.cz/film/';
 	var MAL_SEARCH_URL = 'https://myanimelist.net/anime.php?cat=anime&q=';
@@ -89,11 +90,12 @@ window.AnimeSync = (function () {
 	// Název seriálu v adrese sledujserialy.io/serial/<název>; stejné pravidlo má pomocník (FETCH_RULES).
 	var SERIAL_SLUG = /^[A-Za-z0-9_.%-]+$/;
 
-	// Nejstarší verze pomocníka, která umí zapsat výsledek aktualizace do data/anime.json.
+	// Nejstarší verze pomocníka, která danou aktualizaci zvládne (zápis do data/anime.json;
+	// Seznam navíc od verze 6 stahuje obrázky ze sledujserialy.io).
 	var CSFD_MIN_HELPER_VERSION = 2;
 	var MAL_MIN_HELPER_VERSION = 3;
 	var WATCHED_MIN_HELPER_VERSION = 4;
-	var LIST_MIN_HELPER_VERSION = 5;
+	var LIST_MIN_HELPER_VERSION = 6;
 
 	// Python GetNewFavoriteData() (ř. 1357) - prázdná položka, jejíž pořadí klíčů
 	// určuje pořadí v exportovaných datech.

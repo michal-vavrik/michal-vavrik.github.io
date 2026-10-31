@@ -8,7 +8,7 @@ server proto běží na vašem počítači (jen na 127.0.0.1) a umí:
   GET  /health          stav pomocníka (bez tajemství)
   GET  /fetch?url=...   stáhne stránku z povoleného webu; cookie se přidává jen
                         pro sledujserialy.io
-  POST /images          {"url": "https://serialy.sx/...", "number": 319}
+  POST /images          {"url": "https://sledujserialy.io/upload/...", "number": 319}
                         stáhne obrázek a uloží ho jako img/anime/319.jpg
   POST /csfd-ratings    {"ratings": {"1": "77%", ...}}
                         zapíše ČSFD hodnocení do data/anime.json (mění jen
@@ -57,8 +57,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, quote, unquote, urljoin, urlsplit
 
 # Verze 2 přidala POST /csfd-ratings, verze 3 POST /mal-ratings, verze 4 POST /watched-states,
-# verze 5 POST /anime-items; stránka starší pomocník odmítne.
-VERSION = 5
+# verze 5 POST /anime-items, verze 6 stahuje obrázky ze sledujserialy.io místo serialy.sx;
+# stránka starší pomocník odmítne.
+VERSION = 6
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_IMAGES_DIR = os.path.join(os.path.dirname(HERE), "img", "anime")
 DEFAULT_DATA_FILE = os.path.join(os.path.dirname(HERE), "data", "anime.json")
@@ -112,8 +113,10 @@ FETCH_RULES = {
     "www.csfd.cz": re.compile(r"^/(?:hledat/?|film/[0-9]+[A-Za-z0-9_/-]*)$"),
     "myanimelist.net": re.compile(r"^/(?:anime\.php|anime/[0-9]+(?:/[^/?#]*)?)$"),
 }
-# Obrázky se stahují jen ze serialy.sx.
-IMAGE_RULES = {"serialy.sx": re.compile(r"^/[^?#]*$")}
+# Obrázky oblíbených (IMAGE_ORIGIN v js/anime-sync.js + src z oblíbených). Skript je bral ze
+# serialy.sx, který teď jen přesměrovává na sledujserialy.io; povolená je jen složka /upload/.
+IMAGE_ORIGIN = "https://sledujserialy.io"
+IMAGE_RULES = {"sledujserialy.io": re.compile(r"^/upload/[^?#]*$")}
 
 
 class ProxyError(Exception):
@@ -325,8 +328,13 @@ def looks_like_image(data):
     return _image_kind(data) is not None
 
 
-def download_image(url, transport=http_get_once):
-    status, _final_url, body = fetch_page(url, Config(), IMAGE_RULES, transport)
+def image_config(config):
+    """Obrázek nepotřebuje přihlášení, ale ověření Cloudflare (cf_clearance, User-Agent) ano."""
+    return dataclasses.replace(config, cookie="")
+
+
+def download_image(url, config, transport=http_get_once):
+    status, _final_url, body = fetch_page(url, image_config(config), IMAGE_RULES, transport)
     if status != 200:
         raise ProxyError("image-download-failed", 502, "HTTP %d" % status)
     if not looks_like_image(body):
@@ -646,7 +654,7 @@ class Handler(BaseHTTPRequestHandler):
         if os.path.exists(image_path(self.server.images_dir, number)):
             raise ProxyError("image-exists", 409)
 
-        data = download_image(payload.get("url"), self.server.transport)
+        data = download_image(payload.get("url"), self.server.config, self.server.transport)
         save_image(self.server.images_dir, number, data)
         self._send_json(201, {"ok": True, "number": number, "bytes": len(data)})
 
@@ -730,7 +738,6 @@ def run_check(config, transport=http_get_once, out=print):
         ("sledujserialy.io", "https://sledujserialy.io/ucet/", FETCH_RULES),
         ("www.csfd.cz", "https://www.csfd.cz/hledat/?q=naruto", FETCH_RULES),
         ("myanimelist.net", "https://myanimelist.net/anime.php?cat=anime&q=naruto", FETCH_RULES),
-        ("serialy.sx", "https://serialy.sx/", IMAGE_RULES),
     )
     out("Cookie sledujserialy.io: " + ("nastavena" if config.cookie else "CHYBÍ (viz README)"))
     all_ok = True
@@ -750,7 +757,7 @@ def run_check(config, transport=http_get_once, out=print):
             if error.code == "cloudflare-challenge":
                 verdict = "Cloudflare vyžaduje ověření (výzva) - viz README, část o Cloudflare"
             elif error.code == "redirect-blocked":
-                verdict = "přesměrováno na nepovolený web (%s) - pravděpodobně firemní filtr" % _clean_detail(error.detail)
+                verdict = "přesměrováno na nepovolený web (%s) - firemní filtr, nebo web změnil adresu" % _clean_detail(error.detail)
             elif error.code == "tls-error":
                 verdict = "chyba TLS certifikátu (%s)" % _clean_detail(error.detail)
             else:
@@ -761,8 +768,6 @@ def run_check(config, transport=http_get_once, out=print):
 
 
 # --diag: podrobný výpis pro hledání potíží (přesměrování, Cloudflare, obrázky).
-# Adresa obrázku jako ve stránce (IMAGE_ORIGIN v js/anime-sync.js) i ve skriptu ("https://serialy.sx" + Image).
-DIAG_IMAGE_ORIGIN = "https://serialy.sx"
 DIAG_MAX_FAVORITES = 3
 DIAG_MAX_NAMED = 5
 # Python EXCEPTION_ANIME (AnimeList.pyw ř. 63), stejně jako v js/anime-sync.js.
@@ -817,7 +822,9 @@ def _diag_trace(url, config, transport):
             hop["error"] = "adresa není https, dál se nepokračuje"
             break
         headers = build_headers(parts.hostname, config)
-        hop["cookie"] = "Cookie" in headers
+        sent = headers.get("Cookie", "")
+        hop["cookie"] = "user_logged_in=" in sent
+        hop["clearance"] = "cf_clearance=" in sent
         try:
             hop["status"], hop["headers"], hop["body"] = transport(current, headers, TIMEOUT, MAX_BYTES)
         except ProxyError as error:
@@ -851,7 +858,8 @@ def _diag_body(hop):
 
 def _diag_print_hops(hops, out):
     for index, hop in enumerate(hops, 1):
-        out("    %d. GET %s%s" % (index, _diag_url(hop["url"]), " (s cookie)" if hop.get("cookie") else ""))
+        sent = [label for label, flag in (("cookie", hop.get("cookie")), ("cf_clearance", hop.get("clearance"))) if flag]
+        out("    %d. GET %s%s" % (index, _diag_url(hop["url"]), " (s %s)" % " a ".join(sent) if sent else ""))
         if "error" in hop:
             out("       chyba: %s" % hop["error"])
             continue
@@ -891,11 +899,6 @@ def _diag_verdict(hops, rules, image):
             return "not-an-image"
         return "OK, obrázek by se uložil"
     return "too-many-redirects"
-
-
-def _diag_final_image(hops):
-    last = hops[-1]
-    return "error" not in last and last["status"] == 200 and looks_like_image(last["body"])
 
 
 def _diag_favorites(html):
@@ -941,13 +944,12 @@ def run_diag(config, names=(), data_path=DEFAULT_DATA_FILE, transport=http_get_o
     out("")
     out("--- Stránky (stejné kontroly jako pomocník) ---")
     favorites_hops = None
-    for index, (label, url, rules, page_config) in enumerate((
-        ("sledujserialy.io, účet", "https://sledujserialy.io/ucet/", FETCH_RULES, config),
-        ("serialy.sx, úvodní stránka", DIAG_IMAGE_ORIGIN + "/", IMAGE_RULES, Config()),
-        ("ČSFD, hledání", "https://www.csfd.cz/hledat/?q=naruto", FETCH_RULES, config),
-        ("MyAnimeList, hledání", "https://myanimelist.net/anime.php?cat=anime&q=naruto", FETCH_RULES, config),
+    for index, (label, url, rules) in enumerate((
+        ("sledujserialy.io, účet", "https://sledujserialy.io/ucet/", FETCH_RULES),
+        ("ČSFD, hledání", "https://www.csfd.cz/hledat/?q=naruto", FETCH_RULES),
+        ("MyAnimeList, hledání", "https://myanimelist.net/anime.php?cat=anime&q=naruto", FETCH_RULES),
     )):
-        hops = _diag_trace(url, page_config, transport)
+        hops = _diag_trace(url, config, transport)
         out("  %s:" % label)
         _diag_print_hops(hops, out)
         out("    Pomocník: %s" % _diag_verdict(hops, rules, image=False))
@@ -985,17 +987,11 @@ def run_diag(config, names=(), data_path=DEFAULT_DATA_FILE, transport=http_get_o
         out("")
         out("--- Obrázek: %s ---" % _diag_text(name, 120))
         out("  <img>: %s" % _diag_text(tag, 300))
-        url = DIAG_IMAGE_ORIGIN + src
-        out("  Stránka i AnimeList.pyw stahují: %s" % _diag_url(url))
-        hops = _diag_trace(url, Config(), transport)
+        url = IMAGE_ORIGIN + src
+        out("  Stránka stahuje: %s" % _diag_url(url))
+        hops = _diag_trace(url, image_config(config), transport)
         _diag_print_hops(hops, out)
         out("    Pomocník: %s" % _diag_verdict(hops, IMAGE_RULES, image=True))
-        if not _diag_final_image(hops) and (config.cookie or config.cf_clearance):
-            out("  Totéž s cookie a nastavením Cloudflare pro sledujserialy.io:")
-            _diag_print_hops(_diag_trace(url, config, transport), out)
-        if src.startswith("/") and not src.startswith("//"):
-            out("  Pro srovnání přímo ze sledujserialy.io:")
-            _diag_print_hops(_diag_trace("https://sledujserialy.io" + src, Config(), transport), out)
 
     out("")
     out("Konec diagnostiky. Výpis neobsahuje cookie ani obsah stránky účtu.")

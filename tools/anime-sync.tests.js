@@ -487,25 +487,25 @@ window.AnimeSyncTests = (function () {
 			},
 			function () {
 				return withFetch(function () { return reply(JSON.stringify({ ok: true, number: 12, bytes: 99 }), 201); }, function (stub) {
-					return Client.saveImage('https://serialy.sx/a.jpg', 12).then(function (saved) {
+					return Client.saveImage('https://sledujserialy.io/upload/a.jpg', 12).then(function (saved) {
 						runner.equal('saveImage: výsledek', saved, { number: 12, bytes: 99 });
 						runner.equal('saveImage: požadavek', [
 							stub.calls[0].url, stub.calls[0].init.method, stub.calls[0].init.headers['Content-Type'],
 							JSON.parse(stub.calls[0].init.body)
-						], [base + '/images', 'POST', 'application/json', { url: 'https://serialy.sx/a.jpg', number: 12 }]);
+						], [base + '/images', 'POST', 'application/json', { url: 'https://sledujserialy.io/upload/a.jpg', number: 12 }]);
 					});
 				});
 			},
 			function () {
 				return withFetch(function () { return reply('{}', 409, { 'X-Proxy-Error': 'image-exists' }); }, function () {
-					return summarizeError(Client.saveImage('https://serialy.sx/a.jpg', 12)).then(function (error) {
+					return summarizeError(Client.saveImage('https://sledujserialy.io/upload/a.jpg', 12)).then(function (error) {
 						runner.equal('saveImage: obrázek už existuje', error, { code: 'image-exists', detail: '12', status: 409 });
 					});
 				});
 			},
 			function () {
 				return withFetch(function () { return reply('nic', 201); }, function () {
-					return summarizeError(Client.saveImage('https://serialy.sx/a.jpg', 12)).then(function (error) {
+					return summarizeError(Client.saveImage('https://sledujserialy.io/upload/a.jpg', 12)).then(function (error) {
 						runner.equal('saveImage: neplatná odpověď', error, { code: 'unexpected-response', detail: 'images', status: 0 });
 					});
 				});
@@ -788,9 +788,9 @@ window.AnimeSyncTests = (function () {
 		});
 	}
 
-	// Odpověď /health pomocníka, který umí zapsat Seznam do data/anime.json.
+	// Odpověď /health pomocníka, který umí Seznam (obrázky ze sledujserialy.io, zápis do data/anime.json).
 	function listHealth(overrides) {
-		var health = { version: 5, cookieConfigured: true, maxImageNumber: 12, dataFile: true };
+		var health = { version: 6, cookieConfigured: true, maxImageNumber: 12, dataFile: true };
 		Object.keys(overrides || {}).forEach(function (key) {
 			health[key] = overrides[key];
 		});
@@ -826,8 +826,8 @@ window.AnimeSyncTests = (function () {
 						Sync.csfdSearchUrl('New A'), 'https://www.csfd.cz/film/111', Sync.malSearchUrl('New A'), 'https://myanimelist.net/anime/222',
 						Sync.csfdSearchUrl('New B'), 'https://www.csfd.cz/film/333', Sync.malSearchUrl('New B'), 'https://myanimelist.net/anime/444'
 					]);
-					runner.equal('tok: obrázky z serialy.sx pod číslem anime', run.images, [
-						{ url: 'https://serialy.sx/u/a.jpg', number: 13 }, { url: 'https://serialy.sx/u/b.jpg', number: 14 }
+					runner.equal('tok: obrázky ze sledujserialy.io pod číslem anime', run.images, [
+						{ url: 'https://sledujserialy.io/u/a.jpg', number: 13 }, { url: 'https://sledujserialy.io/u/b.jpg', number: 14 }
 					]);
 					runner.equal('tok: přidané položky', run.items.slice(2), [expectedItemA(13), expectedItemB(14)]);
 					runner.equal('tok: původní položky zůstanou', run.items.slice(0, 2), knownItems());
@@ -906,10 +906,10 @@ window.AnimeSyncTests = (function () {
 				});
 			},
 			function () {
-				// Starší pomocník by nová anime nezapsal; kontroly jdou ve stejném pořadí jako u ostatních voleb.
-				var outdated = listHealth({ version: 4, cookieConfigured: false, dataFile: false });
+				// Starší pomocník by obrázky ze sledujserialy.io nestáhl; kontroly jdou ve stejném pořadí jako u ostatních voleb.
+				var outdated = listHealth({ version: 5, cookieConfigured: false, dataFile: false });
 				return runUpdate({ routes: twoNewFavorites(), health: outdated }).then(function (run) {
-					runner.equal('pomocník verze 4: zastaralý, nic se nestahuje', [errorSummary(run.error), run.calls, run.events],
+					runner.equal('pomocník verze 5: zastaralý, nic se nestahuje', [errorSummary(run.error), run.calls, run.events],
 						[{ code: 'helper-outdated', detail: '' }, [], ['health']]);
 				});
 			},
