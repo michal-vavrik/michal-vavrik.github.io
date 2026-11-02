@@ -228,10 +228,10 @@ window.AnimeProxy = (function () {
 	 * Nechá pomocníka zapsat jedno pole anime do data/anime.json (mirror Python
 	 * `UpdateCSFD()`/`UpdateMAL()`/`UpdateWatched()` + `WriteDataToTheFile()`).
 	 * Mění se jen anime, která v souboru jsou; čísla ostatních vrátí v `missing`.
-	 * @param {string} path - '/csfd-ratings' (CsfdRating), '/mal-ratings' (MalRating)
-	 *     nebo '/watched-states' (State)
-	 * @param {string} key - klíč v těle požadavku ('ratings' nebo 'states')
-	 * @param {Object<string, string>} values Number -> nová hodnota ("85%", "?%", "DONE", "S01E05"...)
+	 * @param {string} path - '/csfd-ratings' (CsfdRating), '/mal-ratings' (MalRating),
+	 *     '/watched-states' (State) nebo '/favorite-url-names' (FavoriteUrlName)
+	 * @param {string} key - klíč v těle požadavku ('ratings', 'states' nebo 'urlNames')
+	 * @param {Object<string, string>} values Number -> nová hodnota ("85%", "?%", "DONE", "S01E05", "naruto"...)
 	 * @returns {Promise<{changed: number, missing: Array<string>}>}
 	 */
 	function saveValues(path, key, values) {
@@ -257,6 +257,14 @@ window.AnimeProxy = (function () {
 	/** Zhlédnuté epizody do data/anime.json (pole State, pomocník od verze 4), viz saveValues(). */
 	function saveWatchedStates(states) {
 		return saveValues('/watched-states', 'states', states);
+	}
+
+	/**
+	 * Adresy seriálů na sledujserialy.io do data/anime.json (pole FavoriteUrlName,
+	 * pomocník od verze 10; doplňuje je Seznam), viz saveValues().
+	 */
+	function saveFavoriteUrlNames(urlNames) {
+		return saveValues('/favorite-url-names', 'urlNames', urlNames);
 	}
 
 	/**
@@ -326,6 +334,7 @@ window.AnimeProxy = (function () {
 		saveCsfdRatings: saveCsfdRatings,
 		saveMalRatings: saveMalRatings,
 		saveWatchedStates: saveWatchedStates,
+		saveFavoriteUrlNames: saveFavoriteUrlNames,
 		saveAnimeItems: saveAnimeItems,
 		saveAnimeEdits: saveAnimeEdits,
 		publish: publish

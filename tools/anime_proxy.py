@@ -17,6 +17,9 @@ server proto běží na vašem počítači (jen na 127.0.0.1) a umí:
   POST /mal-ratings     totéž pro MAL hodnocení (mění jen MalRating)
   POST /watched-states  {"states": {"1": "DONE", "2": "S01E05", ...}}
                         zapíše zhlédnuté epizody (mění jen State)
+  POST /favorite-url-names {"urlNames": {"1": "naruto", ...}}
+                        zapíše adresy seriálů na sledujserialy.io/serial/<adresa>
+                        (mění jen FavoriteUrlName; doplňuje je Seznam)
   POST /anime-items     {"items": [{"Number": "319", ...}, ...]}
                         přidá nová anime ze Seznamu do data/anime.json (číslo,
                         které v souboru už je, nikdy nepřepíše)
@@ -70,8 +73,9 @@ from urllib.parse import parse_qs, quote, unquote, urljoin, urlsplit
 # Verze 2 přidala POST /csfd-ratings, verze 3 POST /mal-ratings, verze 4 POST /watched-states,
 # verze 5 POST /anime-items, verze 6 stahuje obrázky ze sledujserialy.io místo serialy.sx,
 # verze 7 vrací uložený obrázek v odpovědi POST /images, verze 8 přidala POST /publish (tlačítko Push),
-# verze 9 POST /anime-edits (uložení edit módu); stránka starší pomocník odmítne.
-VERSION = 9
+# verze 9 POST /anime-edits (uložení edit módu), verze 10 pole FavoriteUrlName (adresa seriálu
+# na sledujserialy.io) v POST /anime-items a POST /favorite-url-names; stránka starší pomocník odmítne.
+VERSION = 10
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_IMAGES_DIR = os.path.join(os.path.dirname(HERE), "img", "anime")
 DEFAULT_DATA_FILE = os.path.join(os.path.dirname(HERE), "data", "anime.json")
@@ -105,15 +109,20 @@ MAX_IMAGE_NUMBER = 999999
 RATING = re.compile(r"(?:[0-9]{1,3}|\?)%")
 # Stav jako ho zapisuje Python UpdateWatched(): "DONE", "S01E05", nebo "S02E--" (řada bez epizody).
 WATCHED_STATE = re.compile(r"DONE|S[0-9]{1,6}E(?:[0-9]{1,6}|--)")
+# Adresa seriálu v sledujserialy.io/serial/<adresa> tak, jak je v odkazu oblíbeného: jeden segment
+# cesty (bez "/", "?", "#" a mezer); stejně ji kontroluje stránka (FAVORITE_URL_NAME v js/anime-sync.js).
+FAVORITE_URL_NAME = re.compile(r"[A-Za-z0-9_.~%!$&'()*+,;=:@\[\]-]{1,200}")
 # Zápis do data/anime.json: adresa -> (pole v datech, klíč v těle požadavku, povolené hodnoty, název do výpisu).
 DATA_ROUTES = {
     "/csfd-ratings": ("CsfdRating", "ratings", RATING, "ČSFD hodnocení"),
     "/mal-ratings": ("MalRating", "ratings", RATING, "MAL hodnocení"),
     "/watched-states": ("State", "states", WATCHED_STATE, "Zhlédnuté epizody"),
+    "/favorite-url-names": ("FavoriteUrlName", "urlNames", FAVORITE_URL_NAME, "Seznam (adresy seriálů)"),
 }
-# Pole nového anime v pořadí Python GetNewFavoriteData() (stejně jako ITEM_KEYS v js/anime-sync.js).
-ITEM_KEYS = ("Number", "FavoriteName", "CsfdID", "MalID", "MalName", "Image", "NameEn", "NameJa",
-             "Genres", "Description", "Date", "State", "CsfdRating", "MalRating", "MyRating")
+# Pole nového anime v pořadí Python GetNewFavoriteData() (stejně jako ITEM_KEYS v js/anime-sync.js);
+# FavoriteUrlName skript neukládal, je hned za FavoriteName.
+ITEM_KEYS = ("Number", "FavoriteName", "FavoriteUrlName", "CsfdID", "MalID", "MalName", "Image", "NameEn",
+             "NameJa", "Genres", "Description", "Date", "State", "CsfdRating", "MalRating", "MyRating")
 ITEM_NUMBER = re.compile(r"[1-9][0-9]{0,5}")
 # Úpravy z edit módu (POST /anime-edits): editovatelné sloupce (js/anime-columns.js) a povolené hodnoty.
 ANY_TEXT = re.compile(r".*", re.DOTALL)
@@ -487,7 +496,8 @@ def update_field(path, field, values):
     """Přepíše jedno pole anime v souboru s daty (Python UpdateCSFD()/UpdateMAL()/UpdateWatched()
     + WriteDataToTheFile()).
 
-    `field` je "CsfdRating", "MalRating" nebo "State", `values` mapuje Number na novou hodnotu.
+    `field` je "CsfdRating", "MalRating", "State" nebo "FavoriteUrlName" (anime, které ho ještě
+    nemá, ho dostane na místo podle ITEM_KEYS), `values` mapuje Number na novou hodnotu.
     Formát souboru zůstane (viz _write_data()); beze změny se nezapisuje. Vrací
     (počet změněných hodnot, čísla anime, která v souboru nejsou).
     """
@@ -499,12 +509,28 @@ def update_field(path, field, values):
             item = data.get(number)
             if not isinstance(item, dict):
                 missing.append(number)
-            elif item.get(field) != value:
+            elif field not in item:
+                data[number] = _with_new_key(item, field, value)
+                changed += 1
+            elif item[field] != value:
                 item[field] = value
                 changed += 1
         if changed:
             _write_data(path, raw, text, data)
         return changed, missing
+
+
+def _with_new_key(item, field, value):
+    """Kopie položky s novým polem vloženým za pole, která mu v ITEM_KEYS předcházejí
+    (FavoriteUrlName hned za FavoriteName), aby starší anime měla stejné pořadí jako nová."""
+    preceding = set(ITEM_KEYS[:ITEM_KEYS.index(field)])
+    result = {}
+    for key, old in item.items():
+        if field not in result and key not in preceding:
+            result[field] = value
+        result[key] = old
+    result.setdefault(field, value)
+    return result
 
 
 def add_items(path, items):
@@ -1124,6 +1150,9 @@ class Handler(BaseHTTPRequestHandler):
             if not ITEM_NUMBER.fullmatch(item["Number"]) or item["Number"] in numbers:
                 raise ProxyError("bad-request", 400, "number")
             numbers.add(item["Number"])
+            # Prázdná adresa = seriál, jehož odkaz v oblíbených nemá platný tvar (obrázek pak není odkaz).
+            if item["FavoriteUrlName"] and not FAVORITE_URL_NAME.fullmatch(item["FavoriteUrlName"]):
+                raise ProxyError("bad-request", 400, "value")
         if not self.server.data_path:
             raise ProxyError("data-file-missing", 500)
         added = add_items(self.server.data_path, items)

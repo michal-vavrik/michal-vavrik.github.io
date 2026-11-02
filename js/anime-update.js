@@ -14,7 +14,9 @@
  * ale neaktivní. Nové anime (Seznam) i nová hodnocení a zhlédnuté epizody se
  * na stránce ukážou hned u každého anime, ne až po skončení celé aktualizace
  * (Python překreslí řádky až v Update*Done()); po dokončení se seznam ještě
- * jednou celý překreslí. Anime přeskočená při aktualizaci hodnocení nebo
+ * jednou celý překreslí. Seznam navíc hned po načtení oblíbených udělá
+ * z obrázků anime v oblíbených odkazy na sledujserialy.io (FavoriteUrlName,
+ * bez Python vzoru). Anime přeskočená při aktualizaci hodnocení nebo
  * zhlédnutých epizod (bez Python vzoru) a anime, jejichž hodnota se nezapsala do
  * data/anime.json, se vypíšou v liště a souhrn zůstane vidět až do další
  * aktualizace.
@@ -293,6 +295,10 @@ window.AnimeUpdate = (function () {
 					progress.percent = percent;
 					renderInfo();
 				}
+			},
+			onItemsLinked: function (items) {
+				// Obrázky anime, která dostala adresu seriálu, se hned stanou odkazy.
+				options.onItemsChanged(items);
 			},
 			onItemAdded: function (item, items) {
 				added += 1;

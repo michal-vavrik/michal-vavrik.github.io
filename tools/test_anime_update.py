@@ -44,8 +44,8 @@ COOKIE = "E2E-FAKE-COOKIE"
 WEBP = base64.b64decode("UklGRiIAAABXRUJQVlA4IBYAAAAwAQCdASoBAAEADsD+JaQAA3AAAAAA")
 WINDOWS_EDGE = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
 
-ITEM_KEYS = ["Number", "FavoriteName", "CsfdID", "MalID", "MalName", "Image", "NameEn", "NameJa",
-             "Genres", "Description", "Date", "State", "CsfdRating", "MalRating", "MyRating"]
+ITEM_KEYS = ["Number", "FavoriteName", "FavoriteUrlName", "CsfdID", "MalID", "MalName", "Image", "NameEn",
+             "NameJa", "Genres", "Description", "Date", "State", "CsfdRating", "MalRating", "MyRating"]
 
 # Čísla jsou záměrně vysoká, aby k nim v repozitáři nebyly žádné obrázky.
 SEED_NUMBERS = (9001, 9002, 9004)
@@ -193,10 +193,10 @@ EXCEPTION_FAVORITE = ("Owari no Seraph: Nagoja kessen hen", "owari", "/upload/se
 
 def expected_item(show, number, today):
     return {
-        "Number": str(number), "FavoriteName": show["name"], "CsfdID": show["csfd_id"], "MalID": show["mal_id"],
-        "MalName": show["mal_name"], "Image": str(number), "NameEn": show["name_en"], "NameJa": show["name_ja"],
-        "Genres": "Animovaný\nAkční", "Description": show["plot"], "Date": today, "State": show["state"],
-        "CsfdRating": show["csfd_rating"], "MalRating": show["mal_rating"], "MyRating": "?%",
+        "Number": str(number), "FavoriteName": show["name"], "FavoriteUrlName": show["slug"], "CsfdID": show["csfd_id"],
+        "MalID": show["mal_id"], "MalName": show["mal_name"], "Image": str(number), "NameEn": show["name_en"],
+        "NameJa": show["name_ja"], "Genres": "Animovaný\nAkční", "Description": show["plot"], "Date": today,
+        "State": show["state"], "CsfdRating": show["csfd_rating"], "MalRating": show["mal_rating"], "MyRating": "?%",
     }
 
 
@@ -421,6 +421,19 @@ class UpdateListTests(SiteBrowserCase):
         page.wait_for_function("image => image.complete && image.naturalWidth === 1", arg=image.element_handle())
         expect(row.locator(".anime-row__image-missing")).to_have_count(0)
 
+    def expect_serial_link(self, page, number, slug):
+        """Obrázek (nebo popisek chybějícího obrázku) řádku je odkaz na seriál v nové kartě."""
+        link = page.locator('.anime-row[data-number="%s"] a.anime-row__image-link' % number)
+        expect(link).to_have_count(1)
+        expect(link).to_have_attribute("href", SERIAL_PREFIX + slug)
+        expect(link).to_have_attribute("target", "_blank")
+        expect(link).to_have_attribute("rel", "noopener noreferrer")
+
+    def expect_no_serial_link(self, page, number):
+        cell = page.locator('.anime-row[data-number="%s"] .anime-row__cell--Image' % number)
+        expect(cell).to_have_count(1)
+        expect(cell.locator("a")).to_have_count(0)
+
     def unexpected_console_errors(self):
         # 404 na obrázky chybějící v repozitáři je v těchto testech očekávané.
         return [text for kind, text in self.console
@@ -503,7 +516,10 @@ class UpdateListTests(SiteBrowserCase):
             self.assertIn(item["Date"], {today_before, today_after})
             self.assertEqual(item, expected_item(show, int(number), item["Date"]))
         self.assertEqual(self.read_data_file(), self.python_json(saved))
-        self.assertEqual({number: saved[number] for number in SEED_DATA}, SEED_DATA)
+        # Anime 9001 je v oblíbených, takže dostalo adresu seriálu (hned za FavoriteName); 9002 a 9004 v nich nejsou.
+        self.assertEqual({number: saved[number] for number in SEED_DATA},
+                         dict(SEED_DATA, **{"9001": dict(SEED_DATA["9001"], FavoriteUrlName="known-9001")}))
+        self.assertEqual(list(saved["9001"]), ITEM_KEYS)
 
         # Obrázky uložil pomocník pod stejným číslem, jaké má anime.
         self.assertEqual(sorted(os.listdir(self.images_dir)), ["9005.jpg", "9006.jpg"])
@@ -521,6 +537,11 @@ class UpdateListTests(SiteBrowserCase):
         # Obrázek je na webu až po nahrání souboru, řádek ukáže ten, který pomocník vrátil.
         self.expect_shown_image(page, "9005")
         self.expect_shown_image(page, "9006")
+        # Kliknutí na obrázek otevře seriál na sledujserialy.io (i u doplněné adresy bez obrázku).
+        self.expect_serial_link(page, "9005", "new-show-a")
+        self.expect_serial_link(page, "9006", "new-show-b")
+        self.expect_serial_link(page, "9001", "known-9001")
+        self.expect_no_serial_link(page, "9002")
         # Do nahrání souborů si stránka nová anime drží v prohlížeči i s obrázky.
         pending = self.pending(page)
         self.assertEqual(pending["items"], {"9005": saved["9005"], "9006": saved["9006"]})
@@ -547,6 +568,10 @@ class UpdateListTests(SiteBrowserCase):
         row = page.locator('.anime-row[data-number="9005"]')
         row.scroll_into_view_if_needed()
         expect(row.locator(".anime-row__image-missing")).to_have_text("Obrázek chybí")
+        # Adresa seriálu je v souboru, odkaz zůstane i kolem popisku chybějícího obrázku.
+        self.expect_serial_link(page, "9005", "new-show-a")
+        expect(row.locator(".anime-row__image-link .anime-row__image-missing")).to_have_count(1)
+        self.expect_serial_link(page, "9001", "known-9001")
         self.assertEqual(self.page_errors, [])
         self.assertEqual(self.unexpected_console_errors(), [])
 
@@ -584,6 +609,11 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.unexpected_console_errors(), [])
 
     def test_list_update_reports_anime_not_written_to_data_file(self):
+        # Bez anime, které už v datech je, se před přidáváním nic nezapisuje (adresy seriálů).
+        self.web.serve(FAVORITES_URL, favorites_page([
+            (SHOW_A["name"], SHOW_A["slug"], SHOW_A["image"], False),
+            (SHOW_B["name"], SHOW_B["slug"], SHOW_B["image"], True),
+        ]))
         page = self.open_page(self.start_helper())
         expect(page.locator("#anime-list .anime-row")).to_have_count(3)
         self.write_data_file(b"{")
@@ -603,9 +633,25 @@ class UpdateListTests(SiteBrowserCase):
         self.assertIsNone(self.pending(page))
         self.assertIsNone(page.evaluate("() => localStorage.getItem('anime-data-overrides')"))
 
+    def test_list_update_stops_when_serial_addresses_cannot_be_written(self):
+        page = self.open_page(self.start_helper())
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        self.write_data_file(b"{")
+
+        self.run_list_update(page)
+        # Adresa seriálu pro anime 9001 se zapisuje před přidáváním, takže se nic dalšího nestahuje.
+        expect(page.locator("#anime-update-error")).to_have_text(
+            "Výsledek aktualizace se nepodařilo zapsat do data/anime.json. Podrobnosti: data-file-invalid.")
+        self.expect_unlocked(page)
+        self.assertEqual(self.web.urls, [FAVORITES_URL])
+        self.assertEqual(self.read_data_file(), b"{")
+        self.assertEqual(os.listdir(self.images_dir), [])
+        self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004"])
+        self.expect_no_serial_link(page, "9001")
+
     def test_list_update_requires_helper_that_can_write_data_file(self):
-        # Pomocník verze 6 nevrací uložený obrázek (verze 5 by ho stahovala ze serialy.sx).
-        with mock.patch.object(proxy, "VERSION", 6):
+        # Pomocník verze 9 neumí uložit adresy seriálů (verze 6 navíc nevracel uložený obrázek).
+        with mock.patch.object(proxy, "VERSION", 9):
             page = self.open_page(self.start_helper())
             self.run_list_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
@@ -625,6 +671,7 @@ class UpdateListTests(SiteBrowserCase):
         self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE, EXCEPTION_FAVORITE]))
         page = self.open_page(self.start_helper())
         page.evaluate(INFO_LOG_SCRIPT)
+        self.expect_no_serial_link(page, "9001")
 
         self.run_list_update(page)
         expect(page.locator("#anime-update-info")).to_have_text("100.00% Žádné nové anime.")
@@ -639,6 +686,21 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.web.urls, [FAVORITES_URL])
         self.assertEqual(os.listdir(self.images_dir), [])
         self.assertEqual(self.unexpected_console_errors(), [])
+
+        # Anime z oblíbených dostalo adresu seriálu do souboru i na stránce hned, bez znovunačtení.
+        saved = json.loads(self.read_data_file())
+        self.assertEqual(saved, dict(SEED_DATA, **{"9001": dict(SEED_DATA["9001"], FavoriteUrlName="known-9001")}))
+        self.assertEqual(list(saved["9001"]), ITEM_KEYS)
+        self.expect_serial_link(page, "9001", "known-9001")
+        self.expect_no_serial_link(page, "9002")
+        self.assertIsNone(self.pending(page))
+
+        # Další Seznam už adresu má, takže soubor nemění.
+        before = self.read_data_file()
+        self.run_list_update(page)
+        expect(page.locator("#anime-update-info")).to_have_text("100.00% Žádné nové anime.")
+        self.expect_unlocked(page)
+        self.assertEqual(self.read_data_file(), before)
 
     def test_numbers_skip_images_that_already_exist(self):
         existing = os.path.join(self.images_dir, "9007.jpg")
@@ -1805,6 +1867,80 @@ class UpdateListTests(SiteBrowserCase):
             "Soubor s daty nebo složka obrázků není v git repozitáři, pomocný program je nemůže publikovat.")
         expect(page.locator("#anime-push-btn")).to_be_enabled(timeout=1000)
         self.assertEqual(os.listdir(os.path.join(base, "plain")), ["anime.json", "img"])
+
+
+class RepositoryImageLinkTests(SiteBrowserCase):
+    """Odkazy musí fungovat i se skutečným anime.json, bez pomocníka a aktualizace."""
+
+    def open_page(self, role="anime", width=1440):
+        context = self.browser.new_context(viewport={"width": width, "height": 900},
+                                           is_mobile=width < 500, has_touch=width < 500)
+        self.addCleanup(context.close)
+        context.add_init_script("sessionStorage.setItem('site-auth-role', %s);" % json.dumps(role))
+        page = context.new_page()
+        errors = []
+        requests = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.on("request", lambda request: requests.append(request.url))
+        page.goto(self.origin + "/anime.html")
+        expect(page.locator("#anime-list-wrap")).to_be_visible()
+        return page, errors, requests
+
+    def test_repository_anime_have_links_without_update(self):
+        with open(os.path.join(ROOT, "data", "anime.json"), encoding="utf-8") as handle:
+            data = json.load(handle)
+        unavailable = {"181": "Harem Camp!", "185": "Futoku no Guild"}
+        missing = {number: item["FavoriteName"] for number, item in data.items() if not item.get("FavoriteUrlName")}
+        self.assertEqual(missing, unavailable, "Dostupná anime musí mít odkazy už při prvním načtení.")
+        expected = {}
+        for number, item in data.items():
+            if number in unavailable:
+                self.assertEqual(item["FavoriteUrlName"], "")
+                expected[number] = None
+                continue
+            self.assertRegex(item["FavoriteUrlName"], r"^[A-Za-z0-9_.~%!$&'()*+,;=:@\[\]-]{1,200}$")
+            expected[number] = SERIAL_PREFIX + item["FavoriteUrlName"]
+
+        for role, width in (("full", 1440), ("anime", 390)):
+            with self.subTest(role=role, width=width):
+                page, errors, requests = self.open_page(role, width)
+                for reload in (False, True):
+                    if reload:
+                        page.reload()
+                        expect(page.locator("#anime-list-wrap")).to_be_visible()
+                    links = page.locator(".anime-row").evaluate_all("""rows => Object.fromEntries(rows.map(row => [
+                        row.dataset.number, row.querySelector('.anime-row__image-link')?.href || null
+                    ]))""")
+                    self.assertEqual(links, expected)
+                self.assertEqual(errors, [])
+                self.assertFalse(any(":8787/" in url for url in requests), requests)
+
+    def test_existing_image_opens_serial_by_mouse_keyboard_and_touch(self):
+        for width, action in ((1440, "click"), (1440, "keyboard"), (390, "tap")):
+            with self.subTest(width=width, action=action):
+                page, errors, _requests = self.open_page(width=width)
+                page.context.route(re.compile(r"^https://sledujserialy\.io/serial/"),
+                                   lambda route: route.fulfill(content_type="text/html", body="<title>Serial</title>"))
+                link = page.locator('.anime-row[data-number="1"] .anime-row__image-link')
+                expect(link).to_have_attribute("href", SERIAL_PREFIX + "naruto")
+                expect(link).to_have_attribute("rel", "noopener noreferrer")
+                expect(link).to_have_attribute("aria-label", "Naruto")
+                with page.expect_popup() as popup_info:
+                    if action == "keyboard":
+                        link.focus()
+                        page.keyboard.press("Enter")
+                    elif action == "tap":
+                        link.locator("img").tap()
+                    else:
+                        link.locator("img").click()
+                popup = popup_info.value
+                popup.wait_for_load_state()
+                self.assertEqual(popup.url, SERIAL_PREFIX + "naruto")
+                self.assertEqual(page.url, self.origin + "/anime.html")
+                self.assertIsNone(popup.evaluate("window.opener"))
+                popup.close()
+                self.assertEqual(errors, [])
+                page.context.close()
 
 
 class BrowserUnitTests(SiteBrowserCase):

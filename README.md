@@ -29,6 +29,16 @@ scrollování; na úzké obrazovce jsou tlačítka pod hledáním. Action-bar vi
 přihlášení s plným přístupem, s přístupem jen ke stránce Anime jde seznam jen
 prohlížet, řadit a hledat v něm (stránka se pak na pomocný program vůbec neobrací).
 
+Kliknutí na obrázek anime otevře v nové kartě jeho stránku na sledujserialy.io
+(`https://sledujserialy.io/serial/<adresa>`). Adresa je v poli `FavoriteUrlName`
+a ukládá ji Seznam z odkazu v oblíbených, protože z názvu ji spolehlivě odvodit
+nejde (např. „Mashle“ má adresu `mashle-2023`). Adresy současných anime jsou
+již doplněné z veřejného katalogu sledujserialy.io: odkazy fungují hned
+po načtení stránky, bez pomocného programu nebo spuštění aktualizace.
+Anime s chybějící či neplatnou adresou má obrázek bez odkazu; adresa se nehádá.
+To se aktuálně týká „Harem Camp!“ a „Futoku no Guild“, které se nepodařilo
+dohledat ve veřejném katalogu ani vyhledávání cílového webu.
+
 Tlačítko **Aktualizovat** otevře stejné volby jako desktopový skript
 `AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, Seznam
 a Všechno. Hotové jsou volby **Zhlédnuté epizody**, **ČSFD hodnocení**, **MAL
@@ -52,7 +62,14 @@ souboru nepovede, stránka to ohlásí a přidaná anime po obnovení stránky z
 (obrázky už uložené v `img/anime` zůstanou), aktualizaci pak spusťte znovu.
 Nová anime i s obrázky se ukazují hned, i když stránku otevíráte z GitHub Pages,
 kde ještě nejsou (viz Uložení a publikace dat).
-Potřebuje pomocný program verze 7; se starší verzí stránka požádá o jeho restart.
+
+Seznam také doplní adresu seriálu (`FavoriteUrlName`, odkaz z obrázku) anime, která
+už v seznamu jsou: každému anime z oblíbených (shoda `FavoriteName`), které ji
+nemá nebo má jinou, ji pomocný program před přidáváním nových anime zapíše do
+`data/anime.json` (hned za `FavoriteName`) a odkaz se na stránce ukáže hned. Anime, které
+v oblíbených není, se nemění. Když se tento zápis nepovede, Seznam skončí chybou
+dřív, než začne nová anime stahovat.
+Potřebuje pomocný program verze 10; se starší verzí stránka požádá o jeho restart.
 
 Stránka na GitHub Pages si tyto weby sama stáhnout nemůže (CORS, přihlašovací
 cookie) ani zapisovat soubory, proto potřebuje **pomocný program**, který běží na
@@ -198,8 +215,8 @@ Aby nová anime ze Seznamu do té doby nezmizela, drží si je stránka i s obr�
 v prohlížeči (localStorage `anime-pending-additions`) a při načtení je doplní
 k `data/anime.json`. Jakmile načtený `data/anime.json` dané anime obsahuje, z
 prohlížeče se smaže a obrázek se bere z `img/anime`. Platí to jen pro prohlížeč,
-ve kterém aktualizace proběhla; změněná hodnocení, epizody a úpravy z edit módu
-se na GitHub Pages ukážou až po pushi.
+ve kterém aktualizace proběhla; změněná hodnocení, epizody, adresy seriálů a úpravy
+z edit módu se na GitHub Pages ukážou až po pushi.
 
 Jiné změny dat stránka v prohlížeči neukládá. Výsledky, které se do souboru
 zapsat nepodařilo, zůstanou vidět jen do obnovení stránky. Úpravy uložené
@@ -268,6 +285,8 @@ na GitHubu je, stránka napíše „Není co publikovat“.
   zápis pak odmítne (`item-exists`) a nová anime se nezapíšou.
 - Nová anime přijdou na konec aktuálního pořadí. Číslo je největší dosud použité
   číslo (v datech i v `img/anime`) zvýšené o 1.
+- Seznam navíc ukládá adresu seriálu na sledujserialy.io (`FavoriteUrlName`, pole hned
+  za `FavoriteName`) pro odkaz z obrázku; skript ji neukládá.
 - Odpověď HTTP 400 a vyšší je chyba. Hledání na MyAnimeList bez výsledků (MAL ho
   vrací jako HTTP 404) hlásí „Anime se na MyAnimeList nepodařilo najít“ a pokud
   MAL rovnou přesměruje na stránku anime, použije se tato stránka.

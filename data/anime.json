@@ -2,6 +2,7 @@
     "1": {
         "Number": "1",
         "FavoriteName": "Naruto",
+        "FavoriteUrlName": "naruto",
         "CsfdID": "180626",
         "MalID": "20",
         "MalName": "Naruto",
@@ -19,6 +20,7 @@
     "2": {
         "Number": "2",
         "FavoriteName": "Naruto: šippúden",
+        "FavoriteUrlName": "naruto-shippden",
         "CsfdID": "232197",
         "MalID": "1735",
         "MalName": "Naruto  Shippuuden",
@@ -36,6 +38,7 @@
     "3": {
         "Number": "3",
         "FavoriteName": "Boruto: Naruto Next Generations",
+        "FavoriteUrlName": "boruto-naruto-next-generations",
         "CsfdID": "476831",
         "MalID": "34566",
         "MalName": "Boruto  Naruto Next Generations",
@@ -53,6 +56,7 @@
     "4": {
         "Number": "4",
         "FavoriteName": "Death Note",
+        "FavoriteUrlName": "death-note",
         "CsfdID": "227201",
         "MalID": "1535",
         "MalName": "Death Note",
@@ -70,6 +74,7 @@
     "5": {
         "Number": "5",
         "FavoriteName": "Dororo",
+        "FavoriteUrlName": "dororo",
         "CsfdID": "679288",
         "MalID": "37520",
         "MalName": "Dororo",
@@ -87,6 +92,7 @@
     "6": {
         "Number": "6",
         "FavoriteName": "One Punch Man",
+        "FavoriteUrlName": "one-punch-man",
         "CsfdID": "410982",
         "MalID": "30276",
         "MalName": "One Punch Man",
@@ -104,6 +110,7 @@
     "7": {
         "Number": "7",
         "FavoriteName": "Demon Slayer",
+        "FavoriteUrlName": "demon-slayer",
         "CsfdID": "710395",
         "MalID": "38000",
         "MalName": "Kimetsu no Yaiba",
@@ -121,6 +128,7 @@
     "8": {
         "Number": "8",
         "FavoriteName": "Fullmetal Alchemist",
+        "FavoriteUrlName": "fullmetal-alchemist",
         "CsfdID": "217896",
         "MalID": "121",
         "MalName": "Fullmetal Alchemist",
@@ -138,6 +146,7 @@
     "9": {
         "Number": "9",
         "FavoriteName": "Violet Evergarden",
+        "FavoriteUrlName": "violet-evergarden",
         "CsfdID": "564366",
         "MalID": "33352",
         "MalName": "Violet Evergarden",
@@ -155,6 +164,7 @@
     "10": {
         "Number": "10",
         "FavoriteName": "Sedm smrtelných hříchů",
+        "FavoriteUrlName": "nanacu-no-taizai",
         "CsfdID": "389240",
         "MalID": "23755",
         "MalName": "Nanatsu no Taizai",
@@ -172,6 +182,7 @@
     "11": {
         "Number": "11",
         "FavoriteName": "Toaru madžucu no Index",
+        "FavoriteUrlName": "toaru-madzucu-no-index",
         "CsfdID": "249486",
         "MalID": "4654",
         "MalName": "Toaru Majutsu no Index",
@@ -189,6 +200,7 @@
     "12": {
         "Number": "12",
         "FavoriteName": "Toaru kagaku no Railgun",
+        "FavoriteUrlName": "toaru-kagaku-no-railgun",
         "CsfdID": "271723",
         "MalID": "6213",
         "MalName": "Toaru Kagaku no Railgun",
@@ -206,6 +218,7 @@
     "13": {
         "Number": "13",
         "FavoriteName": "Toaru kagaku no Accelerator",
+        "FavoriteUrlName": "toaru-kagaku-no-accelerator-2019",
         "CsfdID": "743252",
         "MalID": "38480",
         "MalName": "Toaru Kagaku no Accelerator",
@@ -223,6 +236,7 @@
     "14": {
         "Number": "14",
         "FavoriteName": "Isekai maó to šókan šódžo no dorei madžucu",
+        "FavoriteUrlName": "isekai-mao-to-sokan-sodzo-no-dorei-madzucu",
         "CsfdID": "1000064",
         "MalID": "37210",
         "MalName": "Isekai Maou to Shoukan Shoujo no Dorei Majutsu",
@@ -240,6 +254,7 @@
     "15": {
         "Number": "15",
         "FavoriteName": "Overlord",
+        "FavoriteUrlName": "overlord",
         "CsfdID": "53221",
         "MalID": "29803",
         "MalName": "Overlord",
@@ -257,6 +272,7 @@
     "16": {
         "Number": "16",
         "FavoriteName": "Is It Wrong to Try to Pick Up Girls in a Dungeon?",
+        "FavoriteUrlName": "dungeon-ni-deai-wo-motomeru-no-wa-machigatteiru-darou-ka-2015",
         "CsfdID": "411135",
         "MalID": "28121",
         "MalName": "Dungeon ni Deai wo Motomeru no wa Machigatteiru Darou ka",
@@ -274,6 +290,7 @@
     "17": {
         "Number": "17",
         "FavoriteName": "Elfen Lied",
+        "FavoriteUrlName": "elfen-lied",
         "CsfdID": "221084",
         "MalID": "226",
         "MalName": "Elfen Lied",
@@ -291,6 +308,7 @@
     "18": {
         "Number": "18",
         "FavoriteName": "Šokugeki no Sóma",
+        "FavoriteUrlName": "okugeki-no-sma",
         "CsfdID": "411141",
         "MalID": "28171",
         "MalName": "Shokugeki no Souma",
@@ -308,6 +326,7 @@
     "19": {
         "Number": "19",
         "FavoriteName": "Tokyo Ghoul",
+        "FavoriteUrlName": "tokyo-ghoul",
         "CsfdID": "1070161",
         "MalID": "22319",
         "MalName": "Tokyo Ghoul",
@@ -325,6 +344,7 @@
     "20": {
         "Number": "20",
         "FavoriteName": "Tensei šitara slime datta ken",
+        "FavoriteUrlName": "tensei-sitara-slime-datta-ken",
         "CsfdID": "658769",
         "MalID": "37430",
         "MalName": "Tensei shitara Slime Datta Ken",
@@ -342,6 +362,7 @@
     "21": {
         "Number": "21",
         "FavoriteName": "Log Horizon",
+        "FavoriteUrlName": "log-horizon",
         "CsfdID": "352352",
         "MalID": "17265",
         "MalName": "Log Horizon",
@@ -359,6 +380,7 @@
     "22": {
         "Number": "22",
         "FavoriteName": "BNA: Brand New Animal",
+        "FavoriteUrlName": "bna-brand-new-animal",
         "CsfdID": "840717",
         "MalID": "40060",
         "MalName": "BNA",
@@ -376,6 +398,7 @@
     "23": {
         "Number": "23",
         "FavoriteName": "Is This a Zombie?",
+        "FavoriteUrlName": "is-this-a-zombie",
         "CsfdID": "1089855",
         "MalID": "8841",
         "MalName": "Kore wa Zombie desu ka",
@@ -393,6 +416,7 @@
     "24": {
         "Number": "24",
         "FavoriteName": "Gintama",
+        "FavoriteUrlName": "gintama",
         "CsfdID": "238440",
         "MalID": "918",
         "MalName": "Gintama",
@@ -410,6 +434,7 @@
     "25": {
         "Number": "25",
         "FavoriteName": "Demon King Daimao",
+        "FavoriteUrlName": "demon-king-daimao",
         "CsfdID": "276576",
         "MalID": "7088",
         "MalName": "Ichiban Ushiro no Daimaou",
@@ -427,6 +452,7 @@
     "26": {
         "Number": "26",
         "FavoriteName": "Goblin Slayer",
+        "FavoriteUrlName": "goblin-slayer",
         "CsfdID": "657629",
         "MalID": "37349",
         "MalName": "Goblin Slayer",
@@ -444,6 +470,7 @@
     "27": {
         "Number": "27",
         "FavoriteName": "Sword Art Online",
+        "FavoriteUrlName": "sword-art-online",
         "CsfdID": "320454",
         "MalID": "11757",
         "MalName": "Sword Art Online",
@@ -461,6 +488,7 @@
     "28": {
         "Number": "28",
         "FavoriteName": "Mušoku tensei: Isekai ittara honki dasu",
+        "FavoriteUrlName": "musoku-tensei-isekai-ittara-honki-dasu",
         "CsfdID": "962935",
         "MalID": "39535",
         "MalName": "Mushoku Tensei  Isekai Ittara Honki Dasu",
@@ -478,6 +506,7 @@
     "29": {
         "Number": "29",
         "FavoriteName": "Assassination Classroom",
+        "FavoriteUrlName": "assassination-classroom",
         "CsfdID": "401202",
         "MalID": "24833",
         "MalName": "Ansatsu Kyoushitsu",
@@ -495,6 +524,7 @@
     "30": {
         "Number": "30",
         "FavoriteName": "Wise Man's Grandchild",
+        "FavoriteUrlName": "wise-mans-grandchild",
         "CsfdID": "712341",
         "MalID": "36407",
         "MalName": "Kenja no Mago",
@@ -512,6 +542,7 @@
     "31": {
         "Number": "31",
         "FavoriteName": "Devil Is a Part-Timer!, The",
+        "FavoriteUrlName": "devil-is-a-part-timer-the",
         "CsfdID": "337647",
         "MalID": "15809",
         "MalName": "Hataraku Maou-sama",
@@ -529,6 +560,7 @@
     "32": {
         "Number": "32",
         "FavoriteName": "Ore dake haireru kakuši Dungeon",
+        "FavoriteUrlName": "ore-dake-haireru-kakusi-dungeon",
         "CsfdID": "962829",
         "MalID": "41899",
         "MalName": "Ore dake Haireru Kakushi Dungeon",
@@ -546,6 +578,7 @@
     "33": {
         "Number": "33",
         "FavoriteName": "KonoSuba – God’s blessing on this wonderful world!!",
+        "FavoriteUrlName": "konosuba-gods-blessing-on-this-wonderful-world",
         "CsfdID": "418921",
         "MalID": "30831",
         "MalName": "Kono Subarashii Sekai ni Shukufuku wo 2  Kono Subarashii Geijutsu ni Shukufuku wo",
@@ -563,6 +596,7 @@
     "34": {
         "Number": "34",
         "FavoriteName": "Tatoeba Last Dungeon mae no mura no šónen ga džoban no mači de kurasu jó na monogatari",
+        "FavoriteUrlName": "tatoeba-last-dungeon-mae-no-mura-no-sonen-ga-dzoban-no-maci-de-kurasu-jo-na-monogatari",
         "CsfdID": "962437",
         "MalID": "40594",
         "MalName": "Tatoeba Last Dungeon Mae no Mura no Shounen ga Joban no Machi de Kurasu Youna Monogatari",
@@ -580,6 +614,7 @@
     "35": {
         "Number": "35",
         "FavoriteName": "Šingeki no kjodžin",
+        "FavoriteUrlName": "singeki-no-kjodzin",
         "CsfdID": "337874",
         "MalID": "16498",
         "MalName": "Shingeki no Kyojin",
@@ -597,6 +632,7 @@
     "36": {
         "Number": "36",
         "FavoriteName": "Death March to the Parallel World Rhapsody",
+        "FavoriteUrlName": "death-march-to-the-parallel-world-rhapsody",
         "CsfdID": "563919",
         "MalID": "34497",
         "MalName": "Death March kara Hajimaru Isekai Kyousoukyoku",
@@ -614,6 +650,7 @@
     "37": {
         "Number": "37",
         "FavoriteName": "Hunter x Hunter",
+        "FavoriteUrlName": "hunter-x-hunter",
         "CsfdID": "303631",
         "MalID": "11061",
         "MalName": "Hunter x Hunter 2011",
@@ -631,6 +668,7 @@
     "38": {
         "Number": "38",
         "FavoriteName": "Re:Zero - Starting Life in Another World",
+        "FavoriteUrlName": "rezero---starting-life-in-another-world-2016",
         "CsfdID": "432438",
         "MalID": "31240",
         "MalName": "Re:Zero kara Hajimeru Isekai Seikatsu",
@@ -648,6 +686,7 @@
     "39": {
         "Number": "39",
         "FavoriteName": "My Hero Academia",
+        "FavoriteUrlName": "my-hero-academia",
         "CsfdID": "432153",
         "MalID": "31964",
         "MalName": "Boku no Hero Academia",
@@ -665,6 +704,7 @@
     "40": {
         "Number": "40",
         "FavoriteName": "The Rising of the Shield Hero",
+        "FavoriteUrlName": "tate-no-jusa-no-nariagari",
         "CsfdID": "679341",
         "MalID": "35790",
         "MalName": "Tate no Yuusha no Nariagari",
@@ -682,6 +722,7 @@
     "41": {
         "Number": "41",
         "FavoriteName": "Arifureta šokugjó de sekai saikjó",
+        "FavoriteUrlName": "arifureta-sokugjo-de-sekai-saikjo",
         "CsfdID": "743245",
         "MalID": "36882",
         "MalName": "Arifureta Shokugyou de Sekai Saikyou",
@@ -699,6 +740,7 @@
     "42": {
         "Number": "42",
         "FavoriteName": "Fairy Tail",
+        "FavoriteUrlName": "fairy-tail",
         "CsfdID": "238107",
         "MalID": "6702",
         "MalName": "Fairy Tail 2014",
@@ -716,6 +758,7 @@
     "43": {
         "Number": "43",
         "FavoriteName": "Dr. STONE",
+        "FavoriteUrlName": "dr-stone",
         "CsfdID": "740725",
         "MalID": "38691",
         "MalName": "Dr Stone  Stone Wars",
@@ -733,6 +776,7 @@
     "44": {
         "Number": "44",
         "FavoriteName": "No Game, No Life",
+        "FavoriteUrlName": "no-game-no-life",
         "CsfdID": "369713",
         "MalID": "19815",
         "MalName": "No Game No Life",
@@ -750,6 +794,7 @@
     "45": {
         "Number": "45",
         "FavoriteName": "Džudžutsu kaisen",
+        "FavoriteUrlName": "dzudzutsu-kaisen",
         "CsfdID": "910437",
         "MalID": "40748",
         "MalName": "Jujutsu Kaisen",
@@ -767,6 +812,7 @@
     "46": {
         "Number": "46",
         "FavoriteName": "So I'm a Spider, So What?",
+        "FavoriteUrlName": "so-im-a-spider-so-what",
         "CsfdID": "962824",
         "MalID": "37984",
         "MalName": "Kumo desu ga Nani ka",
@@ -784,6 +830,7 @@
     "47": {
         "Number": "47",
         "FavoriteName": "Misfit of Demon King Academy (The)",
+        "FavoriteUrlName": "misfit-of-demon-king-academy-the",
         "CsfdID": "877182",
         "MalID": "40496",
         "MalName": "Maou Gakuin no Futekigousha  Shijou Saikyou no Maou no Shiso Tensei shite Shison-tachi no Gakkou e Kayou",
@@ -801,6 +848,7 @@
     "48": {
         "Number": "48",
         "FavoriteName": "Itai no wa ija nano de bógjorjoku ni kjokufuri šitai to omoimasu.",
+        "FavoriteUrlName": "itai-no-wa-ija-nano-de-bgjorjoku-ni-kjokufuri-itai-to-omoimasu",
         "CsfdID": "808194",
         "MalID": "38790",
         "MalName": "Itai no wa Iya nano de Bougyoryoku ni Kyokufuri Shitai to Omoimasu",
@@ -818,6 +866,7 @@
     "49": {
         "Number": "49",
         "FavoriteName": "Maó-sama, Retry!",
+        "FavoriteUrlName": "mao-sama-retry",
         "CsfdID": "742730",
         "MalID": "38297",
         "MalName": "Maou-sama Retry",
@@ -835,6 +884,7 @@
     "50": {
         "Number": "50",
         "FavoriteName": "Isekai no seikiši monogatari",
+        "FavoriteUrlName": "isekai-no-seikii-monogatari",
         "CsfdID": "269948",
         "MalID": "5781",
         "MalName": "Isekai no Seikishi Monogatari",
@@ -852,6 +902,7 @@
     "51": {
         "Number": "51",
         "FavoriteName": "Sentóin, hakenšimasu!",
+        "FavoriteUrlName": "sentoin-hakensimasu",
         "CsfdID": "999180",
         "MalID": "41456",
         "MalName": "Sentouin Hakenshimasu",
@@ -869,6 +920,7 @@
     "52": {
         "Number": "52",
         "FavoriteName": "Didn't I Say to Make My Abilities Average in the Next Life?!",
+        "FavoriteUrlName": "didnt-i-say-to-make-my-abilities-average-in-the-next-life",
         "CsfdID": "774964",
         "MalID": "37393",
         "MalName": "Watashi Nouryoku wa Heikinchi de tte Itta yo ne",
@@ -886,6 +938,7 @@
     "53": {
         "Number": "53",
         "FavoriteName": "Cautious Hero: The Hero Is Overpowered but Overly Cautious",
+        "FavoriteUrlName": "cautious-hero-the-hero-is-overpowered-but-overly-cautious",
         "CsfdID": "773475",
         "MalID": "38659",
         "MalName": "Shinchou Yuusha  Kono Yuusha ga Ore Tueee Kuse ni Shinchou Sugiru",
@@ -903,6 +956,7 @@
     "54": {
         "Number": "54",
         "FavoriteName": "In Another World with My Smartphone",
+        "FavoriteUrlName": "in-another-world-with-my-smartphone",
         "CsfdID": "524506",
         "MalID": "35203",
         "MalName": "Isekai wa Smartphone to Tomo ni",
@@ -920,6 +974,7 @@
     "55": {
         "Number": "55",
         "FavoriteName": "Kaifuku džucuši no jarinaoši",
+        "FavoriteUrlName": "kaifuku-dzucusi-no-jarinaosi",
         "CsfdID": "962937",
         "MalID": "40750",
         "MalName": "Kaifuku Jutsushi no Yarinaoshi",
@@ -937,6 +992,7 @@
     "56": {
         "Number": "56",
         "FavoriteName": "Kamitači ni hirowareta otoko",
+        "FavoriteUrlName": "kamitaci-ni-hirowareta-otoko",
         "CsfdID": "911787",
         "MalID": "41312",
         "MalName": "Kami-tachi ni Hirowareta Otoko",
@@ -954,6 +1010,7 @@
     "57": {
         "Number": "57",
         "FavoriteName": "Jódžo senki",
+        "FavoriteUrlName": "jdo-senki",
         "CsfdID": "459995",
         "MalID": "32615",
         "MalName": "Youjo Senki",
@@ -971,6 +1028,7 @@
     "58": {
         "Number": "58",
         "FavoriteName": "Slime taošite 300 nen, širanai uči ni Level Max ni nattemašita.",
+        "FavoriteUrlName": "slime-taosite-300-nen-siranai-uci-ni-level-max-ni-nattemasita",
         "CsfdID": "998826",
         "MalID": "40586",
         "MalName": "Slime Taoshite 300-nen Shiranai Uchi ni Level Max ni Nattemashita",
@@ -988,6 +1046,7 @@
     "59": {
         "Number": "59",
         "FavoriteName": "High School DxD",
+        "FavoriteUrlName": "high-school-dxd",
         "CsfdID": "309420",
         "MalID": "11617",
         "MalName": "High School DxD",
@@ -1005,6 +1064,7 @@
     "60": {
         "Number": "60",
         "FavoriteName": "Claymore",
+        "FavoriteUrlName": "claymore",
         "CsfdID": "185821",
         "MalID": "1818",
         "MalName": "Claymore",
@@ -1022,6 +1082,7 @@
     "61": {
         "Number": "61",
         "FavoriteName": "Kemono Michi: Rise Up",
+        "FavoriteUrlName": "kemono-michi-rise-up",
         "CsfdID": "773477",
         "MalID": "39030",
         "MalName": "Hataage Kemono Michi",
@@ -1039,6 +1100,7 @@
     "62": {
         "Number": "62",
         "FavoriteName": "Maó-džó de ojasumi",
+        "FavoriteUrlName": "mao-dzo-de-ojasumi",
         "CsfdID": "911812",
         "MalID": "40397",
         "MalName": "Maou-jou de Oyasumi",
@@ -1056,6 +1118,7 @@
     "63": {
         "Number": "63",
         "FavoriteName": "Charlotte",
+        "FavoriteUrlName": "charlotte",
         "CsfdID": "54534",
         "MalID": "28999",
         "MalName": "Charlotte",
@@ -1073,6 +1136,7 @@
     "64": {
         "Number": "64",
         "FavoriteName": "Isekai chito majutsu-shi [majishan]",
+        "FavoriteUrlName": "isekai-chito-majutsu-shi-[majishan]",
         "CsfdID": "743249",
         "MalID": "37744",
         "MalName": "Isekai Cheat Magician",
@@ -1090,6 +1154,7 @@
     "65": {
         "Number": "65",
         "FavoriteName": "Code Geass: Hangjaku no Lelouch",
+        "FavoriteUrlName": "code-geass-hangjaku-no-lelouch",
         "CsfdID": "230765",
         "MalID": "1575",
         "MalName": "Code Geass  Hangyaku no Lelouch R2",
@@ -1107,6 +1172,7 @@
     "66": {
         "Number": "66",
         "FavoriteName": "Gate",
+        "FavoriteUrlName": "gate",
         "CsfdID": "54533",
         "MalID": "28907",
         "MalName": "Gate  Jieitai Kanochi nite Kaku Tatakaeri",
@@ -1124,6 +1190,7 @@
     "67": {
         "Number": "67",
         "FavoriteName": "Problem Children Are Coming From Another World, Aren't They?",
+        "FavoriteUrlName": "problem-children-are-coming-from-another-world-arent-they",
         "CsfdID": "331675",
         "MalID": "15315",
         "MalName": "Mondaiji-tachi ga Isekai kara Kuru Sou desu yo",
@@ -1141,6 +1208,7 @@
     "68": {
         "Number": "68",
         "FavoriteName": "Hai to gensó no Grimgar",
+        "FavoriteUrlName": "hai-to-genso-no-grimgar",
         "CsfdID": "418913",
         "MalID": "31859",
         "MalName": "Hai to Gensou no Grimgar",
@@ -1158,6 +1226,7 @@
     "69": {
         "Number": "69",
         "FavoriteName": "Outbreak Company",
+        "FavoriteUrlName": "outbreak-company",
         "CsfdID": "352346",
         "MalID": "19369",
         "MalName": "Outbreak Company",
@@ -1175,6 +1244,7 @@
     "70": {
         "Number": "70",
         "FavoriteName": "Masamune-kun no Revenge",
+        "FavoriteUrlName": "masamune-kun-no-revenge",
         "CsfdID": "479859",
         "MalID": "33487",
         "MalName": "Masamune-kun no Revenge",
@@ -1192,6 +1262,7 @@
     "71": {
         "Number": "71",
         "FavoriteName": "Vivy: Fluorite eye's song",
+        "FavoriteUrlName": "vivy-fluorite-eyes-song",
         "CsfdID": "1000058",
         "MalID": "46095",
         "MalName": "Vivy  Fluorite Eyes Song",
@@ -1209,6 +1280,7 @@
     "72": {
         "Number": "72",
         "FavoriteName": "Kenpū denki Berserk",
+        "FavoriteUrlName": "kenp-denki-berserk",
         "CsfdID": "139653",
         "MalID": "33",
         "MalName": "Kenpuu Denki Berserk",
@@ -1226,6 +1298,7 @@
     "73": {
         "Number": "73",
         "FavoriteName": "Fumecu no anata e",
+        "FavoriteUrlName": "fumecu-no-anata-e",
         "CsfdID": "998586",
         "MalID": "41025",
         "MalName": "Fumetsu no anata e",
@@ -1243,6 +1316,7 @@
     "74": {
         "Number": "74",
         "FavoriteName": "Kimi to boku no saigo no sendžó, aruiwa sekai ga hadžimaru seisen",
+        "FavoriteUrlName": "kimi-to-boku-no-saigo-no-sendzo-aruiwa-sekai-ga-hadzimaru-seisen",
         "CsfdID": "911673",
         "MalID": "40595",
         "MalName": "Kimi to Boku no Saigo no Senjou Aruiwa Sekai ga Hajimaru Seisen",
@@ -1260,6 +1334,7 @@
     "75": {
         "Number": "75",
         "FavoriteName": "Rokka: Braves of the Six Flowers",
+        "FavoriteUrlName": "rokka-braves-of-the-six-flowers",
         "CsfdID": "54499",
         "MalID": "28497",
         "MalName": "Rokka no Yuusha",
@@ -1277,6 +1352,7 @@
     "76": {
         "Number": "76",
         "FavoriteName": "Plunderer",
+        "FavoriteUrlName": "plunderer",
         "CsfdID": "807097",
         "MalID": "37345",
         "MalName": "Plunderer",
@@ -1294,6 +1370,7 @@
     "77": {
         "Number": "77",
         "FavoriteName": "Seijo no Maryoku wa Bannou Desu",
+        "FavoriteUrlName": "seijo-no-maryoku-wa-bannou-desu",
         "CsfdID": "1004973",
         "MalID": "42826",
         "MalName": "Seijo no Maryoku wa Bannou desu",
@@ -1311,6 +1388,7 @@
     "78": {
         "Number": "78",
         "FavoriteName": "Record of Ragnarok",
+        "FavoriteUrlName": "record-of-ragnarok",
         "CsfdID": "1032664",
         "MalID": "44942",
         "MalName": "Shuumatsu no Walküre",
@@ -1328,6 +1406,7 @@
     "79": {
         "Number": "79",
         "FavoriteName": "Strike the Blood",
+        "FavoriteUrlName": "strike-the-blood",
         "CsfdID": "1114760",
         "MalID": "18277",
         "MalName": "Strike the Blood  Valkyria no Oukoku-hen",
@@ -1345,6 +1424,7 @@
     "80": {
         "Number": "80",
         "FavoriteName": "Blood of Zeus",
+        "FavoriteUrlName": "blood-of-zeus",
         "CsfdID": "824181",
         "MalID": "0",
         "MalName": "Blood Lad  Wagahai wa Neko de wa Nai",
@@ -1362,6 +1442,7 @@
     "81": {
         "Number": "81",
         "FavoriteName": "Mob Psycho 100",
+        "FavoriteUrlName": "mob-psycho-100",
         "CsfdID": "439239",
         "MalID": "32182",
         "MalName": "Mob Psycho 100 II",
@@ -1379,6 +1460,7 @@
     "82": {
         "Number": "82",
         "FavoriteName": "Kiseidžú: Sei no kakuricu",
+        "FavoriteUrlName": "kiseidzu-sei-no-kakuricu",
         "CsfdID": "370631",
         "MalID": "22535",
         "MalName": "Kiseijuu: Sei no Kakuritsu",
@@ -1396,6 +1478,7 @@
     "83": {
         "Number": "83",
         "FavoriteName": "Angels of Death",
+        "FavoriteUrlName": "angels-of-death",
         "CsfdID": "631302",
         "MalID": "35994",
         "MalName": "Satsuriku no Tenshi",
@@ -1413,6 +1496,7 @@
     "84": {
         "Number": "84",
         "FavoriteName": "Quanzhi Fashi",
+        "FavoriteUrlName": "quanzhi-fashi-2016",
         "CsfdID": "503462",
         "MalID": "34300",
         "MalName": "Quanzhi Fashi",
@@ -1430,6 +1514,7 @@
     "85": {
         "Number": "85",
         "FavoriteName": "Kill La Kill",
+        "FavoriteUrlName": "kill-la-kill",
         "CsfdID": "352332",
         "MalID": "18679",
         "MalName": "Kill la Kill",
@@ -1447,6 +1532,7 @@
     "86": {
         "Number": "86",
         "FavoriteName": "Bleach",
+        "FavoriteUrlName": "bleach",
         "CsfdID": "223370",
         "MalID": "269",
         "MalName": "Bleach Movie 4  Jigoku-hen",
@@ -1464,6 +1550,7 @@
     "87": {
         "Number": "87",
         "FavoriteName": "How a Realist Hero Rebuilt the Kingdom",
+        "FavoriteUrlName": "how-a-realist-hero-rebuilt-the-kingdom",
         "CsfdID": "1042865",
         "MalID": "41710",
         "MalName": "Genjitsu Shugi Yuusha no Oukoku Saikenki",
@@ -1481,6 +1568,7 @@
     "88": {
         "Number": "88",
         "FavoriteName": "Tsukimichi -Moonlit Fantasy",
+        "FavoriteUrlName": "tsukimichi--moonlit-fantasy",
         "CsfdID": "1045352",
         "MalID": "43523",
         "MalName": "Tsuki ga Michibiku Isekai Douchuu",
@@ -1498,6 +1586,7 @@
     "89": {
         "Number": "89",
         "FavoriteName": "The Promised Neverland",
+        "FavoriteUrlName": "the-promised-neverland",
         "CsfdID": "680835",
         "MalID": "37779",
         "MalName": "Yakusoku no Neverland",
@@ -1515,6 +1604,7 @@
     "90": {
         "Number": "90",
         "FavoriteName": "Shaman King",
+        "FavoriteUrlName": "shaman-king",
         "CsfdID": "195185",
         "MalID": "42205",
         "MalName": "Shaman King 2021",
@@ -1532,6 +1622,7 @@
     "91": {
         "Number": "91",
         "FavoriteName": "Beelzebub",
+        "FavoriteUrlName": "beelzebub",
         "CsfdID": "289579",
         "MalID": "9513",
         "MalName": "Beelzebub-jou no Okinimesu mama",
@@ -1549,6 +1640,7 @@
     "92": {
         "Number": "92",
         "FavoriteName": "Edens Zero",
+        "FavoriteUrlName": "edens-zero",
         "CsfdID": "998858",
         "MalID": "42192",
         "MalName": "Edens Zero",
@@ -1566,6 +1658,7 @@
     "93": {
         "Number": "93",
         "FavoriteName": "Noragami",
+        "FavoriteUrlName": "noragami",
         "CsfdID": "360610",
         "MalID": "20507",
         "MalName": "Noragami",
@@ -1583,6 +1676,7 @@
     "94": {
         "Number": "94",
         "FavoriteName": "Princess Connect! Re:Dive",
+        "FavoriteUrlName": "princess-connect-redive",
         "CsfdID": "843670",
         "MalID": "39292",
         "MalName": "Princess Connect Re Dive",
@@ -1600,6 +1694,7 @@
     "95": {
         "Number": "95",
         "FavoriteName": "Ixion Saga: Dimension Transfer",
+        "FavoriteUrlName": "ixion-saga-dimension-transfer",
         "CsfdID": "325419",
         "MalID": "14765",
         "MalName": "Ixion Saga DT",
@@ -1617,6 +1712,7 @@
     "96": {
         "Number": "96",
         "FavoriteName": "Btooom!",
+        "FavoriteUrlName": "btooom",
         "CsfdID": "325396",
         "MalID": "14345",
         "MalName": "Btooom",
@@ -1634,6 +1730,7 @@
     "97": {
         "Number": "97",
         "FavoriteName": "Record of Grancrest War",
+        "FavoriteUrlName": "record-of-grancrest-war",
         "CsfdID": "563924",
         "MalID": "34279",
         "MalName": "Grancrest Senki",
@@ -1651,6 +1748,7 @@
     "98": {
         "Number": "98",
         "FavoriteName": "Džodžo no kimjó na bóken",
+        "FavoriteUrlName": "dzodzo-no-kimjo-na-boken",
         "CsfdID": "325407",
         "MalID": "14719",
         "MalName": "JoJo no Kimyou na Bouken",
@@ -1668,6 +1766,7 @@
     "99": {
         "Number": "99",
         "FavoriteName": "Seirei Gensouki: Spirit Chronicles",
+        "FavoriteUrlName": "seirei-gensouki-spirit-chronicles",
         "CsfdID": "1044976",
         "MalID": "44203",
         "MalName": "Seirei Gensouki",
@@ -1685,6 +1784,7 @@
     "100": {
         "Number": "100",
         "FavoriteName": "Tower of God",
+        "FavoriteUrlName": "tower-of-god",
         "CsfdID": "842361",
         "MalID": "40221",
         "MalName": "Kami no Tou",
@@ -1702,6 +1802,7 @@
     "101": {
         "Number": "101",
         "FavoriteName": "Sekai saikó no ansacuša, isekai kizoku ni tensei suru",
+        "FavoriteUrlName": "sekai-saiko-no-ansacusa-isekai-kizoku-ni-tensei-suru",
         "CsfdID": "1063452",
         "MalID": "47790",
         "MalName": "Sekai Saikou no Ansatsusha Isekai Kizoku ni Tensei suru",
@@ -1719,6 +1820,7 @@
     "102": {
         "Number": "102",
         "FavoriteName": "Saihate no Paladin",
+        "FavoriteUrlName": "saihate-no-paladin",
         "CsfdID": "1085823",
         "MalID": "48761",
         "MalName": "Saihate no Paladin",
@@ -1736,6 +1838,7 @@
     "103": {
         "Number": "103",
         "FavoriteName": "Mushikago no Cagaster",
+        "FavoriteUrlName": "mushikago-no-cagaster",
         "CsfdID": "819434",
         "MalID": "38663",
         "MalName": "Mushikago no Cagaster",
@@ -1753,6 +1856,7 @@
     "104": {
         "Number": "104",
         "FavoriteName": "Inujašiki",
+        "FavoriteUrlName": "inujasiki",
         "CsfdID": "538337",
         "MalID": "34542",
         "MalName": "Inuyashiki",
@@ -1770,6 +1874,7 @@
     "105": {
         "Number": "105",
         "FavoriteName": "Peter Grill and the Philosopher's Time",
+        "FavoriteUrlName": "peter-grill-and-the-philosophers-time",
         "CsfdID": "877193",
         "MalID": "40436",
         "MalName": "Peter Grill to Kenja no Jikan",
@@ -1787,6 +1892,7 @@
     "106": {
         "Number": "106",
         "FavoriteName": "Kyokou Suiri",
+        "FavoriteUrlName": "kyokou-suiri-2020",
         "CsfdID": "808545",
         "MalID": "39017",
         "MalName": "Kyokou Suiri",
@@ -1804,6 +1910,7 @@
     "107": {
         "Number": "107",
         "FavoriteName": "Code: Breaker",
+        "FavoriteUrlName": "code-breaker",
         "CsfdID": "325410",
         "MalID": "11703",
         "MalName": "Code Breaker",
@@ -1821,6 +1928,7 @@
     "108": {
         "Number": "108",
         "FavoriteName": "World of Leadale",
+        "FavoriteUrlName": "world-of-leadale",
         "CsfdID": "1118480",
         "MalID": "48239",
         "MalName": "Leadale no Daichi nite",
@@ -1838,6 +1946,7 @@
     "109": {
         "Number": "109",
         "FavoriteName": "Made in Abyss",
+        "FavoriteUrlName": "made-in-abyss",
         "CsfdID": "524479",
         "MalID": "34599",
         "MalName": "Made in Abyss",
@@ -1855,6 +1964,7 @@
     "110": {
         "Number": "110",
         "FavoriteName": "Mushi-Shi",
+        "FavoriteUrlName": "mushi-shi",
         "CsfdID": "223320",
         "MalID": "457",
         "MalName": "Mushishi",
@@ -1872,6 +1982,7 @@
     "111": {
         "Number": "111",
         "FavoriteName": "Hellsing Ultimate",
+        "FavoriteUrlName": "hellsing-2006",
         "CsfdID": "223824",
         "MalID": "777",
         "MalName": "Hellsing Ultimate",
@@ -1889,6 +2000,7 @@
     "112": {
         "Number": "112",
         "FavoriteName": "Shikkaku Mon no Saikyou Kenja",
+        "FavoriteUrlName": "shikkaku-mon-no-saikyou-kenja",
         "CsfdID": "1118782",
         "MalID": "47161",
         "MalName": "Shikkakumon no Saikyou Kenja",
@@ -1906,6 +2018,7 @@
     "113": {
         "Number": "113",
         "FavoriteName": "Life with an Ordinary Guy who Reincarnated into a Total Fantasy Knockout",
+        "FavoriteUrlName": "life-with-an-ordinary-guy-who-reincarnated-into-a-total-fantasy-knockout",
         "CsfdID": "1117915",
         "MalID": "48997",
         "MalName": "Fantasy Bishoujo Juniku Ojisan to",
@@ -1923,6 +2036,7 @@
     "114": {
         "Number": "114",
         "FavoriteName": "She Professed Herself Pupil of the Wise Man",
+        "FavoriteUrlName": "she-professed-herself-pupil-of-the-wise-man",
         "CsfdID": "1118406",
         "MalID": "42072",
         "MalName": "Kenja no Deshi wo Nanoru Kenja",
@@ -1940,6 +2054,7 @@
     "115": {
         "Number": "115",
         "FavoriteName": "Disastrous Life of Saiki K. (The)",
+        "FavoriteUrlName": "disastrous-life-of-saiki-k-the",
         "CsfdID": "1181092",
         "MalID": "33255",
         "MalName": "Saiki Kusuo no Ψ-nan",
@@ -1957,6 +2072,7 @@
     "116": {
         "Number": "116",
         "FavoriteName": "Orient",
+        "FavoriteUrlName": "orient",
         "CsfdID": "1118535",
         "MalID": "45560",
         "MalName": "Orient",
@@ -1974,6 +2090,7 @@
     "117": {
         "Number": "117",
         "FavoriteName": "Owari no Seraph",
+        "FavoriteUrlName": "seraph-of-the-end",
         "CsfdID": "1122561",
         "MalID": "26243",
         "MalName": "Owari no Seraph",
@@ -1991,6 +2108,7 @@
     "118": {
         "Number": "118",
         "FavoriteName": "Welcome to Demon School, Iruma-kun",
+        "FavoriteUrlName": "welcome-to-demon-school-iruma-kun",
         "CsfdID": "1000873",
         "MalID": "39196",
         "MalName": "Mairimashita Iruma-kun 2nd Season",
@@ -2008,6 +2126,7 @@
     "119": {
         "Number": "119",
         "FavoriteName": "Gaikotsu Kishi-sama, Tadaima Isekai e Odekakechuu",
+        "FavoriteUrlName": "gaikotsu-kishi-sama-tadaima-isekai-e-odekakechuu",
         "CsfdID": "1153713",
         "MalID": "48760",
         "MalName": "Gaikotsu Kishi-sama Tadaima Isekai e Odekakechuu",
@@ -2025,6 +2144,7 @@
     "120": {
         "Number": "120",
         "FavoriteName": "Yuusha, Yamemasu",
+        "FavoriteUrlName": "yuusha-yamemasu",
         "CsfdID": "1154503",
         "MalID": "50175",
         "MalName": "Yuusha Yamemasu",
@@ -2042,6 +2162,7 @@
     "121": {
         "Number": "121",
         "FavoriteName": "The 8th Son? Are You Kidding Me?",
+        "FavoriteUrlName": "the-8th-son-are-you-kidding-me",
         "CsfdID": "842526",
         "MalID": "38830",
         "MalName": "Hachi-nan tte Sore wa Nai deshou",
@@ -2059,6 +2180,7 @@
     "122": {
         "Number": "122",
         "FavoriteName": "Alderamin on the Sky",
+        "FavoriteUrlName": "alderamin-on-the-sky",
         "CsfdID": "443048",
         "MalID": "31764",
         "MalName": "Nejimaki Seirei Senki  Tenkyou no Alderamin",
@@ -2076,6 +2198,7 @@
     "123": {
         "Number": "123",
         "FavoriteName": "Dungeon of Black Company (The)",
+        "FavoriteUrlName": "the-dungeon-of-black-company",
         "CsfdID": "1045737",
         "MalID": "42340",
         "MalName": "Meikyuu Black Company",
@@ -2093,6 +2216,7 @@
     "124": {
         "Number": "124",
         "FavoriteName": "Mahou Tsukai Reimeiki",
+        "FavoriteUrlName": "mahou-tsukai-reimeiki",
         "CsfdID": "1154036",
         "MalID": "48842",
         "MalName": "Mahoutsukai Reimeiki",
@@ -2110,6 +2234,7 @@
     "125": {
         "Number": "125",
         "FavoriteName": "Shijou Saikyou no Daimaou, Murabito A ni Tensei Suru",
+        "FavoriteUrlName": "shijou-saikyou-no-daimaou-murabito-a-ni-tensei-suru",
         "CsfdID": "1154383",
         "MalID": "48415",
         "MalName": "Shijou Saikyou no Daimaou Murabito A ni Tensei suru",
@@ -2127,6 +2252,7 @@
     "126": {
         "Number": "126",
         "FavoriteName": "Shokei Shoujo no Virgin Road",
+        "FavoriteUrlName": "shokei-shoujo-no-virgin-road",
         "CsfdID": "1154399",
         "MalID": "47162",
         "MalName": "Shokei Shoujo no Virgin Road",
@@ -2144,6 +2270,7 @@
     "127": {
         "Number": "127",
         "FavoriteName": "Shinka no mi: Shiranai uchi ni kachigumi jinsei",
+        "FavoriteUrlName": "shinka-no-mi-shiranai-uchi-ni-kachigumi-jinsei",
         "CsfdID": "1087677",
         "MalID": "46985",
         "MalName": "Shinka no Mi  Shiranai Uchi ni Kachigumi Jinsei",
@@ -2161,6 +2288,7 @@
     "128": {
         "Number": "128",
         "FavoriteName": "Magi: The Labyrinth Of Magic",
+        "FavoriteUrlName": "magi-the-labyrinth-of-magic",
         "CsfdID": "325413",
         "MalID": "14513",
         "MalName": "Magi  The Labyrinth of Magic",
@@ -2178,6 +2306,7 @@
     "129": {
         "Number": "129",
         "FavoriteName": "Don't Hurt Me, My Healer!",
+        "FavoriteUrlName": "dont-hurt-me-my-healer",
         "CsfdID": "1153942",
         "MalID": "48742",
         "MalName": "Kono Healer Mendokusai",
@@ -2195,6 +2324,7 @@
     "130": {
         "Number": "130",
         "FavoriteName": "Full Dive: This Ultimate Next-Gen Full Dive RPG Is Even Shittier Than Real Life!",
+        "FavoriteUrlName": "full-dive-this-ultimate-next-gen-full-dive-rpg-is-even-shittier-than-real-life",
         "CsfdID": "1000049",
         "MalID": "44276",
         "MalName": "Kyuukyoku Shinka shita Full Dive RPG ga Genjitsu yori mo Kusoge Dattara",
@@ -2212,6 +2342,7 @@
     "131": {
         "Number": "131",
         "FavoriteName": "I'm Standing on 1,000,000 Lives.",
+        "FavoriteUrlName": "im-standing-on-1000000-lives",
         "CsfdID": "911781",
         "MalID": "41380",
         "MalName": "100-man no Inochi no Ue ni Ore wa Tatteiru",
@@ -2229,6 +2360,7 @@
     "132": {
         "Number": "132",
         "FavoriteName": "Chain Chronicle: The Light of Haecceitas",
+        "FavoriteUrlName": "chain-chronicle-the-light-of-haecceitas",
         "CsfdID": "479869",
         "MalID": "28833",
         "MalName": "Chain Chronicle  Haecceitas no Hikari",
@@ -2246,6 +2378,7 @@
     "133": {
         "Number": "133",
         "FavoriteName": "Spy x Family",
+        "FavoriteUrlName": "spy-x-family",
         "CsfdID": "1109804",
         "MalID": "50265",
         "MalName": "Spy x Family",
@@ -2263,6 +2396,7 @@
     "134": {
         "Number": "134",
         "FavoriteName": "Densecu no júša no densecu",
+        "FavoriteUrlName": "densecu-no-ja-no-densecu",
         "CsfdID": "280594",
         "MalID": "8086",
         "MalName": "Densetsu no Yuusha no Densetsu",
@@ -2280,6 +2414,7 @@
     "135": {
         "Number": "135",
         "FavoriteName": "Banished from the Hero's Party I Decided to Live a Quiet Life in the Countryside",
+        "FavoriteUrlName": "banished-from-the-heros-party-i-decided-to-live-a-quiet-life-in-the-countryside",
         "CsfdID": "1087598",
         "MalID": "44037",
         "MalName": "Shin no Nakama ja Nai to Yuusha no Party wo Oidasareta node Henkyou de Slow Life suru Koto ni Shimashita",
@@ -2297,6 +2432,7 @@
     "136": {
         "Number": "136",
         "FavoriteName": "When Supernatural Battles Became Commonplace",
+        "FavoriteUrlName": "when-supernatural-battles-became-commonplace",
         "CsfdID": "389263",
         "MalID": "25159",
         "MalName": "Inou-Battle wa Nichijou-kei no Naka de",
@@ -2314,6 +2450,7 @@
     "137": {
         "Number": "137",
         "FavoriteName": "Hagure júša no Aesthetica",
+        "FavoriteUrlName": "hagure-jusa-no-aesthetica",
         "CsfdID": "320506",
         "MalID": "13161",
         "MalName": "Hagure Yuusha no Aesthetica",
@@ -2331,6 +2468,7 @@
     "138": {
         "Number": "138",
         "FavoriteName": "Fate/Zero",
+        "FavoriteUrlName": "fate-zero",
         "CsfdID": "303629",
         "MalID": "10087",
         "MalName": "Fate/Zero",
@@ -2348,6 +2486,7 @@
     "139": {
         "Number": "139",
         "FavoriteName": "Otome Game sekai wa Mob ni kibišii sekai desu",
+        "FavoriteUrlName": "otome-game-sekai-wa-mob-ni-kibisii-sekai-desu",
         "CsfdID": "1154093",
         "MalID": "50461",
         "MalName": "Otome Game Sekai wa Mob ni Kibishii Sekai desu",
@@ -2365,6 +2504,7 @@
     "140": {
         "Number": "140",
         "FavoriteName": "Tensei Kenja no Isekai Life: Daini no Shokugyou o Ete, Sekai Saikyou ni Narimashita",
+        "FavoriteUrlName": "tensei-kenja-no-isekai-life-daini-no-shokugyou-o-ete-sekai-saikyou-ni-narimashita",
         "CsfdID": "1193607",
         "MalID": "47163",
         "MalName": "Tensei Kenja no Isekai Life  Dai-2 no Shokugyou wo Ete Sekai Saikyou ni Narimashita",
@@ -2382,6 +2522,7 @@
     "141": {
         "Number": "141",
         "FavoriteName": "Drifters",
+        "FavoriteUrlName": "drifters",
         "CsfdID": "453155",
         "MalID": "31339",
         "MalName": "Drifters",
@@ -2399,6 +2540,7 @@
     "142": {
         "Number": "142",
         "FavoriteName": "Harem in the Labyrinth of Another World",
+        "FavoriteUrlName": "isekai-meikyuu-de-harem-o-2022",
         "CsfdID": "1193189",
         "MalID": "44524",
         "MalName": "Isekai Meikyuu de Harem wo",
@@ -2416,6 +2558,7 @@
     "143": {
         "Number": "143",
         "FavoriteName": "Kinsou no Vermeil: Gakeppuchi Majutsushi wa Saikyou no Yakusai to Mahou Sekai o Tsukisusumu",
+        "FavoriteUrlName": "kinsou-no-vermeil-gakeppuchi-majutsushi-wa-saikyou-no-yakusai-to-mahou-sekai-o-tsukisusumu",
         "CsfdID": "1193288",
         "MalID": "51213",
         "MalName": "Kinsou no Vermeil  Gakeppuchi Majutsushi wa Saikyou no Yakusai to Mahou Sekai wo Tsukisusumu",
@@ -2433,6 +2576,7 @@
     "144": {
         "Number": "144",
         "FavoriteName": "Uncle From Another World",
+        "FavoriteUrlName": "uncle-from-another-world",
         "CsfdID": "1193235",
         "MalID": "49220",
         "MalName": "Isekai Ojisan",
@@ -2450,6 +2594,7 @@
     "145": {
         "Number": "145",
         "FavoriteName": "Kuro no Shoukanshi",
+        "FavoriteUrlName": "kuro-no-shoukanshi",
         "CsfdID": "1193368",
         "MalID": "51064",
         "MalName": "Kuro no Shoukanshi",
@@ -2467,6 +2612,7 @@
     "146": {
         "Number": "146",
         "FavoriteName": "Steins Gate",
+        "FavoriteUrlName": "steins-gate",
         "CsfdID": "294167",
         "MalID": "9253",
         "MalName": "Steins Gate",
@@ -2484,6 +2630,7 @@
     "147": {
         "Number": "147",
         "FavoriteName": "Ijiranaide, Nagatoro-san",
+        "FavoriteUrlName": "ijiranaide-nagatoro-san",
         "CsfdID": "977467",
         "MalID": "42361",
         "MalName": "Ijiranaide Nagatoro-san",
@@ -2501,6 +2648,7 @@
     "148": {
         "Number": "148",
         "FavoriteName": "World's End Harem",
+        "FavoriteUrlName": "worlds-end-harem",
         "CsfdID": "1087660",
         "MalID": "41946",
         "MalName": "Shuumatsu no Harem",
@@ -2518,6 +2666,7 @@
     "149": {
         "Number": "149",
         "FavoriteName": "Yofukashi no Uta",
+        "FavoriteUrlName": "yofukashi-no-uta",
         "CsfdID": "1194350",
         "MalID": "50346",
         "MalName": "Yofukashi no Uta",
@@ -2535,6 +2684,7 @@
     "150": {
         "Number": "150",
         "FavoriteName": "Fruit of Grisaia (The)",
+        "FavoriteUrlName": "fruit-of-grisaia-the",
         "CsfdID": "386461",
         "MalID": "17729",
         "MalName": "Grisaia no Kajitsu",
@@ -2552,6 +2702,7 @@
     "151": {
         "Number": "151",
         "FavoriteName": "High School Prodigies Have It Easy Even in Another World",
+        "FavoriteUrlName": "high-school-prodigies-have-it-easy-even-in-another-world",
         "CsfdID": "774034",
         "MalID": "39523",
         "MalName": "Choujin Koukousei-tachi wa Isekai demo Yoyuu de Ikinuku you desu",
@@ -2569,6 +2720,7 @@
     "152": {
         "Number": "152",
         "FavoriteName": "Death Parade",
+        "FavoriteUrlName": "prehlidka-smrti",
         "CsfdID": "401207",
         "MalID": "28223",
         "MalName": "Death Parade",
@@ -2586,6 +2738,7 @@
     "153": {
         "Number": "153",
         "FavoriteName": "Asu no yoichi!",
+        "FavoriteUrlName": "asu-no-yoichi",
         "CsfdID": "256459",
         "MalID": "4999",
         "MalName": "Asu no Yoichi",
@@ -2603,6 +2756,7 @@
     "154": {
         "Number": "154",
         "FavoriteName": "Knight's & Magic",
+        "FavoriteUrlName": "knights-and-magic",
         "CsfdID": "524406",
         "MalID": "34104",
         "MalName": "Knights   Magic",
@@ -2620,6 +2774,7 @@
     "155": {
         "Number": "155",
         "FavoriteName": "Classroom of the Elite",
+        "FavoriteUrlName": "jkoso-dicurjoku-id-ugi-no-kjicu-e",
         "CsfdID": "524514",
         "MalID": "35507",
         "MalName": "Youkoso Jitsuryoku Shijou Shugi no Kyoushitsu e",
@@ -2637,6 +2792,7 @@
     "156": {
         "Number": "156",
         "FavoriteName": "Isekai Yakkyoku",
+        "FavoriteUrlName": "isekai-yakkyoku",
         "CsfdID": "1193251",
         "MalID": "49438",
         "MalName": "Isekai Yakkyoku",
@@ -2654,6 +2810,7 @@
     "157": {
         "Number": "157",
         "FavoriteName": "Yu-No: A Girl Who Chants Love at the Bound of this World",
+        "FavoriteUrlName": "yu-no-a-girl-who-chants-love-at-the-bound-of-this-world",
         "CsfdID": "709613",
         "MalID": "34620",
         "MalName": "Kono Yo no Hate de Koi wo Utau Shoujo YU-NO",
@@ -2671,6 +2828,7 @@
     "158": {
         "Number": "158",
         "FavoriteName": "Kiba",
+        "FavoriteUrlName": "kiba",
         "CsfdID": "244997",
         "MalID": "845",
         "MalName": "Kiba",
@@ -2688,6 +2846,7 @@
     "159": {
         "Number": "159",
         "FavoriteName": "My Stepmom's Daughter Is My Ex",
+        "FavoriteUrlName": "my-stepmoms-daughter-is-my-ex",
         "CsfdID": "1193426",
         "MalID": "49470",
         "MalName": "Mamahaha no Tsurego ga Motokano datta",
@@ -2705,6 +2864,7 @@
     "160": {
         "Number": "160",
         "FavoriteName": "Restaurant to Another World",
+        "FavoriteUrlName": "restaurant-to-another-world",
         "CsfdID": "524457",
         "MalID": "34012",
         "MalName": "Isekai Shokudou",
@@ -2722,6 +2882,7 @@
     "161": {
         "Number": "161",
         "FavoriteName": "Rent-a-Girlfriend",
+        "FavoriteUrlName": "rent-a-girlfriend",
         "CsfdID": "920725",
         "MalID": "40839",
         "MalName": "Kanojo Okarishimasu",
@@ -2739,6 +2900,7 @@
     "162": {
         "Number": "162",
         "FavoriteName": "Peach Boy Riverside",
+        "FavoriteUrlName": "peach-boy-riverside",
         "CsfdID": "1045734",
         "MalID": "42627",
         "MalName": "Peach Boy Riverside",
@@ -2756,6 +2918,7 @@
     "163": {
         "Number": "163",
         "FavoriteName": "Roku de naši madžucu kóši to Akashic Records",
+        "FavoriteUrlName": "roku-de-nasi-madzucu-kosi-to-akashic-records",
         "CsfdID": "486963",
         "MalID": "32951",
         "MalName": "Rokudenashi Majutsu Koushi to Akashic Records",
@@ -2773,6 +2936,7 @@
     "164": {
         "Number": "164",
         "FavoriteName": "Naka no hito Genome [Jikkyouchuu]",
+        "FavoriteUrlName": "naka-no-hito-genome-[jikkyouchuu]",
         "CsfdID": "743243",
         "MalID": "37926",
         "MalName": "Nakanohito Genome Jikkyouchuu",
@@ -2790,6 +2954,7 @@
     "165": {
         "Number": "165",
         "FavoriteName": "Battle Game in 5 Seconds",
+        "FavoriteUrlName": "battle-game-in-5-seconds",
         "CsfdID": "1046043",
         "MalID": "43814",
         "MalName": "Deatte 5-byou de Battle",
@@ -2807,6 +2972,7 @@
     "166": {
         "Number": "166",
         "FavoriteName": "Saikin Yatotta Maid ga Ayashii",
+        "FavoriteUrlName": "saikin-yatotta-maid-ga-ayashii",
         "CsfdID": "1193500",
         "MalID": "51837",
         "MalName": "Saikin Yatotta Maid ga Ayashii",
@@ -2824,6 +2990,7 @@
     "167": {
         "Number": "167",
         "FavoriteName": "Akuyaku Reijou nanode Last Boss wo Kattemimashita",
+        "FavoriteUrlName": "akuyaku-reijou-nanode-last-boss-wo-kattemimashita",
         "CsfdID": "1231592",
         "MalID": "49979",
         "MalName": "Akuyaku Reijou nano de Last Boss wo Kattemimashita",
@@ -2841,6 +3008,7 @@
     "168": {
         "Number": "168",
         "FavoriteName": "Tensei Shitara Ken Deshita",
+        "FavoriteUrlName": "tensei-shitara-ken-deshita",
         "CsfdID": "1232453",
         "MalID": "49891",
         "MalName": "Tensei shitara Ken Deshita",
@@ -2858,6 +3026,7 @@
     "169": {
         "Number": "169",
         "FavoriteName": "Noumin Kanren no Skill Bakka Agetetara Naze ka Tsuyoku Natta.",
+        "FavoriteUrlName": "noumin-kanren-no-skill-bakka-agetetara-naze-ka-tsuyoku-natta",
         "CsfdID": "1232273",
         "MalID": "51128",
         "MalName": "Noumin Kanren no Skill bakka Agetetara Nazeka Tsuyoku Natta",
@@ -2875,6 +3044,7 @@
     "170": {
         "Number": "170",
         "FavoriteName": "Darling in the Franxx",
+        "FavoriteUrlName": "darling-in-the-franxx",
         "CsfdID": "563918",
         "MalID": "35849",
         "MalName": "Darling in the FranXX",
@@ -2892,6 +3062,7 @@
     "171": {
         "Number": "171",
         "FavoriteName": "Yuusha Party o Tsuihou Sareta Beast Tamer, Saikyoushu no Nekomimi Shoujo to Deau",
+        "FavoriteUrlName": "yuusha-party-o-tsuihou-sareta-beast-tamer-saikyoushu-no-nekomimi-shoujo-to-deau",
         "CsfdID": "1232678",
         "MalID": "52046",
         "MalName": "Yuusha Party wo Tsuihou sareta Beast Tamer Saikyoushu no Nekomimi Shoujo to Deau",
@@ -2909,6 +3080,7 @@
     "172": {
         "Number": "172",
         "FavoriteName": "Kage no Jitsuryokusha ni Naritakute!",
+        "FavoriteUrlName": "kage-no-jitsuryokusha-ni-naritakute",
         "CsfdID": "1232111",
         "MalID": "48316",
         "MalName": "Kage no Jitsuryokusha ni Naritakute",
@@ -2926,6 +3098,7 @@
     "173": {
         "Number": "173",
         "FavoriteName": "Mahóka kókó no rettósei",
+        "FavoriteUrlName": "mahka-kk-no-rettsei",
         "CsfdID": "369697",
         "MalID": "20785",
         "MalName": "Mahouka Koukou no Rettousei",
@@ -2943,6 +3116,7 @@
     "174": {
         "Number": "174",
         "FavoriteName": "Deadman Wonderland",
+        "FavoriteUrlName": "deadman-wonderland",
         "CsfdID": "294892",
         "MalID": "6880",
         "MalName": "Deadman Wonderland",
@@ -2960,6 +3134,7 @@
     "175": {
         "Number": "175",
         "FavoriteName": "Shinobi no Ittoki",
+        "FavoriteUrlName": "shinobi-no-ittoki",
         "CsfdID": "1232398",
         "MalID": "51098",
         "MalName": "Shinobi no Ittoki",
@@ -2977,6 +3152,7 @@
     "176": {
         "Number": "176",
         "FavoriteName": "I couldn't become a hero, so I reluctantly decided to get a job.",
+        "FavoriteUrlName": "i-couldnt-become-a-hero-so-i-reluctantly-decided-to-get-a-job",
         "CsfdID": "352355",
         "MalID": "18677",
         "MalName": "Yuusha ni Narenakatta Ore wa Shibushibu Shuushoku wo Ketsui Shimashita",
@@ -2994,6 +3170,7 @@
     "177": {
         "Number": "177",
         "FavoriteName": "Chainsaw Man",
+        "FavoriteUrlName": "chainsaw-man",
         "CsfdID": "1093193",
         "MalID": "44511",
         "MalName": "Chainsaw Man",
@@ -3011,6 +3188,7 @@
     "178": {
         "Number": "178",
         "FavoriteName": "Haven't You Heard? I'm Sakamoto",
+        "FavoriteUrlName": "havent-you-heard-im-sakamoto",
         "CsfdID": "432370",
         "MalID": "32542",
         "MalName": "Sakamoto desu ga",
@@ -3028,6 +3206,7 @@
     "179": {
         "Number": "179",
         "FavoriteName": "A Couple of Cuckoos",
+        "FavoriteUrlName": "a-couple-of-cuckoos",
         "CsfdID": "1153775",
         "MalID": "48675",
         "MalName": "Kakkou no Iinazuke",
@@ -3045,6 +3224,7 @@
     "180": {
         "Number": "180",
         "FavoriteName": "To Be Hero",
+        "FavoriteUrlName": "to-be-hero-2016",
         "CsfdID": "456646",
         "MalID": "34009",
         "MalName": "To Be Hero",
@@ -3062,6 +3242,7 @@
     "181": {
         "Number": "181",
         "FavoriteName": "Harem Camp!",
+        "FavoriteUrlName": "",
         "CsfdID": "1233286",
         "MalID": "52717",
         "MalName": "Harem Camp",
@@ -3079,6 +3260,7 @@
     "182": {
         "Number": "182",
         "FavoriteName": "Renai Flops",
+        "FavoriteUrlName": "renai-flops",
         "CsfdID": "1232296",
         "MalID": "51403",
         "MalName": "Renai Flops",
@@ -3096,6 +3278,7 @@
     "183": {
         "Number": "183",
         "FavoriteName": "Isekai Quartet",
+        "FavoriteUrlName": "isekai-quartet",
         "CsfdID": "712893",
         "MalID": "38472",
         "MalName": "Isekai Quartet",
@@ -3113,6 +3296,7 @@
     "184": {
         "Number": "184",
         "FavoriteName": "Shimoneta",
+        "FavoriteUrlName": "shimoneta",
         "CsfdID": "54501",
         "MalID": "29786",
         "MalName": "Shimoneta to Iu Gainen ga Sonzai Shinai Taikutsu na Sekai",
@@ -3130,6 +3314,7 @@
     "185": {
         "Number": "185",
         "FavoriteName": "Futoku no Guild",
+        "FavoriteUrlName": "",
         "CsfdID": "1232022",
         "MalID": "51212",
         "MalName": "Futoku no Guild",
@@ -3147,6 +3332,7 @@
     "186": {
         "Number": "186",
         "FavoriteName": "My Dress-Up Darling",
+        "FavoriteUrlName": "my-dress-up-darling",
         "CsfdID": "1118808",
         "MalID": "48736",
         "MalName": "Sono Bisque Doll wa Koi wo Suru",
@@ -3164,6 +3350,7 @@
     "187": {
         "Number": "187",
         "FavoriteName": "Noblesse",
+        "FavoriteUrlName": "noblesse",
         "CsfdID": "910438",
         "MalID": "41345",
         "MalName": "Noblesse",
@@ -3181,6 +3368,7 @@
     "188": {
         "Number": "188",
         "FavoriteName": "Fuufu Ijou, Koibito Miman.",
+        "FavoriteUrlName": "fuufu-ijou-koibito-miman",
         "CsfdID": "1232040",
         "MalID": "50425",
         "MalName": "Fuufu Ijou Koibito Miman",
@@ -3198,6 +3386,7 @@
     "189": {
         "Number": "189",
         "FavoriteName": "Blood Lad",
+        "FavoriteUrlName": "blood-lad",
         "CsfdID": "346170",
         "MalID": "11633",
         "MalName": "Blood Lad",
@@ -3215,6 +3404,7 @@
     "191": {
         "Number": "191",
         "FavoriteName": "Zero no cukaima",
+        "FavoriteUrlName": "zero-no-cukaima",
         "CsfdID": "1165110",
         "MalID": "1195",
         "MalName": "Zero no Tsukaima",
@@ -3232,6 +3422,7 @@
     "192": {
         "Number": "192",
         "FavoriteName": "86",
+        "FavoriteUrlName": "86",
         "CsfdID": "999000",
         "MalID": "41457",
         "MalName": "86",
@@ -3249,6 +3440,7 @@
     "193": {
         "Number": "193",
         "FavoriteName": "Isekai Nonbiri Nouka",
+        "FavoriteUrlName": "isekai-nonbiri-nouka-2023",
         "CsfdID": "1275216",
         "MalID": "51462",
         "MalName": "Isekai Nonbiri Nouka",
@@ -3266,6 +3458,7 @@
     "194": {
         "Number": "194",
         "FavoriteName": "Tondemo Skill de Isekai Hourou Meshi",
+        "FavoriteUrlName": "tondemo-skill-de-isekai-hourou-meshi-2023",
         "CsfdID": "1277055",
         "MalID": "53446",
         "MalName": "Tondemo Skill de Isekai Hourou Meshi",
@@ -3283,6 +3476,7 @@
     "195": {
         "Number": "195",
         "FavoriteName": "Eiyuuou, Bu wo Kiwameru Tame Tenseisu",
+        "FavoriteUrlName": "eiyuuou-bu-wo-kiwameru-tame-tenseisu-2023",
         "CsfdID": "1275100",
         "MalID": "50481",
         "MalName": "Eiyuuou Bu wo Kiwameru Tame Tenseisu  Soshite Sekai Saikyou no Minarai Kishi♀",
@@ -3300,6 +3494,7 @@
     "196": {
         "Number": "196",
         "FavoriteName": "Chillin' in My 30s after Getting Fired from the Demon King's Army",
+        "FavoriteUrlName": "chillin-in-my-30s-after-getting-fired-from-the-demon-kings-army-2023",
         "CsfdID": "1275305",
         "MalID": "52446",
         "MalName": "Kaiko sareta Ankoku Heishi 30-dai no Slow na Second Life",
@@ -3317,6 +3512,7 @@
     "197": {
         "Number": "197",
         "FavoriteName": "Ningen Fushin no Boukensha-tachi ga Sekai o Sukuu You Desu",
+        "FavoriteUrlName": "ningen-fushin-no-boukensha-tachi-ga-sekai-o-sukuu-you-desu-2023",
         "CsfdID": "1275725",
         "MalID": "49612",
         "MalName": "Ningen Fushin no Boukensha-tachi ga Sekai wo Sukuu you desu",
@@ -3334,6 +3530,7 @@
     "198": {
         "Number": "198",
         "FavoriteName": "Reincarnation of the Strongest Exorcist In Another World (The)",
+        "FavoriteUrlName": "the-reincarnation-of-the-strongest-exorcist-in-another-world-2023",
         "CsfdID": "1276648",
         "MalID": "50932",
         "MalName": "Saikyou Onmyouji no Isekai Tenseiki",
@@ -3351,6 +3548,7 @@
     "199": {
         "Number": "199",
         "FavoriteName": "Benriya Saitou-san, Isekai ni Iku",
+        "FavoriteUrlName": "benriya-saitou-san-isekai-ni-iku-2023",
         "CsfdID": "1275057",
         "MalID": "50854",
         "MalName": "Benriya Saitou-san Isekai ni Iku",
@@ -3368,6 +3566,7 @@
     "200": {
         "Number": "200",
         "FavoriteName": "Hyouken no Majutsushi ga Sekai o Suberu",
+        "FavoriteUrlName": "hyouken-no-majutsushi-ga-sekai-o-suberu-2023",
         "CsfdID": "1275180",
         "MalID": "51711",
         "MalName": "Hyouken no Majutsushi ga Sekai wo Suberu",
@@ -3385,6 +3584,7 @@
     "201": {
         "Number": "201",
         "FavoriteName": "Inu ni Nattara Suki na Hito ni Hirowareta.",
+        "FavoriteUrlName": "inu-ni-nattara-suki-na-hito-ni-hirowareta-2023",
         "CsfdID": "1275194",
         "MalID": "51265",
         "MalName": "Inu ni Nattara Suki na Hito ni Hirowareta",
@@ -3402,6 +3602,7 @@
     "202": {
         "Number": "202",
         "FavoriteName": "Angel Next Door Spoils Me Rotten (The)",
+        "FavoriteUrlName": "the-angel-next-door-spoils-me-rotten-2023",
         "CsfdID": "1276593",
         "MalID": "50739",
         "MalName": "Otonari no Tenshi-sama ni Itsunomanika Dame Ningen ni Sareteita Ken",
@@ -3419,6 +3620,7 @@
     "203": {
         "Number": "203",
         "FavoriteName": "Ascendance of a Bookworm",
+        "FavoriteUrlName": "ascendance-of-a-bookworm",
         "CsfdID": "774036",
         "MalID": "39468",
         "MalName": "Honzuki no Gekokujou  Shisho ni Naru Tame ni wa Shudan wo Erandeiraremasen",
@@ -3436,6 +3638,7 @@
     "204": {
         "Number": "204",
         "FavoriteName": "Tensei Oujo to Tensai Reijou no Mahou Kakumei",
+        "FavoriteUrlName": "tensei-oujo-to-tensai-reijou-no-mahou-kakumei-2023",
         "CsfdID": "1276772",
         "MalID": "52736",
         "MalName": "Tensei Oujo to Tensai Reijou no Mahou Kakumei",
@@ -3453,6 +3656,7 @@
     "205": {
         "Number": "205",
         "FavoriteName": "NieR:Automata Ver1.1a",
+        "FavoriteUrlName": "nierautomata-ver11a-2023",
         "CsfdID": "1275707",
         "MalID": "51105",
         "MalName": "NieR Automata Ver11a",
@@ -3470,6 +3674,7 @@
     "206": {
         "Number": "206",
         "FavoriteName": "Rougo ni Sonaete Isekai de 8-manmai no Kinka o Tamemasu",
+        "FavoriteUrlName": "rougo-ni-sonaete-isekai-de-8-manmai-no-kinka-o-tamemasu-2023",
         "CsfdID": "1276633",
         "MalID": "52461",
         "MalName": "Rougo ni Sonaete Isekai de 8-manmai no Kinka wo Tamemasu",
@@ -3487,6 +3692,7 @@
     "207": {
         "Number": "207",
         "FavoriteName": "Jahari ore no seišun rabukome wa mačigatteiru.",
+        "FavoriteUrlName": "jahari-ore-no-seisun-rabukome-wa-macigatteiru",
         "CsfdID": "337855",
         "MalID": "14813",
         "MalName": "Yahari Ore no Seishun Love Comedy wa Machigatteiru",
@@ -3504,6 +3710,7 @@
     "208": {
         "Number": "208",
         "FavoriteName": "Heavenly Delusion",
+        "FavoriteUrlName": "heavenly-delusion-2023",
         "CsfdID": "1322955",
         "MalID": "53393",
         "MalName": "Tengoku Daimakyou",
@@ -3521,6 +3728,7 @@
     "209": {
         "Number": "209",
         "FavoriteName": "Jigokuraku",
+        "FavoriteUrlName": "jigokuraku-2023",
         "CsfdID": "1129000",
         "MalID": "46569",
         "MalName": "Jigokuraku",
@@ -3538,6 +3746,7 @@
     "210": {
         "Number": "210",
         "FavoriteName": "Yamada-kun to Lv999 no Koi wo Suru",
+        "FavoriteUrlName": "yamada-kun-to-lv999-no-koi-wo-suru-2023",
         "CsfdID": "1323342",
         "MalID": "53126",
         "MalName": "Yamada-kun to Lv999 no Koi wo Suru",
@@ -3555,6 +3764,7 @@
     "211": {
         "Number": "211",
         "FavoriteName": "Iseleve",
+        "FavoriteUrlName": "iseleve-2023",
         "CsfdID": "1321766",
         "MalID": "52830",
         "MalName": "Isekai de Cheat Skill wo Te ni Shita Ore wa Genjitsu Sekai wo mo Musou Suru  Level Up wa Jinsei wo Kaeta",
@@ -3572,6 +3782,7 @@
     "212": {
         "Number": "212",
         "FavoriteName": "Lookism",
+        "FavoriteUrlName": "lookism-2022",
         "CsfdID": "1259735",
         "MalID": "53149",
         "MalName": "Oemojisangjuui",
@@ -3589,6 +3800,7 @@
     "213": {
         "Number": "213",
         "FavoriteName": "Kaminaki Sekai no Kamisama Katsudou",
+        "FavoriteUrlName": "kaminaki-sekai-no-kamisama-katsudou-2023",
         "CsfdID": "1321830",
         "MalID": "51693",
         "MalName": "Kaminaki Sekai no Kamisama Katsudou",
@@ -3606,6 +3818,7 @@
     "214": {
         "Number": "214",
         "FavoriteName": "Kono Subarashii Sekai ni Bakuen wo!",
+        "FavoriteUrlName": "kono-subarashii-sekai-ni-bakuen-wo-2023",
         "CsfdID": "1322027",
         "MalID": "51958",
         "MalName": "Kono Subarashii Sekai ni Bakuen wo",
@@ -3623,6 +3836,7 @@
     "215": {
         "Number": "215",
         "FavoriteName": "Trinity Seven",
+        "FavoriteUrlName": "trinity-seven",
         "CsfdID": "389269",
         "MalID": "33581",
         "MalName": "Trinity Seven Movie 1  Eternity Library to Alchemic Girl",
@@ -3640,6 +3854,7 @@
     "216": {
         "Number": "216",
         "FavoriteName": "Yuusha ga Shinda!",
+        "FavoriteUrlName": "yuusha-ga-shinda-2023",
         "CsfdID": "1301352",
         "MalID": "51706",
         "MalName": "Yuusha ga Shinda",
@@ -3657,6 +3872,7 @@
     "217": {
         "Number": "217",
         "FavoriteName": "Mashle",
+        "FavoriteUrlName": "mashle-2023",
         "CsfdID": "1322078",
         "MalID": "52211",
         "MalName": "Mashle",
@@ -3674,6 +3890,7 @@
     "218": {
         "Number": "218",
         "FavoriteName": "Isekai One Turn Kill Neesan",
+        "FavoriteUrlName": "isekai-one-turn-kill-neesan-2023",
         "CsfdID": "1321787",
         "MalID": "51219",
         "MalName": "Isekai One Turn Kill Neesan  Ane Douhan no Isekai Seikatsu Hajimemashita",
@@ -3691,6 +3908,7 @@
     "219": {
         "Number": "219",
         "FavoriteName": "Isekai Shoukan wa Nidome desu",
+        "FavoriteUrlName": "isekai-shoukan-wa-nidome-desu-2023",
         "CsfdID": "1321801",
         "MalID": "50220",
         "MalName": "Isekai Shoukan wa Nidome desu",
@@ -3708,6 +3926,7 @@
     "220": {
         "Number": "220",
         "FavoriteName": "Otonari ni Ginga",
+        "FavoriteUrlName": "otonari-ni-ginga-2023",
         "CsfdID": "1322570",
         "MalID": "51705",
         "MalName": "Otonari ni Ginga",
@@ -3725,6 +3944,7 @@
     "221": {
         "Number": "221",
         "FavoriteName": "Dead Mount Death Play",
+        "FavoriteUrlName": "dead-mount-death-play-2023",
         "CsfdID": "1321731",
         "MalID": "53613",
         "MalName": "Dead Mount Death Play",
@@ -3742,6 +3962,7 @@
     "222": {
         "Number": "222",
         "FavoriteName": "Oshi no Ko",
+        "FavoriteUrlName": "oshi-no-ko-2023",
         "CsfdID": "1247413",
         "MalID": "52034",
         "MalName": "Oshi no Ko",
@@ -3759,6 +3980,7 @@
     "223": {
         "Number": "223",
         "FavoriteName": "Megami no Cafe Terrace",
+        "FavoriteUrlName": "megami-no-cafe-terrace-2023",
         "CsfdID": "1322124",
         "MalID": "52973",
         "MalName": "Megami no Café Terrace",
@@ -3776,6 +3998,7 @@
     "224": {
         "Number": "224",
         "FavoriteName": "Tensei Kizoku no Isekai Boukenroku",
+        "FavoriteUrlName": "tensei-kizoku-no-isekai-boukenroku-2023",
         "CsfdID": "1322971",
         "MalID": "52608",
         "MalName": "Tensei Kizoku no Isekai Boukenroku  Jichou wo Shiranai Kamigami no Shito",
@@ -3793,6 +4016,7 @@
     "225": {
         "Number": "225",
         "FavoriteName": "Samurai Champloo",
+        "FavoriteUrlName": "samurai-champloo",
         "CsfdID": "205802",
         "MalID": "205",
         "MalName": "Samurai Champloo",
@@ -3810,6 +4034,7 @@
     "226": {
         "Number": "226",
         "FavoriteName": "School days",
+        "FavoriteUrlName": "school-days",
         "CsfdID": "235267",
         "MalID": "756",
         "MalName": "School Days ONA",
@@ -3827,6 +4052,7 @@
     "227": {
         "Number": "227",
         "FavoriteName": "Jitsu wa Ore, Saikyou deshita",
+        "FavoriteUrlName": "jitsu-wa-ore-saikyou-deshita-2023",
         "CsfdID": "1370714",
         "MalID": "52969",
         "MalName": "Jitsu wa Ore Saikyou deshita",
@@ -3844,6 +4070,7 @@
     "228": {
         "Number": "228",
         "FavoriteName": "Lv1 Maou to One Room Yuusha",
+        "FavoriteUrlName": "lv1-maou-to-one-room-yuusha-2023",
         "CsfdID": "1370813",
         "MalID": "51458",
         "MalName": "Lv1 Maou to One Room Yuusha",
@@ -3861,6 +4088,7 @@
     "229": {
         "Number": "229",
         "FavoriteName": "Jidou Hanbaiki ni Umarekawatta Ore wa Meikyuu wo Samayou",
+        "FavoriteUrlName": "jidou-hanbaiki-ni-umarekawatta-ore-wa-meikyuu-wo-samayou-2023",
         "CsfdID": "1370700",
         "MalID": "52619",
         "MalName": "Jidou Hanbaiki ni Umarekawatta Ore wa Meikyuu wo Samayou",
@@ -3878,6 +4106,7 @@
     "230": {
         "Number": "230",
         "FavoriteName": "Undead Girl Murder Farce",
+        "FavoriteUrlName": "undead-girl-murder-farce-2023",
         "CsfdID": "1371236",
         "MalID": "54790",
         "MalName": "Undead Girl Murder Farce",
@@ -3895,6 +4124,7 @@
     "231": {
         "Number": "231",
         "FavoriteName": "Okashi na Tensei",
+        "FavoriteUrlName": "okashi-na-tensei-2023",
         "CsfdID": "1370859",
         "MalID": "52611",
         "MalName": "Okashi na Tensei",
@@ -3912,6 +4142,7 @@
     "232": {
         "Number": "232",
         "FavoriteName": "Absolute Duo",
+        "FavoriteUrlName": "absolute-duo",
         "CsfdID": "401176",
         "MalID": "25397",
         "MalName": "Absolute Duo",
@@ -3929,6 +4160,7 @@
     "233": {
         "Number": "233",
         "FavoriteName": "Seija Musou",
+        "FavoriteUrlName": "seija-musou-2023",
         "CsfdID": "1370984",
         "MalID": "53263",
         "MalName": "Seija Musou  Salaryman Isekai de Ikinokoru Tame ni Ayumu Michi",
@@ -3946,6 +4178,7 @@
     "234": {
         "Number": "234",
         "FavoriteName": "Classroom for Heroes",
+        "FavoriteUrlName": "classroom-for-heroes-2023",
         "CsfdID": "1370436",
         "MalID": "49894",
         "MalName": "Eiyuu Kyoushitsu",
@@ -3963,6 +4196,7 @@
     "235": {
         "Number": "235",
         "FavoriteName": "My Unique Skill Makes Me OP Even at Level 1",
+        "FavoriteUrlName": "my-unique-skill-makes-me-op-even-at-level-1-2023",
         "CsfdID": "1370730",
         "MalID": "51764",
         "MalName": "Level 1 dakedo Unique Skill de Saikyou desu",
@@ -3980,6 +4214,7 @@
     "236": {
         "Number": "236",
         "FavoriteName": "Zom 100 - Zombie ni Naru made ni Shitai 100 no Koto",
+        "FavoriteUrlName": "zom-100---zombie-ni-naru-made-ni-shitai-100-no-koto-2023",
         "CsfdID": "1371283",
         "MalID": "54112",
         "MalName": "Zom 100  Zombie ni Naru made ni Shitai 100 no Koto",
@@ -3997,6 +4232,7 @@
     "237": {
         "Number": "237",
         "FavoriteName": "Liar Liar",
+        "FavoriteUrlName": "liar-liar-2023",
         "CsfdID": "1370799",
         "MalID": "48633",
         "MalName": "Liar Liar",
@@ -4014,6 +4250,7 @@
     "238": {
         "Number": "238",
         "FavoriteName": "Helck",
+        "FavoriteUrlName": "helck-2023",
         "CsfdID": "1370491",
         "MalID": "51020",
         "MalName": "Helck",
@@ -4031,6 +4268,7 @@
     "239": {
         "Number": "239",
         "FavoriteName": "Devilman: Crybaby",
+        "FavoriteUrlName": "devilman-crybaby",
         "CsfdID": "544523",
         "MalID": "35120",
         "MalName": "Devilman  Crybaby",
@@ -4048,6 +4286,7 @@
     "240": {
         "Number": "240",
         "FavoriteName": "Daily Life of the Immortal King (The)",
+        "FavoriteUrlName": "daily-life-of-the-immortal-king-the",
         "CsfdID": "823718",
         "MalID": "41094",
         "MalName": "Xian Wang de Richang Shenghuo",
@@ -4065,6 +4304,7 @@
     "241": {
         "Number": "241",
         "FavoriteName": "Yosuga No Sora: In Solitude Where We Are Least Alone",
+        "FavoriteUrlName": "yosuga-no-sora-in-solitude-where-we-are-least-alone",
         "CsfdID": "285009",
         "MalID": "8861",
         "MalName": "Yosuga no Sora  In Solitude Where We Are Least Alone",
@@ -4082,6 +4322,7 @@
     "242": {
         "Number": "242",
         "FavoriteName": "Berserk of Gluttony",
+        "FavoriteUrlName": "berserk-of-gluttony-2023",
         "CsfdID": "1414204",
         "MalID": "53439",
         "MalName": "Boushoku no Berserk",
@@ -4099,6 +4340,7 @@
     "243": {
         "Number": "243",
         "FavoriteName": "Buta no Liver wa Kanetsu Shiro",
+        "FavoriteUrlName": "buta-no-liver-wa-kanetsu-shiro-2023",
         "CsfdID": "1414222",
         "MalID": "50583",
         "MalName": "Buta no Liver wa Kanetsu Shiro",
@@ -4116,6 +4358,7 @@
     "244": {
         "Number": "244",
         "FavoriteName": "Hametsu no Oukoku",
+        "FavoriteUrlName": "hametsu-no-oukoku-2023",
         "CsfdID": "1414489",
         "MalID": "54362",
         "MalName": "Hametsu no Oukoku",
@@ -4133,6 +4376,7 @@
     "245": {
         "Number": "245",
         "FavoriteName": "Ikenaikyo",
+        "FavoriteUrlName": "ikenaikyo-2023",
         "CsfdID": "1415876",
         "MalID": "52934",
         "MalName": "Konyaku Haki sareta Reijou wo Hirotta Ore ga Ikenai Koto wo Oshiekomu",
@@ -4150,6 +4394,7 @@
     "246": {
         "Number": "246",
         "FavoriteName": "Platinum End",
+        "FavoriteUrlName": "platinum-end",
         "CsfdID": "1085190",
         "MalID": "44961",
         "MalName": "Platinum End",
@@ -4167,6 +4412,7 @@
     "247": {
         "Number": "247",
         "FavoriteName": "Devil May Cry",
+        "FavoriteUrlName": "devil-may-cry",
         "CsfdID": "232161",
         "MalID": "1726",
         "MalName": "Devil May Cry",
@@ -4184,6 +4430,7 @@
     "248": {
         "Number": "248",
         "FavoriteName": "Kikansha no Mahou wa Tokubetsu desu",
+        "FavoriteUrlName": "kikansha-no-mahou-wa-tokubetsu-desu-2023",
         "CsfdID": "1415757",
         "MalID": "54852",
         "MalName": "Kikansha no Mahou wa Tokubetsu desu",
@@ -4201,6 +4448,7 @@
     "249": {
         "Number": "249",
         "FavoriteName": "Frieren: Beyond Journey's End",
+        "FavoriteUrlName": "frieren-beyond-journeys-end-2023",
         "CsfdID": "1417211",
         "MalID": "52991",
         "MalName": "Sousou no Frieren",
@@ -4218,6 +4466,7 @@
     "250": {
         "Number": "250",
         "FavoriteName": "The God of High School",
+        "FavoriteUrlName": "the-god-of-high-school",
         "CsfdID": "877184",
         "MalID": "41353",
         "MalName": "The God of High School",
@@ -4235,6 +4484,7 @@
     "251": {
         "Number": "251",
         "FavoriteName": "Demon Sword Master of Excalibur Academy (The)",
+        "FavoriteUrlName": "the-demon-sword-master-of-excalibur-academy-2023",
         "CsfdID": "1417080",
         "MalID": "50184",
         "MalName": "Seiken Gakuin no Makentsukai",
@@ -4252,6 +4502,7 @@
     "252": {
         "Number": "252",
         "FavoriteName": "Ragna Crimson",
+        "FavoriteUrlName": "ragna-crimson-2023",
         "CsfdID": "1417053",
         "MalID": "51297",
         "MalName": "Ragna Crimson",
@@ -4269,6 +4520,7 @@
     "253": {
         "Number": "253",
         "FavoriteName": "Seven Senses of the Reunion",
+        "FavoriteUrlName": "seven-senses-of-the-reunion",
         "CsfdID": "632807",
         "MalID": "36316",
         "MalName": "Shichisei no Subaru",
@@ -4286,6 +4538,7 @@
     "254": {
         "Number": "254",
         "FavoriteName": "Nozomanu Fushi no Boukensha",
+        "FavoriteUrlName": "nozomanu-fushi-no-boukensha-2024",
         "CsfdID": "1454452",
         "MalID": "51648",
         "MalName": "Nozomanu Fushi no Boukensha",
@@ -4303,6 +4556,7 @@
     "255": {
         "Number": "255",
         "FavoriteName": "Sokushi Cheat",
+        "FavoriteUrlName": "sokushi-cheat-2024",
         "CsfdID": "1455214",
         "MalID": "53730",
         "MalName": "Sokushi Cheat ga Saikyou sugite Isekai no Yatsura ga Marude Aite ni Naranai n desu ga",
@@ -4320,6 +4574,7 @@
     "256": {
         "Number": "256",
         "FavoriteName": "Solo Leveling",
+        "FavoriteUrlName": "solo-leveling-2024",
         "CsfdID": "1387618",
         "MalID": "52299",
         "MalName": "Ore dake Level Up na Ken",
@@ -4337,6 +4592,7 @@
     "257": {
         "Number": "257",
         "FavoriteName": "Saikyou Tank no Meikyuu Kouryaku",
+        "FavoriteUrlName": "saikyou-tank-no-meikyuu-kouryaku-2024",
         "CsfdID": "1454620",
         "MalID": "56845",
         "MalName": "Saikyou Tank no Meikyuu Kouryaku  Tairyoku 9999 no Rare Skill-mochi Tank Yuusha Party wo Tsuihou sareru",
@@ -4354,6 +4610,7 @@
     "258": {
         "Number": "258",
         "FavoriteName": "Chiyu Mahou no Machigatta Tsukaikata",
+        "FavoriteUrlName": "chiyu-mahou-no-machigatta-tsukaikata-2024",
         "CsfdID": "1453853",
         "MalID": "49613",
         "MalName": "Chiyu Mahou no Machigatta Tsukaikata",
@@ -4371,6 +4628,7 @@
     "259": {
         "Number": "259",
         "FavoriteName": "Vinland Saga",
+        "FavoriteUrlName": "vinland-saga",
         "CsfdID": "740726",
         "MalID": "37521",
         "MalName": "Vinland Saga",
@@ -4388,6 +4646,7 @@
     "260": {
         "Number": "260",
         "FavoriteName": "Another",
+        "FavoriteUrlName": "another",
         "CsfdID": "305669",
         "MalID": "31240",
         "MalName": "Re Zero kara Hajimeru Isekai Seikatsu",
@@ -4405,6 +4664,7 @@
     "261": {
         "Number": "261",
         "FavoriteName": "Gakuen mokuširoku: High School of the Dead",
+        "FavoriteUrlName": "gakuen-mokusiroku-high-school-of-the-dead",
         "CsfdID": "280604",
         "MalID": "8074",
         "MalName": "Highschool of the Dead",
@@ -4422,6 +4682,7 @@
     "262": {
         "Number": "262",
         "FavoriteName": "Re:Monster",
+        "FavoriteUrlName": "remonster-2024",
         "CsfdID": "1493541",
         "MalID": "56690",
         "MalName": "Re Monster",
@@ -4439,6 +4700,7 @@
     "263": {
         "Number": "263",
         "FavoriteName": "Lv2 kara Cheat datta Motoyuusha Kouho no Mattari Isekai Life",
+        "FavoriteUrlName": "lv2-kara-cheat-datta-motoyuusha-kouho-no-mattari-isekai-life-2024",
         "CsfdID": "1493184",
         "MalID": "56923",
         "MalName": "Lv2 kara Cheat datta Motoyuusha Kouho no Mattari Isekai Life",
@@ -4456,6 +4718,7 @@
     "264": {
         "Number": "264",
         "FavoriteName": "New Gate (The)",
+        "FavoriteUrlName": "the-new-gate-2024",
         "CsfdID": "1494271",
         "MalID": "57100",
         "MalName": "The New Gate",
@@ -4473,6 +4736,7 @@
     "265": {
         "Number": "265",
         "FavoriteName": "Kaijuu 8-gou",
+        "FavoriteUrlName": "kaijuu-8-gou-2024",
         "CsfdID": "1492992",
         "MalID": "52588",
         "MalName": "Kaijuu 8-gou",
@@ -4490,6 +4754,7 @@
     "266": {
         "Number": "266",
         "FavoriteName": "Tensei Kizoku Kantei Skill de Nariagaru",
+        "FavoriteUrlName": "tensei-kizoku-kantei-skill-de-nariagaru-2024",
         "CsfdID": "1493828",
         "MalID": "55265",
         "MalName": "Tensei Kizoku Kantei Skill de Nariagaru",
@@ -4507,6 +4772,7 @@
     "267": {
         "Number": "267",
         "FavoriteName": "World Trigger",
+        "FavoriteUrlName": "world-trigger",
         "CsfdID": "389256",
         "MalID": "40907",
         "MalName": "World Trigger 2nd Season",
@@ -4524,6 +4790,7 @@
     "268": {
         "Number": "268",
         "FavoriteName": "Undead Unluck",
+        "FavoriteUrlName": "undead-unluck-2023",
         "CsfdID": "1417618",
         "MalID": "52741",
         "MalName": "Undead Unluck",
@@ -4541,6 +4808,7 @@
     "269": {
         "Number": "269",
         "FavoriteName": "Ishura",
+        "FavoriteUrlName": "ishura-2024",
         "CsfdID": "1454232",
         "MalID": "54449",
         "MalName": "Ishura",
@@ -4558,6 +4826,7 @@
     "270": {
         "Number": "270",
         "FavoriteName": "Isekai Shikkaku",
+        "FavoriteUrlName": "isekai-shikkaku-2024",
         "CsfdID": "1526537",
         "MalID": "52367",
         "MalName": "Isekai Shikkaku",
@@ -4575,6 +4844,7 @@
     "271": {
         "Number": "271",
         "FavoriteName": "Hazurewaku",
+        "FavoriteUrlName": "hazurewaku-2024",
         "CsfdID": "1526520",
         "MalID": "57892",
         "MalName": "Hazurewaku no Joutai Ijou Skill de Saikyou ni Natta Ore ga Subete wo Juurin suru made",
@@ -4592,6 +4862,7 @@
     "272": {
         "Number": "272",
         "FavoriteName": "Mob kara Hajimaru Tansaku Eiyuutan",
+        "FavoriteUrlName": "mob-kara-hajimaru-tansaku-eiyuutan-2024",
         "CsfdID": "1527223",
         "MalID": "57646",
         "MalName": "Mob kara Hajimaru Tansaku Eiyuutan",
@@ -4609,6 +4880,7 @@
     "273": {
         "Number": "273",
         "FavoriteName": "Ore wa Subete wo Parry suru",
+        "FavoriteUrlName": "ore-wa-subete-wo-parry-suru-2024",
         "CsfdID": "1527300",
         "MalID": "57058",
         "MalName": "Ore wa Subete wo Parry suru  Gyaku Kanchigai no Sekai Saikyou wa Boukensha ni Naritai",
@@ -4626,6 +4898,7 @@
     "274": {
         "Number": "274",
         "FavoriteName": "Shinmai Ossan Boukensha",
+        "FavoriteUrlName": "shinmai-ossan-boukensha-2024",
         "CsfdID": "1527402",
         "MalID": "54913",
         "MalName": "Shinmai Ossan Boukensha Saikyou Party ni Shinu hodo Kitaerarete Muteki ni Naru",
@@ -4643,6 +4916,7 @@
     "275": {
         "Number": "275",
         "FavoriteName": "Ao no Exorcist",
+        "FavoriteUrlName": "ao-no-exorcist",
         "CsfdID": "294891",
         "MalID": "9919",
         "MalName": "Ao no Exorcist",
@@ -4660,6 +4934,7 @@
     "276": {
         "Number": "276",
         "FavoriteName": "Tsue to Tsurugi no Wistoria",
+        "FavoriteUrlName": "tsue-to-tsurugi-no-wistoria-2024",
         "CsfdID": "1527708",
         "MalID": "58059",
         "MalName": "Tsue to Tsurugi no Wistoria",
@@ -4677,6 +4952,7 @@
     "277": {
         "Number": "277",
         "FavoriteName": "Party kara Tsuihou sareta Sono Chiyushi, Jitsu wa Saikyou ni Tsuki",
+        "FavoriteUrlName": "party-kara-tsuihou-sareta-sono-chiyushi-jitsu-wa-saikyou-ni-tsuki-2024",
         "CsfdID": "1564441",
         "MalID": "57944",
         "MalName": "Party kara Tsuihou sareta Sono Chiyushi Jitsu wa Saikyou ni Tsuki",
@@ -4694,6 +4970,7 @@
     "278": {
         "Number": "278",
         "FavoriteName": "Spice and Wolf",
+        "FavoriteUrlName": "spice-and-wolf",
         "CsfdID": "1493517",
         "MalID": "2966",
         "MalName": "Ookami to Koushinryou",
@@ -4711,6 +4988,7 @@
     "279": {
         "Number": "279",
         "FavoriteName": "Sayounara Ryuusei, Konnichiwa Jinsei",
+        "FavoriteUrlName": "sayounara-ryuusei-konnichiwa-jinsei-2024",
         "CsfdID": "1564631",
         "MalID": "58445",
         "MalName": "Sayounara Ryuusei Konnichiwa Jinsei",
@@ -4728,6 +5006,7 @@
     "280": {
         "Number": "280",
         "FavoriteName": "Let This Grieving Soul Retire!",
+        "FavoriteUrlName": "let-this-grieving-soul-retire-2024",
         "CsfdID": "1564394",
         "MalID": "58172",
         "MalName": "Nageki no Bourei wa Intai shitai",
@@ -4745,6 +5024,7 @@
     "281": {
         "Number": "281",
         "FavoriteName": "Dan Da Dan",
+        "FavoriteUrlName": "dan-da-dan-2024",
         "CsfdID": "1451797",
         "MalID": "57334",
         "MalName": "Dandadan",
@@ -4762,6 +5042,7 @@
     "282": {
         "Number": "282",
         "FavoriteName": "Loner Life in Another World",
+        "FavoriteUrlName": "loner-life-in-another-world-2024",
         "CsfdID": "1564039",
         "MalID": "57891",
         "MalName": "Hitoribocchi no Isekai Kouryaku",
@@ -4779,6 +5060,7 @@
     "283": {
         "Number": "283",
         "FavoriteName": "Wajutsushi",
+        "FavoriteUrlName": "wajutsushi-2024",
         "CsfdID": "1564616",
         "MalID": "58714",
         "MalName": "Saikyou no Shienshoku Wajutsushi de Aru Ore wa Sekai Saikyou Clan wo Shitagaeru",
@@ -4796,6 +5078,7 @@
     "284": {
         "Number": "284",
         "FavoriteName": "Possibly the Greatest Alchemist of All Time",
+        "FavoriteUrlName": "possibly-the-greatest-alchemist-of-all-time-2025",
         "CsfdID": "1599688",
         "MalID": "58822",
         "MalName": "Izure Saikyou no Renkinjutsushi",
@@ -4813,6 +5096,7 @@
     "285": {
         "Number": "285",
         "FavoriteName": "Fugukan",
+        "FavoriteUrlName": "fugukan-2025",
         "CsfdID": "1599578",
         "MalID": "59144",
         "MalName": "Fuguushoku Kanteishi ga Jitsu wa Saikyou Datta",
@@ -4830,6 +5114,7 @@
     "286": {
         "Number": "286",
         "FavoriteName": "Im a Noble on the Brink of Ruin, So I Might as Well Try Mastering Magic",
+        "FavoriteUrlName": "im-a-noble-on-the-brink-of-ruin-so-i-might-as-well-try-mastering-magic-2025",
         "CsfdID": "1599507",
         "MalID": "58437",
         "MalName": "Botsuraku Yotei no Kizoku dakedo Hima Datta kara Mahou wo Kiwametemita",
@@ -4847,6 +5132,7 @@
     "287": {
         "Number": "287",
         "FavoriteName": "Übel Blatt",
+        "FavoriteUrlName": "ubel-blatt-2025",
         "CsfdID": "1600554",
         "MalID": "58216",
         "MalName": "Übel Blatt",
@@ -4864,6 +5150,7 @@
     "288": {
         "Number": "288",
         "FavoriteName": "Black Clover",
+        "FavoriteUrlName": "black-clover",
         "CsfdID": "546281",
         "MalID": "40031",
         "MalName": "Mugyutto Black Clover",
@@ -4881,6 +5168,7 @@
     "289": {
         "Number": "289",
         "FavoriteName": "Beginning After the End (The)",
+        "FavoriteUrlName": "the-beginning-after-the-end-2025",
         "CsfdID": "1646111",
         "MalID": "60146",
         "MalName": "Saikyou no Ousama Nidome no Jinsei wa Nani wo Suru",
@@ -4898,6 +5186,7 @@
     "290": {
         "Number": "290",
         "FavoriteName": "Kijin Gentoushou",
+        "FavoriteUrlName": "kijin-gentoushou-2025",
         "CsfdID": "1526584",
         "MalID": "49778",
         "MalName": "Kijin Gentoushou",
@@ -4915,6 +5204,7 @@
     "291": {
         "Number": "291",
         "FavoriteName": "Shangri-La Frontier",
+        "FavoriteUrlName": "shangri-la-frontier-2023",
         "CsfdID": "1417095",
         "MalID": "52347",
         "MalName": "Shangri-La Frontier  Kusoge Hunter Kamige ni Idoman to su",
@@ -4932,6 +5222,7 @@
     "292": {
         "Number": "292",
         "FavoriteName": "Nande koko ni sensei ga!?",
+        "FavoriteUrlName": "nande-koko-ni-sensei-ga",
         "CsfdID": "711490",
         "MalID": "38397",
         "MalName": "Nande Koko ni Sensei ga",
@@ -4949,6 +5240,7 @@
     "293": {
         "Number": "293",
         "FavoriteName": "Teogonia",
+        "FavoriteUrlName": "teogonia-2025",
         "CsfdID": "1646252",
         "MalID": "58614",
         "MalName": "Teogonia",
@@ -4966,6 +5258,7 @@
     "294": {
         "Number": "294",
         "FavoriteName": "Kanchigai no Atelier Meister",
+        "FavoriteUrlName": "kanchigai-no-atelier-meister-2025",
         "CsfdID": "1645608",
         "MalID": "60140",
         "MalName": "Kanchigai no Atelier Meister  Eiyuu Party no Moto Zatsuyougakari ga Jitsu wa Sentou Igai ga SSS Rank Datta to Iu Yoku Aru Hanashi",
@@ -4983,6 +5276,7 @@
     "295": {
         "Number": "295",
         "FavoriteName": "Ore wa Seikan Kokka no Akutoku Ryoushu",
+        "FavoriteUrlName": "ore-wa-seikan-kokka-no-akutoku-ryoushu-2025",
         "CsfdID": "1645988",
         "MalID": "60154",
         "MalName": "Ore wa Seikan Kokka no Akutoku Ryoushu",
@@ -5000,6 +5294,7 @@
     "296": {
         "Number": "296",
         "FavoriteName": "Cyberpunk: Edgerunners",
+        "FavoriteUrlName": "cyberpunk-edgerunners",
         "CsfdID": "877384",
         "MalID": "42310",
         "MalName": "Cyberpunk  Edgerunners",
@@ -5017,6 +5312,7 @@
     "297": {
         "Number": "297",
         "FavoriteName": "Kiznaiver",
+        "FavoriteUrlName": "kiznaiver",
         "CsfdID": "432502",
         "MalID": "31798",
         "MalName": "Kiznaiver",
@@ -5034,6 +5330,7 @@
     "298": {
         "Number": "298",
         "FavoriteName": "Yami Healer",
+        "FavoriteUrlName": "yami-healer-2025",
         "CsfdID": "1645571",
         "MalID": "40750",
         "MalName": "Kaifuku Jutsushi no Yarinaoshi",
@@ -5051,6 +5348,7 @@
     "299": {
         "Number": "299",
         "FavoriteName": "Haite Kudasai, Takamine-san",
+        "FavoriteUrlName": "haite-kudasai-takamine-san-2025",
         "CsfdID": "1645535",
         "MalID": "59457",
         "MalName": "Haite Kudasai Takamine-san",
@@ -5068,6 +5366,7 @@
     "300": {
         "Number": "300",
         "FavoriteName": "Tensai Ouji no Akaji Kokka Saiseijutsu",
+        "FavoriteUrlName": "tensai-ouji-no-akaji-kokka-saiseijutsu",
         "CsfdID": "1118823",
         "MalID": "47159",
         "MalName": "Tensai Ouji no Akaji Kokka Saisei Jutsu",
@@ -5085,6 +5384,7 @@
     "301": {
         "Number": "301",
         "FavoriteName": "Clevatess",
+        "FavoriteUrlName": "clevatess-2025",
         "CsfdID": "1686757",
         "MalID": "59205",
         "MalName": "Clevatess  Majuu no Ou to Akago to Shikabane no Yuusha",
@@ -5102,6 +5402,7 @@
     "302": {
         "Number": "302",
         "FavoriteName": "Mizuzokusei no Mahoutsukai",
+        "FavoriteUrlName": "mizuzokusei-no-mahoutsukai-2025",
         "CsfdID": "1687484",
         "MalID": "60732",
         "MalName": "Mizu Zokusei no Mahoutsukai",
@@ -5119,6 +5420,7 @@
     "303": {
         "Number": "303",
         "FavoriteName": "Isekai Mokushiroku Mynoghra",
+        "FavoriteUrlName": "isekai-mokushiroku-mynoghra-2025",
         "CsfdID": "1687050",
         "MalID": "59130",
         "MalName": "Isekai Mokushiroku Mynoghra  Hametsu no Bunmei de Hajimeru Sekai Seifuku",
@@ -5136,6 +5438,7 @@
     "304": {
         "Number": "304",
         "FavoriteName": "Busamen Gachi Fighter",
+        "FavoriteUrlName": "busamen-gachi-fighter-2025",
         "CsfdID": "1686719",
         "MalID": "60316",
         "MalName": "Busamen Gachi Fighter",
@@ -5153,6 +5456,7 @@
     "305": {
         "Number": "305",
         "FavoriteName": "Gachiakuta",
+        "FavoriteUrlName": "gachiakuta-2025",
         "CsfdID": "1686921",
         "MalID": "59062",
         "MalName": "Gachiakuta",
@@ -5170,6 +5474,7 @@
     "306": {
         "Number": "306",
         "FavoriteName": "Chivalry of a Failed Knight",
+        "FavoriteUrlName": "chivalry-of-a-failed-knight",
         "CsfdID": "61871",
         "MalID": "30296",
         "MalName": "Rakudai Kishi no Cavalry",
@@ -5187,6 +5492,7 @@
     "307": {
         "Number": "307",
         "FavoriteName": "Mushoku no Eiyuu",
+        "FavoriteUrlName": "mushoku-no-eiyuu-2025",
         "CsfdID": "1729623",
         "MalID": "56854",
         "MalName": "Mushoku no Eiyuu  Betsu ni Skill Nanka Iranakatta n da ga",
@@ -5204,6 +5510,7 @@
     "308": {
         "Number": "308",
         "FavoriteName": "Ansatsusha de Aru Ore no Status ga Yuusha yori mo Akiraka ni Tsuyoi no da ga",
+        "FavoriteUrlName": "ansatsusha-de-aru-ore-no-status-ga-yuusha-yori-mo-akiraka-ni-tsuyoi-no-da-ga-2025",
         "CsfdID": "1728907",
         "MalID": "61026",
         "MalName": "Ansatsusha de Aru Ore no Status ga Yuusha yori mo Akiraka ni Tsuyoi no da ga",
@@ -5221,6 +5528,7 @@
     "309": {
         "Number": "309",
         "FavoriteName": "Mugen Gacha",
+        "FavoriteUrlName": "mugen-gacha-2025",
         "CsfdID": "1729741",
         "MalID": "60303",
         "MalName": "Shinjiteita Nakama-tachi ni Dungeon Okuchi de Korosarekaketa ga Gift Mugen Gacha de Level 9999 no Nakama-tachi wo Te ni Irete Moto Party Member to Sekai ni Fukushuu   Zamaa Shimasu",
@@ -5238,6 +5546,7 @@
     "310": {
         "Number": "310",
         "FavoriteName": "Towa no Yuugure",
+        "FavoriteUrlName": "towa-no-yuugure-2025",
         "CsfdID": "1726845",
         "MalID": "61917",
         "MalName": "Towa no Yuugure",
@@ -5255,6 +5564,7 @@
     "311": {
         "Number": "311",
         "FavoriteName": "Madan no ó to Vanadis",
+        "FavoriteUrlName": "madan-no-o-to-vanadis",
         "CsfdID": "389234",
         "MalID": "24455",
         "MalName": "Madan no Ou to Vanadis",
@@ -5272,6 +5582,7 @@
     "312": {
         "Number": "312",
         "FavoriteName": "Yasei no Last Boss ga Arawareta!",
+        "FavoriteUrlName": "yasei-no-last-boss-ga-arawareta-2025",
         "CsfdID": "1729959",
         "MalID": "59644",
         "MalName": "Yasei no Last Boss ga Arawareta",
@@ -5289,6 +5600,7 @@
     "313": {
         "Number": "313",
         "FavoriteName": "Hell Mode",
+        "FavoriteUrlName": "hell-mode-2026",
         "CsfdID": "1776642",
         "MalID": "60460",
         "MalName": "Hell Mode  Yarikomizuki no Gamer wa Hai Settei no Isekai de Musou suru",
@@ -5306,6 +5618,7 @@
     "314": {
         "Number": "314",
         "FavoriteName": "Kizoku Tensei: Megumareta Umare kara Saikyou no Chikara o Eru",
+        "FavoriteUrlName": "kizoku-tensei-megumareta-umare-kara-saikyou-no-chikara-o-eru-2026",
         "CsfdID": "1776952",
         "MalID": "60692",
         "MalName": "Kizoku Tensei  Megumareta Umare kara Saikyou no Chikara wo Eru",
@@ -5323,6 +5636,7 @@
     "315": {
         "Number": "315",
         "FavoriteName": "Majutsushi Kunon wa Mieteiru",
+        "FavoriteUrlName": "majutsushi-kunon-wa-mieteiru-2026",
         "CsfdID": "1776973",
         "MalID": "60810",
         "MalName": "Majutsushi Kunon wa Mieteiru",
@@ -5340,6 +5654,7 @@
     "316": {
         "Number": "316",
         "FavoriteName": "Okiraku Ryoushu no Tanoshii Ryouchi Bouei",
+        "FavoriteUrlName": "okiraku-ryoushu-no-tanoshii-ryouchi-bouei-2026",
         "CsfdID": "1777067",
         "MalID": "61549",
         "MalName": "Okiraku Ryoushu no Tanoshii Ryouchi Bouei  Seisankei Majutsu de Na mo Naki Mura wo Saikyou no Jousai Toshi ni",
@@ -5357,6 +5672,7 @@
     "317": {
         "Number": "317",
         "FavoriteName": "Tensei shitara Dragon no Tamago datta",
+        "FavoriteUrlName": "tensei-shitara-dragon-no-tamago-datta-2026",
         "CsfdID": "1777482",
         "MalID": "61207",
         "MalName": "Tensei shitara Dragon no Tamago datta",
@@ -5374,6 +5690,7 @@
     "318": {
         "Number": "318",
         "FavoriteName": "Yomi no Tsugai",
+        "FavoriteUrlName": "yomi-no-tsugai-2026",
         "CsfdID": "1818502",
         "MalID": "62001",
         "MalName": "Yomi no Tsugai",
@@ -5391,6 +5708,7 @@
     "319": {
         "Number": "319",
         "FavoriteName": "Toukutsu Ou",
+        "FavoriteUrlName": "toukutsu-ou-2026",
         "CsfdID": "1859484",
         "MalID": "63316",
         "MalName": "Dogulwang",
@@ -5408,6 +5726,7 @@
     "320": {
         "Number": "320",
         "FavoriteName": "Tsuihou sareta Tensei Juukishi wa Game Chishiki de Musou suru",
+        "FavoriteUrlName": "tsuihou-sareta-tensei-juukishi-wa-game-chishiki-de-musou-suru-2026",
         "CsfdID": "1860374",
         "MalID": "59741",
         "MalName": "Tsuihou sareta Tensei Juukishi wa Game Chishiki de Musou suru",
@@ -5425,6 +5744,7 @@
     "321": {
         "Number": "321",
         "FavoriteName": "Rakudai Kenja no Gakuin Musou",
+        "FavoriteUrlName": "rakudai-kenja-no-gakuin-musou-2026",
         "CsfdID": "1859544",
         "MalID": "63508",
         "MalName": "Rakudai Kenja no Gakuin Musou  Nidome no Tensei S-Rank Cheat Majutsushi Boukenroku",
@@ -5442,6 +5762,7 @@
     "322": {
         "Number": "322",
         "FavoriteName": "Kokoore",
+        "FavoriteUrlName": "kokoore-2026",
         "CsfdID": "1819057",
         "MalID": "11887",
         "MalName": "Kokoro Connect",
@@ -5459,6 +5780,7 @@
     "323": {
         "Number": "323",
         "FavoriteName": "Tensei Goblin dakedo Shitsumon Aru",
+        "FavoriteUrlName": "tensei-goblin-dakedo-shitsumon-aru-2026",
         "CsfdID": "1897405",
         "MalID": "63712",
         "MalName": "Tensei Goblin dakedo Shitsumon Aru",

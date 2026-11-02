@@ -101,21 +101,27 @@ window.AnimeSync = (function () {
 	// Název seriálu v adrese sledujserialy.io/serial/<název>; stejné pravidlo má pomocník (FETCH_RULES).
 	var SERIAL_SLUG = /^[A-Za-z0-9_.%-]+$/;
 
+	// FavoriteUrlName - adresa seriálu z odkazu oblíbeného (jeden segment cesty bez "/", "?", "#"
+	// a mezer); stejně ji kontroluje pomocník (FAVORITE_URL_NAME) a js/anime-row-view.js.
+	var FAVORITE_URL_NAME = /^[A-Za-z0-9_.~%!$&'()*+,;=:@\[\]-]{1,200}$/;
+
 	// Nejstarší verze pomocníka, která danou aktualizaci zvládne (zápis do data/anime.json;
-	// Seznam navíc od verze 6 stahuje obrázky ze sledujserialy.io a od verze 7 je vrací stránce).
+	// Seznam navíc od verze 6 stahuje obrázky ze sledujserialy.io, od verze 7 je vrací stránce
+	// a od verze 10 ukládá FavoriteUrlName).
 	var CSFD_MIN_HELPER_VERSION = 2;
 	var MAL_MIN_HELPER_VERSION = 3;
 	var WATCHED_MIN_HELPER_VERSION = 4;
-	var LIST_MIN_HELPER_VERSION = 7;
+	var LIST_MIN_HELPER_VERSION = 10;
 	// Tlačítko Push (POST /publish).
 	var PUBLISH_MIN_HELPER_VERSION = 8;
 	// Uložení úprav z edit módu (POST /anime-edits).
 	var EDITS_MIN_HELPER_VERSION = 9;
 
 	// Python GetNewFavoriteData() (ř. 1357) - prázdná položka, jejíž pořadí klíčů
-	// určuje pořadí v exportovaných datech.
-	var ITEM_KEYS = ['Number', 'FavoriteName', 'CsfdID', 'MalID', 'MalName', 'Image', 'NameEn', 'NameJa',
-		'Genres', 'Description', 'Date', 'State', 'CsfdRating', 'MalRating', 'MyRating'];
+	// určuje pořadí v data/anime.json. FavoriteUrlName (adresa seriálu, na kterou
+	// vede obrázek) skript neukládal; je hned za FavoriteName.
+	var ITEM_KEYS = ['Number', 'FavoriteName', 'FavoriteUrlName', 'CsfdID', 'MalID', 'MalName', 'Image', 'NameEn',
+		'NameJa', 'Genres', 'Description', 'Date', 'State', 'CsfdRating', 'MalRating', 'MyRating'];
 
 	var running = false;
 
@@ -243,6 +249,37 @@ window.AnimeSync = (function () {
 		return favorites.filter(function (favorite) {
 			return !known.has(favorite.Name) && EXCEPTION_ANIME.indexOf(favorite.Name) === -1;
 		});
+	}
+
+	/** FavoriteUrlName oblíbeného; adresa v neplatném tvaru dá '' (obrázek pak není odkaz). */
+	function favoriteUrlName(favorite) {
+		var urlName = favorite.AnimeUrlName;
+		return typeof urlName === 'string' && FAVORITE_URL_NAME.test(urlName) ? urlName : '';
+	}
+
+	/**
+	 * Adresy seriálů pro anime, která už v datech jsou (bez Python vzoru):
+	 * anime v oblíbených (shoda FavoriteName jako v GetNewFavorites()) dostane
+	 * FavoriteUrlName oblíbeného, pokud je platná a liší se od uložené. Anime,
+	 * které v oblíbených není, se nemění.
+	 * @returns {Object<string, string>} Number -> nová FavoriteUrlName
+	 */
+	function getFavoriteUrlNames(favorites, items) {
+		var byName = new Map();
+		favorites.forEach(function (favorite) {
+			var urlName = favoriteUrlName(favorite);
+			if (urlName && !byName.has(favorite.Name)) {
+				byName.set(favorite.Name, urlName);
+			}
+		});
+		var urlNames = {};
+		items.forEach(function (item) {
+			var urlName = byName.get(item.FavoriteName);
+			if (urlName && item.FavoriteUrlName !== urlName) {
+				urlNames[String(item.Number)] = urlName;
+			}
+		});
+		return urlNames;
 	}
 
 	/**
@@ -502,6 +539,7 @@ window.AnimeSync = (function () {
 		var values = {
 			Number: String(number),
 			FavoriteName: favorite.Name,
+			FavoriteUrlName: favoriteUrlName(favorite),
 			CsfdID: csfd.CsfdID,
 			MalID: mal.id,
 			MalName: mal.name,
@@ -715,14 +753,21 @@ window.AnimeSync = (function () {
 	 * jednou zapíše do data/anime.json (Python WriteDataToTheFile()); při
 	 * zastavení chybou zapíše ta, která už jsou hotová.
 	 *
+	 * Bez Python vzoru: anime, která už v datech jsou a jsou v oblíbených,
+	 * dostanou před přidáváním nových FavoriteUrlName (adresu seriálu, na
+	 * kterou vede obrázek); pomocník ji hned zapíše do data/anime.json. Když
+	 * zápis selže, aktualizace skončí chybou data-save-failed.
+	 *
 	 * @param {Object} deps
-	 * @param {Object} deps.proxy - AnimeProxy (health, fetchPage, saveImage, saveAnimeItems)
+	 * @param {Object} deps.proxy - AnimeProxy (health, fetchPage, saveFavoriteUrlNames, saveImage, saveAnimeItems)
 	 * @param {Object} deps.data - AnimeData (getItems, addItem, setImage, keepAdded)
 	 * @param {function(number)} [deps.onTotal] - počet nových seriálů
 	 * @param {function(number)} [deps.onProgress] - průběh v procentech 0-100
+	 * @param {function(Array)} [deps.onItemsLinked] - anime dostala FavoriteUrlName (všechny položky)
 	 * @param {function(Object, Array)} [deps.onItemAdded] - hotová položka a všechny položky
 	 * @param {function(): Date} [deps.now] - aktuální datum (pro testy)
-	 * @returns {Promise<{total: number, added: Array<Object>, savedTo: ?string}>}
+	 * @returns {Promise<{total: number, added: Array<Object>, linked: number, savedTo: ?string}>}
+	 *     `linked` je počet anime, kterým se doplnila nebo změnila FavoriteUrlName,
 	 *     `savedTo` je 'file', nebo null, když nepřibylo žádné anime. Při
 	 *     zastavení chybou má chyba navíc `added` (počet přidaných anime)
 	 *     a `savedTo` ('file' nebo null). Selže-li jen zápis do souboru, je to
@@ -740,9 +785,11 @@ window.AnimeSync = (function () {
 		var onTotal = deps.onTotal || noop;
 		var onProgress = deps.onProgress || noop;
 		var onItemAdded = deps.onItemAdded || noop;
+		var onItemsLinked = deps.onItemsLinked || noop;
 		var now = deps.now || function () { return new Date(); };
 		var imageFloor = 0;
 		var added = [];
+		var linked = 0;
 
 		if (!data.getItems()) {
 			return Promise.reject(syncError('data-not-loaded', ''));
@@ -811,6 +858,32 @@ window.AnimeSync = (function () {
 			return error;
 		}
 
+		// FavoriteUrlName anime, která už v datech jsou; na stránce se změní až po zápisu do souboru.
+		function linkFavorites(favorites) {
+			var urlNames = getFavoriteUrlNames(favorites, data.getItems());
+			if (Object.keys(urlNames).length === 0) {
+				return Promise.resolve();
+			}
+			return persistUpdate(function () {
+				return proxy.saveFavoriteUrlNames(urlNames);
+			}).then(function (saved) {
+				if (saved.error) {
+					throw saveFailedError(saved.error);
+				}
+				var missing = new Set(saved.result.missing);
+				data.getItems().forEach(function (item) {
+					var number = String(item.Number);
+					if (Object.prototype.hasOwnProperty.call(urlNames, number) && !missing.has(number)) {
+						item.FavoriteUrlName = urlNames[number];
+						linked += 1;
+					}
+				});
+				if (linked > 0) {
+					onItemsLinked(data.getItems());
+				}
+			});
+		}
+
 		return proxy.health().then(function (health) {
 			if (!(health.version >= LIST_MIN_HELPER_VERSION)) {
 				throw syncError('helper-outdated', '');
@@ -824,7 +897,11 @@ window.AnimeSync = (function () {
 			imageFloor = health.maxImageNumber;
 			return proxy.fetchPage(FAVORITES_URL);
 		}).then(function (page) {
-			var fresh = getNewFavorites(parseFavorites(page.text), data.getItems());
+			var favorites = parseFavorites(page.text);
+			return linkFavorites(favorites).then(function () {
+				return getNewFavorites(favorites, data.getItems());
+			});
+		}).then(function (fresh) {
 			onTotal(fresh.length);
 
 			var chain = Promise.resolve();
@@ -843,7 +920,7 @@ window.AnimeSync = (function () {
 				if (saved.error) {
 					throw annotate(saveFailedError(saved.error), saved);
 				}
-				return { total: total, added: added, savedTo: saved.savedTo };
+				return { total: total, added: added, linked: linked, savedTo: saved.savedTo };
 			});
 		}, function (error) {
 			return persist().then(function (saved) {
@@ -1077,6 +1154,7 @@ window.AnimeSync = (function () {
 		formatDate: formatDate,
 		parseFavorites: parseFavorites,
 		getNewFavorites: getNewFavorites,
+		getFavoriteUrlNames: getFavoriteUrlNames,
 		csfdSearchUrl: csfdSearchUrl,
 		parseCsfdSerialId: parseCsfdSerialId,
 		parseCsfdData: parseCsfdData,

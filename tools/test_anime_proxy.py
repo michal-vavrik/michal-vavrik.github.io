@@ -175,6 +175,7 @@ class GuardTests(ProxyTestCase):
         self.assertEqual(self.request("GET", "/csfd-ratings")[0], 405)
         self.assertEqual(self.request("GET", "/mal-ratings")[0], 405)
         self.assertEqual(self.request("GET", "/watched-states")[0], 405)
+        self.assertEqual(self.request("GET", "/favorite-url-names")[0], 405)
         self.assertEqual(self.request("GET", "/anime-edits")[0], 405)
 
 
@@ -566,7 +567,8 @@ class ConfigReloadTests(ProxyTestCase):
 
 
 class DataFileTests(ProxyTestCase):
-    """POST /csfd-ratings, /mal-ratings, /watched-states, /anime-items a /anime-edits zapisují do souboru s daty."""
+    """POST /csfd-ratings, /mal-ratings, /watched-states, /favorite-url-names, /anime-items a /anime-edits
+    zapisují do souboru s daty."""
 
     ITEMS = {
         "1": {"Number": "1", "FavoriteName": "Naruto Šippúden", "NameJa": "ナルト", "State": "S01E05",
@@ -768,12 +770,69 @@ class DataFileTests(ProxyTestCase):
         self.assertEqual(status, 403)
         self.assertEqual(self.read_data(), before)
 
+    def test_favorite_url_names_are_added_after_favorite_name_of_old_items(self):
+        status, _, body = self.post_ratings({"urlNames": {"1": "naruto-shippuden", "2": "bleach", "99": "x"}},
+                                            path="/favorite-url-names")
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 2, "missing": ["99"]}))
+        expected = {}
+        for number, url_name in (("1", "naruto-shippuden"), ("2", "bleach")):
+            item = self.ITEMS[number]
+            expected[number] = {"Number": item["Number"], "FavoriteName": item["FavoriteName"],
+                                "FavoriteUrlName": url_name}
+            expected[number].update(item)
+        self.assertEqual(self.read_data(), self.dumps(expected).encode("utf-8"))
+        self.assertEqual(list(json.loads(self.read_data())["1"]),
+                         ["Number", "FavoriteName", "FavoriteUrlName", "NameJa", "State", "CsfdRating", "MalRating"])
+        self.assertEqual(os.listdir(self.tmp), ["anime.json"])
+        self.assertEqual(self.transport.calls, [])
+        # Stejná adresa soubor nemění, jiná přepíše starou na stejném místě.
+        os.utime(self.data_path, ns=(10 ** 9, 10 ** 9))
+        status, _, body = self.post_ratings({"urlNames": {"1": "naruto-shippuden"}}, path="/favorite-url-names")
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 0, "missing": []}))
+        self.assertEqual(os.stat(self.data_path).st_mtime_ns, 10 ** 9)
+        self.assertEqual(self.post_ratings({"urlNames": {"2": "bleach-2"}}, path="/favorite-url-names")[0], 200)
+        expected["2"]["FavoriteUrlName"] = "bleach-2"
+        self.assertEqual(self.read_data(), self.dumps(expected).encode("utf-8"))
+
+    def test_favorite_url_names_accept_real_serial_addresses(self):
+        for url_name in ("boys-the", "9-1-1-lone-star", "kevin-can-f**k-himself", "erkenci-ku%C5%9F",
+                         "ghost-in-the-shell-sac_2045", "banished-from-the-heros-party;-i-decided-to-live",
+                         "isekai-chito-majutsu-shi-[majishan]", "naka-no-hito-genome-[jikkyouchuu]", "x" * 200):
+            with self.subTest(url_name=url_name):
+                self.assertEqual(self.post_ratings({"urlNames": {"2": url_name}}, path="/favorite-url-names")[0], 200)
+                self.assertEqual(json.loads(self.read_data())["2"]["FavoriteUrlName"], url_name)
+
+    def test_favorite_url_names_are_validated(self):
+        before = self.read_data()
+        for url_names in ([], {"1": ""}, {"1": "a/b"}, {"1": "a b"}, {"1": "a?b"}, {"1": "a#b"}, {"1": 'a"b'},
+                          {"1": "a<b"}, {"1": "naruto\n"}, {"1": "ž"}, {"1": "x" * 201}, {"1": None}, {"1": 5}, {"x": "a"}):
+            with self.subTest(url_names=url_names):
+                status, headers, _ = self.post_ratings({"urlNames": url_names}, path="/favorite-url-names")
+                self.assertEqual((status, headers["x-proxy-error"]), (400, "bad-request"))
+        self.assertEqual(self.post_ratings({"states": {"1": "naruto"}}, path="/favorite-url-names")[0], 400)
+        self.assertEqual(self.post_ratings({"urlNames": {"1": "DONE"}}, path="/watched-states")[0], 400)
+        self.assertEqual(self.read_data(), before)
+        os.remove(self.data_path)
+        status, headers, _ = self.post_ratings({"urlNames": {"1": "naruto"}}, path="/favorite-url-names")
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-missing"))
+
+    def test_favorite_url_names_need_the_api_header_and_origin(self):
+        before = self.read_data()
+        status, _, _ = self.post_ratings({"urlNames": {"1": "naruto"}}, path="/favorite-url-names",
+                                         headers={proxy.REQUEST_HEADER: None})
+        self.assertEqual(status, 403)
+        status, _, _ = self.post_ratings({"urlNames": {"1": "naruto"}}, path="/favorite-url-names",
+                                         headers={"Origin": "https://evil.example"})
+        self.assertEqual(status, 403)
+        self.assertEqual(self.read_data(), before)
+
     @staticmethod
     def new_item(number, **overrides):
         item = {key: "" for key in proxy.ITEM_KEYS}
         item.update({"Number": number, "FavoriteName": "Nové anime " + number, "Image": number, "NameJa": "新しい",
                      "Genres": "Animovaný\nAkční", "Description": "Popis, s čárkou", "Date": "17.05.2024",
-                     "State": "S01E03", "CsfdRating": "75%", "MalRating": "?%", "MyRating": "?%"})
+                     "State": "S01E03", "CsfdRating": "75%", "MalRating": "?%", "MyRating": "?%",
+                     "FavoriteUrlName": "nove-anime-" + number})
         item.update(overrides)
         return item
 
@@ -817,11 +876,16 @@ class DataFileTests(ProxyTestCase):
         before = self.read_data()
         missing_key = self.new_item("3")
         del missing_key["MyRating"]
+        # Položka bez FavoriteUrlName (stránka před verzí 10) se odmítne.
+        without_url_name = self.new_item("3")
+        del without_url_name["FavoriteUrlName"]
         bad_items = [
-            None, {}, [], "3", [None], ["3"], [missing_key], [self.new_item("3", Extra="x")],
+            None, {}, [], "3", [None], ["3"], [missing_key], [without_url_name], [self.new_item("3", Extra="x")],
             [self.new_item("3", Description=None)], [self.new_item("3", CsfdRating=75)],
             [self.new_item("0")], [self.new_item("03")], [self.new_item("x")], [self.new_item("")],
             [self.new_item("1234567")], [self.new_item(" 3")], [self.new_item("3"), self.new_item("3")],
+            [self.new_item("3", FavoriteUrlName="a/b")], [self.new_item("3", FavoriteUrlName="a b")],
+            [self.new_item("3", FavoriteUrlName="x" * 201)], [self.new_item("3", FavoriteUrlName=None)],
         ]
         for items in bad_items:
             with self.subTest(items=items):
@@ -841,6 +905,11 @@ class DataFileTests(ProxyTestCase):
         status, _, body = self.post_items(items)
         self.assertEqual((status, json.loads(body)), (200, {"ok": True, "added": 300}))
         self.assertEqual(len(json.loads(self.read_data())), 302)
+
+    def test_anime_items_without_serial_address_are_accepted(self):
+        # Oblíbený s adresou v neplatném tvaru: stránka pošle prázdnou FavoriteUrlName.
+        self.assertEqual(self.post_items([self.new_item("3", FavoriteUrlName="")])[0], 200)
+        self.assertEqual(json.loads(self.read_data())["3"]["FavoriteUrlName"], "")
 
     def test_anime_items_need_a_data_file(self):
         os.remove(self.data_path)

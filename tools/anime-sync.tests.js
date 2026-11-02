@@ -196,6 +196,28 @@ window.AnimeSyncTests = (function () {
 			[{ FavoriteName: 'A' }, { FavoriteName: 'C' }]);
 		runner.equal('getNewFavorites: vynechá známá anime a výjimky', fresh.map(function (item) { return item.Name; }), ['B']);
 
+		var urlNames = Sync.getFavoriteUrlNames([
+			{ Name: 'A', AnimeUrlName: 'a-serial' },
+			{ Name: 'B', AnimeUrlName: 'kevin-can-f**k-himself' },
+			{ Name: 'C', AnimeUrlName: 'c-serial' },
+			{ Name: 'D', AnimeUrlName: 'bad/slug' },
+			{ Name: 'E', AnimeUrlName: 'e-first' },
+			{ Name: 'E', AnimeUrlName: 'e-second' },
+			{ Name: 'F', AnimeUrlName: 'isekai-chito-majutsu-shi-[majishan]' },
+			{ Name: 'New', AnimeUrlName: 'new' }
+		], [
+			{ Number: '1', FavoriteName: 'A' },
+			{ Number: '2', FavoriteName: 'B', FavoriteUrlName: 'old-b' },
+			{ Number: '3', FavoriteName: 'C', FavoriteUrlName: 'c-serial' },
+			{ Number: '4', FavoriteName: 'D' },
+			{ Number: '5', FavoriteName: 'E' },
+			{ Number: '6', FavoriteName: 'Not in favorites' },
+			{ Number: '7', FavoriteName: 'F' }
+		]);
+		runner.equal('getFavoriteUrlNames: nové a změněné adresy známých anime, neplatné a stejné se vynechají', urlNames,
+			{ 1: 'a-serial', 2: 'kevin-can-f**k-himself', 5: 'e-first',
+				7: 'isekai-chito-majutsu-shi-[majishan]' });
+
 		runner.equal('parseSerialSeasons: řady a jejich stav', Sync.parseSerialSeasons(serialPage([['1', 'Videné'], ['2', 'Označiť']])),
 			[{ season: '1', state: 'Videné' }, { season: '2', state: 'Označiť' }]);
 		runner.equal('parseSerialSeasons: varianta s apostrofy', Sync.parseSerialSeasons(serialPage([['3', 'Označiť']], true)),
@@ -322,19 +344,20 @@ window.AnimeSyncTests = (function () {
 
 	function newItem(runner) {
 		var csfdData = { CsfdID: '111', NameEn: 'En', NameJa: 'Ja', Genres: 'G', Description: 'D', CsfdRating: '75%' };
-		var unfinished = Sync.buildNewItem({ Name: 'New A', Finished: false, ActualSeason: '02', ActualEpisode: '07' },
+		var unfinished = Sync.buildNewItem({ Name: 'New A', Finished: false, ActualSeason: '02', ActualEpisode: '07', AnimeUrlName: 'new-a' },
 			csfdData, { id: '222', name: 'Mal Name' }, '80%', 13, new Date(2024, 4, 17));
-		runner.equal('buildNewItem: klíče ve stejném pořadí jako v Python skriptu', Object.keys(unfinished),
-			['Number', 'FavoriteName', 'CsfdID', 'MalID', 'MalName', 'Image', 'NameEn', 'NameJa', 'Genres', 'Description',
-				'Date', 'State', 'CsfdRating', 'MalRating', 'MyRating']);
+		runner.equal('buildNewItem: klíče ve stejném pořadí jako v Python skriptu, FavoriteUrlName za FavoriteName', Object.keys(unfinished),
+			['Number', 'FavoriteName', 'FavoriteUrlName', 'CsfdID', 'MalID', 'MalName', 'Image', 'NameEn', 'NameJa', 'Genres',
+				'Description', 'Date', 'State', 'CsfdRating', 'MalRating', 'MyRating']);
 		runner.equal('buildNewItem: rozpracované anime', unfinished, {
-			Number: '13', FavoriteName: 'New A', CsfdID: '111', MalID: '222', MalName: 'Mal Name', Image: '13', NameEn: 'En',
-			NameJa: 'Ja', Genres: 'G', Description: 'D', Date: '17.05.2024', State: 'S02E07', CsfdRating: '75%',
-			MalRating: '80%', MyRating: '?%'
+			Number: '13', FavoriteName: 'New A', FavoriteUrlName: 'new-a', CsfdID: '111', MalID: '222', MalName: 'Mal Name',
+			Image: '13', NameEn: 'En', NameJa: 'Ja', Genres: 'G', Description: 'D', Date: '17.05.2024', State: 'S02E07',
+			CsfdRating: '75%', MalRating: '80%', MyRating: '?%'
 		});
-		var finished = Sync.buildNewItem({ Name: 'New B', Finished: true, ActualSeason: '01', ActualEpisode: '12' },
+		var finished = Sync.buildNewItem({ Name: 'New B', Finished: true, ActualSeason: '01', ActualEpisode: '12', AnimeUrlName: 'x?y' },
 			csfdData, { id: '1', name: 'M' }, '?%', 14, new Date(2024, 4, 17));
-		runner.equal('buildNewItem: dokončené anime', [finished.State, finished.MalRating], ['DONE', '?%']);
+		runner.equal('buildNewItem: dokončené anime, neplatná adresa seriálu dá prázdnou FavoriteUrlName',
+			[finished.State, finished.MalRating, finished.FavoriteUrlName], ['DONE', '?%', '']);
 	}
 
 	function dataLayer(runner) {
@@ -658,6 +681,25 @@ window.AnimeSyncTests = (function () {
 				});
 			},
 			function () {
+				return withFetch(function () { return reply(JSON.stringify({ ok: true, changed: 1, missing: ['8'] }), 200); }, function (stub) {
+					return Client.saveFavoriteUrlNames({ 1: 'naruto', 8: 'boys-the' }).then(function (saved) {
+						runner.equal('saveFavoriteUrlNames: výsledek', saved, { changed: 1, missing: ['8'] });
+						runner.equal('saveFavoriteUrlNames: požadavek', [
+							stub.calls[0].url, stub.calls[0].init.method, stub.calls[0].init.headers['Content-Type'],
+							stub.calls[0].init.headers['X-Anime-Proxy'], JSON.parse(stub.calls[0].init.body)
+						], [base + '/favorite-url-names', 'POST', 'application/json', '1', { urlNames: { 1: 'naruto', 8: 'boys-the' } }]);
+					});
+				});
+			},
+			function () {
+				return withFetch(function () { return reply('{"ok": true, "changed": 1}', 200); }, function () {
+					return summarizeError(Client.saveFavoriteUrlNames({ 1: 'naruto' })).then(function (error) {
+						runner.equal('saveFavoriteUrlNames: neplatná odpověď', error,
+							{ code: 'unexpected-response', detail: 'favorite-url-names', status: 0 });
+					});
+				});
+			},
+			function () {
 				var items = [{ Number: '13', FavoriteName: 'New A' }, { Number: '14', FavoriteName: 'New B' }];
 				return withFetch(function () { return reply(JSON.stringify({ ok: true, added: 2 }), 200); }, function (stub) {
 					return Client.saveAnimeItems(items).then(function (saved) {
@@ -764,25 +806,26 @@ window.AnimeSyncTests = (function () {
 	};
 
 	function knownItems() {
+		// "Known" už FavoriteUrlName má (Seznam ji nemění); vlastní testy doplňování jsou níže.
 		return [
-			{ Number: '3', FavoriteName: 'Known', Image: '3' },
+			{ Number: '3', FavoriteName: 'Known', Image: '3', FavoriteUrlName: 'known' },
 			{ Number: '10', FavoriteName: 'Known Ten', Image: '10' }
 		];
 	}
 
 	function expectedItemA(number) {
 		return {
-			Number: String(number), FavoriteName: 'New A', CsfdID: '111', MalID: '222', MalName: 'New A', Image: String(number),
-			NameEn: 'New A EN', NameJa: 'Atarashii A', Genres: 'Animovaný\nAkční', Description: 'Popis A', Date: '17.05.2024',
-			State: 'S02E07', CsfdRating: '75%', MalRating: '82%', MyRating: '?%'
+			Number: String(number), FavoriteName: 'New A', FavoriteUrlName: 'new-a', CsfdID: '111', MalID: '222', MalName: 'New A',
+			Image: String(number), NameEn: 'New A EN', NameJa: 'Atarashii A', Genres: 'Animovaný\nAkční', Description: 'Popis A',
+			Date: '17.05.2024', State: 'S02E07', CsfdRating: '75%', MalRating: '82%', MyRating: '?%'
 		};
 	}
 
 	function expectedItemB(number) {
 		return {
-			Number: String(number), FavoriteName: 'New B', CsfdID: '333', MalID: '444', MalName: 'New B', Image: String(number),
-			NameEn: 'New B EN', NameJa: 'Atarashii B', Genres: 'Animovaný\nAkční', Description: 'Popis B, s čárkou', Date: '17.05.2024',
-			State: 'DONE', CsfdRating: '64%', MalRating: '75%', MyRating: '?%'
+			Number: String(number), FavoriteName: 'New B', FavoriteUrlName: 'new-b', CsfdID: '333', MalID: '444', MalName: 'New B',
+			Image: String(number), NameEn: 'New B EN', NameJa: 'Atarashii B', Genres: 'Animovaný\nAkční',
+			Description: 'Popis B, s čárkou', Date: '17.05.2024', State: 'DONE', CsfdRating: '64%', MalRating: '75%', MyRating: '?%'
 		};
 	}
 
@@ -790,14 +833,16 @@ window.AnimeSyncTests = (function () {
 	 * Spustí aktualizaci s atrapou pomocníka a dat.
 	 * @param {Object} setup - routes (adresa -> text | {text, finalUrl} | Error), items (null = data nejsou načtená),
 	 *   health, imageError (number -> Error | null), writeError (chyba zápisu do souboru),
-	 *   noImageData (pomocník obrázek nevrátí)
-	 * @returns {Promise<{result, error, events, calls, images, items, writes, kept}>}
+	 *   noImageData (pomocník obrázek nevrátí), linkError (chyba zápisu FavoriteUrlName),
+	 *   linkMissing (čísla anime, která pomocník v souboru nenašel)
+	 * @returns {Promise<{result, error, events, calls, images, items, writes, links, kept}>}
 	 */
 	function runUpdate(setup) {
 		var events = [];
 		var calls = [];
 		var images = [];
 		var writes = [];
+		var links = [];
 		var kept = [];
 		var items = setup.items === null ? null : (setup.items || knownItems());
 		var proxy = {
@@ -843,6 +888,14 @@ window.AnimeSyncTests = (function () {
 					return Promise.reject(setup.writeError);
 				}
 				return Promise.resolve({ added: added.length });
+			},
+			saveFavoriteUrlNames: function (urlNames) {
+				links.push(JSON.parse(JSON.stringify(urlNames)));
+				events.push('link');
+				if (setup.linkError) {
+					return Promise.reject(setup.linkError);
+				}
+				return Promise.resolve({ changed: Object.keys(urlNames).length, missing: setup.linkMissing || [] });
 			}
 		};
 		var data = {
@@ -868,17 +921,21 @@ window.AnimeSyncTests = (function () {
 			onProgress: function (percent) { events.push('progress:' + percent.toFixed(2)); },
 			onItemAdded: function (item, all) {
 				events.push('added:' + item.Number + '/' + all.length);
+			},
+			onItemsLinked: function (all) {
+				events.push('linked:' + all.length);
 			}
 		}).then(function (result) {
-			return { result: result, error: null, events: events, calls: calls, images: images, items: items, writes: writes, kept: kept };
+			return { result: result, error: null, events: events, calls: calls, images: images, items: items, writes: writes, links: links, kept: kept };
 		}, function (error) {
-			return { result: null, error: error, events: events, calls: calls, images: images, items: items, writes: writes, kept: kept };
+			return { result: null, error: error, events: events, calls: calls, images: images, items: items, writes: writes, links: links, kept: kept };
 		});
 	}
 
-	// Odpověď /health pomocníka, který umí Seznam (obrázky ze sledujserialy.io i pro stránku, zápis do data/anime.json).
+	// Odpověď /health pomocníka, který umí Seznam (obrázky ze sledujserialy.io i pro stránku, zápis do data/anime.json
+	// včetně FavoriteUrlName).
 	function listHealth(overrides) {
-		var health = { version: 7, cookieConfigured: true, maxImageNumber: 12, dataFile: true };
+		var health = { version: 10, cookieConfigured: true, maxImageNumber: 12, dataFile: true };
 		Object.keys(overrides || {}).forEach(function (key) {
 			health[key] = overrides[key];
 		});
@@ -950,9 +1007,51 @@ window.AnimeSyncTests = (function () {
 				var routes = {};
 				routes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE, EXCEPTION_FAVORITE]);
 				return runUpdate({ routes: routes }).then(function (run) {
-					runner.equal('bez nových anime: výsledek', run.result, { total: 0, added: [], savedTo: null });
-					runner.equal('bez nových anime: jen seznam oblíbených, žádný průběh ani zápis', [run.calls, run.events, run.kept],
-						[[Sync.FAVORITES_URL], ['health', 'total:0'], []]);
+					runner.equal('bez nových anime: výsledek', run.result, { total: 0, added: [], linked: 0, savedTo: null });
+					runner.equal('bez nových anime: jen seznam oblíbených, žádný průběh ani zápis', [run.calls, run.events, run.kept, run.links],
+						[[Sync.FAVORITES_URL], ['health', 'total:0'], [], []]);
+				});
+			},
+			function () {
+				// Známá anime bez FavoriteUrlName ji dostanou z oblíbených ještě před přidáváním nových.
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE, SHOW_A]);
+				addShowRoutes(routes, SHOW_A);
+				var items = [
+					{ Number: '3', FavoriteName: 'Known', Image: '3' },
+					{ Number: '10', FavoriteName: 'Known Ten', Image: '10' }
+				];
+				return runUpdate({ routes: routes, items: items }).then(function (run) {
+					runner.equal('FavoriteUrlName: bez chyby a počet doplněných', [run.error && run.error.message, run.result && run.result.linked],
+						[null, 1]);
+					runner.equal('FavoriteUrlName: zápis jen chybějících adres', run.links, [{ 3: 'known' }]);
+					runner.equal('FavoriteUrlName: zápis a překreslení před přidáváním nových anime',
+						run.events.slice(0, 4), ['health', 'link', 'linked:2', 'total:1']);
+					runner.equal('FavoriteUrlName: známé anime ji má, anime mimo oblíbené ne',
+						[run.items[0].FavoriteUrlName, 'FavoriteUrlName' in run.items[1], run.items[2] && run.items[2].FavoriteUrlName],
+						['known', false, 'new-a']);
+				});
+			},
+			function () {
+				var routes = {};
+				routes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE]);
+				var items = [{ Number: '3', FavoriteName: 'Known', Image: '3', FavoriteUrlName: 'old-known' }];
+				return runUpdate({ routes: routes, items: items, linkMissing: ['3'] }).then(function (run) {
+					runner.equal('FavoriteUrlName: anime, které v souboru není, se na stránce nezmění',
+						[run.error && run.error.message, run.links, run.items[0].FavoriteUrlName, run.result && run.result.linked, run.events],
+						[null, [{ 3: 'known' }], 'old-known', 0, ['health', 'link', 'total:0']]);
+				});
+			},
+			function () {
+				var routes = twoNewFavorites();
+				var items = [{ Number: '3', FavoriteName: 'Known', Image: '3' }];
+				return runUpdate({ routes: routes, items: items, linkError: makeError('data-write-failed', 'PermissionError', 500) }).then(function (run) {
+					runner.equal('FavoriteUrlName: selhaný zápis zastaví Seznam chybou data-save-failed',
+						[errorSummary(run.error), run.error && run.error.added, run.error && run.error.savedTo],
+						[{ code: 'data-save-failed', detail: 'data-write-failed PermissionError' }, 0, null]);
+					runner.equal('FavoriteUrlName: po selhaném zápisu se nic nepřidá ani nezmění',
+						[run.calls, run.writes, 'FavoriteUrlName' in run.items[0], numbersOf(run.items)],
+						[[Sync.FAVORITES_URL], [], false, ['3']]);
 				});
 			},
 			function () {
@@ -1000,11 +1099,11 @@ window.AnimeSyncTests = (function () {
 				});
 			},
 			function () {
-				// Starší pomocník nevrací uložený obrázek (verze 5 by ho ani nestáhla ze sledujserialy.io);
+				// Pomocník starší než verze 10 neumí FavoriteUrlName (POST /anime-items by novou položku odmítl);
 				// kontroly jdou ve stejném pořadí jako u ostatních voleb.
-				var outdated = listHealth({ version: 6, cookieConfigured: false, dataFile: false });
+				var outdated = listHealth({ version: 9, cookieConfigured: false, dataFile: false });
 				return runUpdate({ routes: twoNewFavorites(), health: outdated }).then(function (run) {
-					runner.equal('pomocník verze 6: zastaralý, nic se nestahuje', [errorSummary(run.error), run.calls, run.events],
+					runner.equal('pomocník verze 9: zastaralý, nic se nestahuje', [errorSummary(run.error), run.calls, run.events],
 						[{ code: 'helper-outdated', detail: '' }, [], ['health']]);
 				});
 			},
@@ -1127,16 +1226,16 @@ window.AnimeSyncTests = (function () {
 					release();
 					return first;
 				}).then(function (firstRun) {
-					runner.equal('původní aktualizace doběhne', firstRun.result, { total: 0, added: [], savedTo: null });
+					runner.equal('původní aktualizace doběhne', firstRun.result, { total: 0, added: [], linked: 0, savedTo: null });
 					return runUpdate({ routes: routes });
 				}).then(function (afterSuccess) {
-					runner.equal('po dokončení jde aktualizaci spustit znovu', afterSuccess.result, { total: 0, added: [], savedTo: null });
+					runner.equal('po dokončení jde aktualizaci spustit znovu', afterSuccess.result, { total: 0, added: [], linked: 0, savedTo: null });
 					return runUpdate({ routes: {}, health: listHealth({ cookieConfigured: false, maxImageNumber: 0 }) });
 				}).then(function (failed) {
 					runner.equal('aktualizace skončí chybou', errorSummary(failed.error), { code: 'cookie-missing', detail: '' });
 					return runUpdate({ routes: routes });
 				}).then(function (afterError) {
-					runner.equal('po chybě jde aktualizaci spustit znovu', afterError.result, { total: 0, added: [], savedTo: null });
+					runner.equal('po chybě jde aktualizaci spustit znovu', afterError.result, { total: 0, added: [], linked: 0, savedTo: null });
 				});
 			}
 		]);

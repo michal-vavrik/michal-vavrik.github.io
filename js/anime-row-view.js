@@ -10,11 +10,13 @@
  * img/anime, dokud se nenahraje do repozitáře - do té doby se ukáže obrázek
  * uložený v prohlížeči (AnimeData.imageSource()), a když ani ten není,
  * nahradí chybějící obrázek popisek (anime.row.imageMissing).
+ * Bez Python vzoru: obrázek anime s FavoriteUrlName (doplňuje Seznam) je
+ * odkaz na stránku seriálu na sledujserialy.io (otevře se v nové záložce).
  *
  * Struktura:
  *   <article class="anime-row" data-number="1">
  *     <div class="anime-row__cell anime-row__cell--Number">1</div>
- *     <div class="anime-row__cell anime-row__cell--Image"><img …></div>
+ *     <div class="anime-row__cell anime-row__cell--Image"><a …><img …></a></div>
  *     …
  *   </article>
  */
@@ -22,6 +24,12 @@ window.AnimeRow = (function () {
 	'use strict';
 
 	var IMAGE_BASE = 'img/anime/';
+
+	// Obrázek anime odkazuje na jeho stránku na sledujserialy.io (bez Python vzoru).
+	// FavoriteUrlName doplňuje Seznam z odkazu v oblíbených; stejné pravidlo mají
+	// js/anime-sync.js (FAVORITE_URL_NAME) a pomocník. Anime bez ní odkaz nemá.
+	var SERIAL_LINK_BASE = 'https://sledujserialy.io/serial/';
+	var FAVORITE_URL_NAME = /^[A-Za-z0-9_.~%!$&'()*+,;=:@\[\]-]{1,200}$/;
 
 	// Python nahrazuje " / " v hodnotách za "\n" (AnimeList.pyw ř. 743, 746, 749, 756).
 	// CSS `white-space: pre-line` na buňce se pak postará o zalomení.
@@ -49,8 +57,8 @@ window.AnimeRow = (function () {
 			var placeholder = document.createElement('span');
 			placeholder.className = 'anime-row__image-missing';
 			placeholder.setAttribute('data-i18n', 'anime.row.imageMissing');
-			if (img.parentNode === cell) {
-				cell.replaceChild(placeholder, img);
+			if (img.parentNode) {
+				img.parentNode.replaceChild(placeholder, img);
 			}
 			if (window.I18n && typeof window.I18n.applyStatic === 'function') {
 				window.I18n.applyStatic(cell);
@@ -60,7 +68,23 @@ window.AnimeRow = (function () {
 			? window.AnimeData.imageSource(item)
 			: null;
 		img.src = pending || IMAGE_BASE + String(item.Image) + '.jpg';
-		cell.appendChild(img);
+
+		var urlName = item.FavoriteUrlName;
+		if (typeof urlName === 'string' && FAVORITE_URL_NAME.test(urlName)) {
+			var link = document.createElement('a');
+			link.className = 'anime-row__image-link';
+			link.href = SERIAL_LINK_BASE + urlName;
+			link.target = '_blank';
+			link.rel = 'noopener noreferrer';
+			link.title = 'sledujserialy.io';
+			img.alt = String(item.FavoriteName || '');
+			// Název odkazu zůstane i po nahrazení chybějícího obrázku popiskem.
+			link.setAttribute('aria-label', img.alt || link.title);
+			link.appendChild(img);
+			cell.appendChild(link);
+		} else {
+			cell.appendChild(img);
+		}
 		return cell;
 	}
 

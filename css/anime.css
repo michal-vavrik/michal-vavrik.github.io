@@ -496,6 +496,35 @@
 	line-height: var(--leading-tight);
 }
 
+/* Obrázek anime s adresou seriálu odkazuje na sledujserialy.io (viz buildImageCell). */
+.anime-row__image-link {
+	display: block;
+	max-width: 100%;
+	border-radius: var(--radius-md);
+	color: inherit;
+	text-decoration: none;
+}
+
+.anime-row__image-link .anime-row__image {
+	transition:
+		transform var(--dur) var(--ease),
+		box-shadow var(--dur) var(--ease),
+		filter var(--dur) var(--ease);
+}
+
+@media (hover: hover) {
+	.anime-row__image-link:hover .anime-row__image {
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-md);
+		filter: brightness(1.08);
+	}
+}
+
+.anime-row__image-link:active .anime-row__image {
+	transform: translateY(0);
+	filter: brightness(0.96);
+}
+
 /* NameEn odkazuje na ČSFD, NameJa na MyAnimeList. */
 .anime-row__link {
 	border-radius: var(--radius-xs);
@@ -680,6 +709,10 @@
 	.anime-row__image {
 		width: 100%;
 		max-height: none;
+	}
+
+	.anime-row__image-link {
+		width: 100%;
 	}
 
 	.anime-row__image-missing {
