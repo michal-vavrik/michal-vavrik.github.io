@@ -175,6 +175,7 @@ class GuardTests(ProxyTestCase):
         self.assertEqual(self.request("GET", "/csfd-ratings")[0], 405)
         self.assertEqual(self.request("GET", "/mal-ratings")[0], 405)
         self.assertEqual(self.request("GET", "/watched-states")[0], 405)
+        self.assertEqual(self.request("GET", "/anime-edits")[0], 405)
 
 
 class FetchTests(ProxyTestCase):
@@ -565,7 +566,7 @@ class ConfigReloadTests(ProxyTestCase):
 
 
 class DataFileTests(ProxyTestCase):
-    """POST /csfd-ratings, /mal-ratings, /watched-states a /anime-items zapisují do souboru s daty."""
+    """POST /csfd-ratings, /mal-ratings, /watched-states, /anime-items a /anime-edits zapisují do souboru s daty."""
 
     ITEMS = {
         "1": {"Number": "1", "FavoriteName": "Naruto Šippúden", "NameJa": "ナルト", "State": "S01E05",
@@ -867,6 +868,160 @@ class DataFileTests(ProxyTestCase):
         status, _, _ = self.post_items([self.new_item("3")], headers={proxy.REQUEST_HEADER: None})
         self.assertEqual(status, 403)
         status, _, _ = self.post_items([self.new_item("3")], headers={"Origin": "https://evil.example"})
+        self.assertEqual(status, 403)
+        self.assertEqual(self.read_data(), before)
+
+    def post_edits(self, edits, **kwargs):
+        return self.post_ratings({"edits": edits}, path="/anime-edits", **kwargs)
+
+    @staticmethod
+    def edit(number, **changes):
+        return {"number": number, "changes": {field: {"from": old, "to": new} for field, (old, new) in changes.items()}}
+
+    def test_anime_edits_change_only_given_fields_in_python_format(self):
+        status, _, body = self.post_edits([
+            self.edit("1", NameJa=("ナルト", "ナルト疾風伝"), MyRating=("", "90%")),
+            self.edit("2", State=("DONE", "S02E01"), Description=("", "Řádek 1\nŘádek 2")),
+        ])
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 4}))
+        expected = json.loads(json.dumps(self.ITEMS))
+        expected["1"].update(NameJa="ナルト疾風伝", MyRating="90%")
+        expected["2"].update(State="S02E01", Description="Řádek 1\nŘádek 2")
+        self.assertEqual(self.read_data(), self.dumps(expected).encode("utf-8"))
+        self.assertEqual(os.listdir(self.tmp), ["anime.json"])
+        self.assertEqual(self.transport.calls, [])
+
+    def test_anime_edits_keep_bom_line_endings_and_final_newline(self):
+        original = self.dumps(self.ITEMS).replace("\n", "\r\n") + "\r\n"
+        self.write_data(b"\xef\xbb\xbf" + original.encode("utf-8"))
+        self.assertEqual(self.post_edits([self.edit("1", CsfdRating=("80%", "81%"))])[0], 200)
+        self.assertEqual(self.read_data(), b"\xef\xbb\xbf" + original.replace('"80%"', '"81%"').encode("utf-8"))
+
+    def test_anime_edits_unchanged_values_do_not_touch_the_file(self):
+        os.utime(self.data_path, ns=(10 ** 9, 10 ** 9))
+        status, _, body = self.post_edits([self.edit("1", State=("S01E05", "S01E05"))])
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 0}))
+        self.assertEqual(os.stat(self.data_path).st_mtime_ns, 10 ** 9)
+
+    def test_anime_edits_conflict_with_the_file_writes_nothing(self):
+        # Soubor se mezitím změnil (aktualizace, stránka se starými daty): celý zápis se odmítne.
+        before = self.read_data()
+        status, headers, _ = self.post_edits([
+            self.edit("1", MyRating=("", "90%")),
+            self.edit("2", CsfdRating=("70%", "75%")),
+        ])
+        self.assertEqual((status, headers["x-proxy-error"], headers["x-proxy-detail"]), (409, "data-conflict", "2 CsfdRating"))
+        status, headers, _ = self.post_edits([self.edit("1", NameEn=("Naruto", "Naruto S"))])
+        self.assertEqual((status, headers["x-proxy-error"], headers["x-proxy-detail"]), (409, "data-conflict", "1 NameEn"))
+        self.assertEqual(self.read_data(), before)
+
+    def test_anime_edits_of_missing_anime_write_nothing(self):
+        before = self.read_data()
+        status, headers, _ = self.post_edits([self.edit("1", MyRating=("", "90%")), self.edit("99", MyRating=("", "50%"))])
+        self.assertEqual((status, headers["x-proxy-error"], headers["x-proxy-detail"]), (409, "item-missing", "99"))
+        self.assertEqual(self.read_data(), before)
+
+    def test_anime_edits_renumber_and_sort_like_python(self):
+        status, _, body = self.post_edits([self.edit("1", Number=("1", "10"), MyRating=("", "70%"))])
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 2}))
+        data = json.loads(self.read_data())
+        self.assertEqual(list(data), ["2", "10"])
+        expected = dict(self.ITEMS["1"], Number="10", MyRating="70%")
+        self.assertEqual(data["10"], expected)
+        self.assertEqual(data["2"], self.ITEMS["2"])
+
+    def test_anime_edits_may_swap_numbers(self):
+        status, _, body = self.post_edits([self.edit("1", Number=("1", "2")), self.edit("2", Number=("2", "1"))])
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 2}))
+        data = json.loads(self.read_data())
+        self.assertEqual(list(data), ["1", "2"])
+        self.assertEqual((data["1"]["FavoriteName"], data["1"]["Number"]), ("Bleach", "1"))
+        self.assertEqual((data["2"]["FavoriteName"], data["2"]["Number"]), ("Naruto Šippúden", "2"))
+
+    def test_anime_edits_never_take_the_number_of_another_anime(self):
+        before = self.read_data()
+        status, headers, _ = self.post_edits([self.edit("1", Number=("1", "2"))])
+        self.assertEqual((status, headers["x-proxy-error"], headers["x-proxy-detail"]), (409, "number-exists", "2"))
+        self.assertEqual(self.read_data(), before)
+        self.write_data(self.dumps(dict(self.ITEMS, **{"3": dict(self.ITEMS["2"], Number="3")})).encode("utf-8"))
+        before = self.read_data()
+        status, headers, _ = self.post_edits([self.edit("1", Number=("1", "5")), self.edit("3", Number=("3", "5"))])
+        self.assertEqual((status, headers["x-proxy-error"], headers["x-proxy-detail"]), (409, "number-exists", "5"))
+        self.assertEqual(self.read_data(), before)
+
+    def test_anime_edits_are_validated(self):
+        before = self.read_data()
+        bad_edits = [
+            None, {}, [], "1", [None], ["1"],
+            [{"number": "1"}], [{"number": "1", "changes": {}, "extra": 1}],
+            [self.edit("x", MyRating=("", "90%"))], [self.edit("", MyRating=("", "90%"))],
+            [self.edit("1234567", MyRating=("", "90%"))], [{"number": 1, "changes": {"MyRating": {"from": "", "to": "90%"}}}],
+            [{"number": "1", "changes": {}}], [{"number": "1", "changes": []}],
+            [self.edit("1", FavoriteName=("Naruto Šippúden", "X"))], [self.edit("1", Image=("", "5"))],
+            [self.edit("1", CsfdID=("", "5"))], [self.edit("1", MalName=("", "x"))],
+            [{"number": "1", "changes": {"MyRating": {"to": "90%"}}}],
+            [{"number": "1", "changes": {"MyRating": {"from": "", "to": "90%", "x": ""}}}],
+            [{"number": "1", "changes": {"MyRating": {"from": None, "to": "90%"}}}],
+            [{"number": "1", "changes": {"MyRating": {"from": "", "to": 90}}}],
+            [self.edit("1", MyRating=("", "90"))], [self.edit("1", CsfdRating=("80%", "1000%"))],
+            [self.edit("1", MalRating=("82%", ""))], [self.edit("1", Date=("", "2024-05-17"))],
+            [self.edit("1", Date=("", "17.5.24"))], [self.edit("1", Number=("1", "0"))],
+            [self.edit("1", Number=("1", "03"))], [self.edit("1", Number=("1", ""))],
+            [self.edit("1", Description=("", "a" * (proxy.MAX_EDIT_VALUE + 1)))],
+            [self.edit("1", MyRating=("", "90%")), self.edit("1", NameEn=("", "x"))],
+        ]
+        for edits in bad_edits:
+            with self.subTest(edits=edits):
+                status, headers, _ = self.post_edits(edits)
+                self.assertEqual((status, headers["x-proxy-error"]), (400, "bad-request"))
+        self.assertEqual(self.post_ratings({"items": [self.edit("1", MyRating=("", "90%"))]}, path="/anime-edits")[0], 400)
+        self.assertEqual(self.post_ratings({"edits": [self.edit("1", MyRating=("", "90%"))]}, path="/csfd-ratings")[0], 400)
+        self.assertEqual(self.post_ratings(b"{}", path="/anime-edits", headers={"Content-Type": "text/plain"})[0], 415)
+        self.assertEqual(self.post_ratings(b'{"edits": "' + b"a" * proxy.MAX_ITEMS_BODY + b'"}', path="/anime-edits")[0], 413)
+        too_many = [self.edit(str(number), MyRating=("", "50%")) for number in range(1, proxy.MAX_DATA_VALUES + 2)]
+        self.assertEqual(self.post_edits(too_many)[0], 400)
+        self.assertEqual(self.read_data(), before)
+
+    def test_anime_edits_accept_valid_values(self):
+        long_text = ("Dlouhý popis.\n" * 2000)[:proxy.MAX_EDIT_VALUE]
+        status, _, body = self.post_edits([
+            self.edit("1", Date=("", "1.2.2024"), MyRating=("", "?%"), Description=("", long_text)),
+            self.edit("2", MalRating=("79%", "100%"), Genres=("", "Akční\nDrama")),
+        ])
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 5}))
+        data = json.loads(self.read_data())
+        self.assertEqual((data["1"]["Date"], data["1"]["MyRating"], data["1"]["Description"]), ("1.2.2024", "?%", long_text))
+        self.assertEqual((data["2"]["MalRating"], data["2"]["Genres"]), ("100%", "Akční\nDrama"))
+        status, _, body = self.post_edits([self.edit("1", Date=("1.2.2024", ""))])
+        self.assertEqual((status, json.loads(body)), (200, {"ok": True, "changed": 1}))
+        self.assertEqual(json.loads(self.read_data())["1"]["Date"], "")
+
+    def test_anime_edits_need_a_data_file(self):
+        os.remove(self.data_path)
+        status, headers, _ = self.post_edits([self.edit("1", MyRating=("", "90%"))])
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-missing"))
+        self.assertFalse(os.path.exists(self.data_path))
+        self.write_data(b"[]")
+        status, headers, _ = self.post_edits([self.edit("1", MyRating=("", "90%"))])
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-invalid"))
+        self.server.data_path = None
+        status, headers, _ = self.post_edits([self.edit("1", MyRating=("", "90%"))])
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-file-missing"))
+
+    def test_anime_edits_failed_write_keeps_original_file(self):
+        before = self.read_data()
+        with mock.patch.object(proxy.os, "replace", side_effect=PermissionError("locked")), \
+                mock.patch.object(proxy.time, "sleep"):
+            status, headers, _ = self.post_edits([self.edit("1", MyRating=("", "90%"))])
+        self.assertEqual((status, headers["x-proxy-error"]), (500, "data-write-failed"))
+        self.assertEqual(self.read_data(), before)
+        self.assertEqual(os.listdir(self.tmp), ["anime.json"])
+
+    def test_anime_edits_need_the_api_header_and_origin(self):
+        before = self.read_data()
+        status, _, _ = self.post_edits([self.edit("1", MyRating=("", "90%"))], headers={proxy.REQUEST_HEADER: None})
+        self.assertEqual(status, 403)
+        status, _, _ = self.post_edits([self.edit("1", MyRating=("", "90%"))], headers={"Origin": "https://evil.example"})
         self.assertEqual(status, 403)
         self.assertEqual(self.read_data(), before)
 

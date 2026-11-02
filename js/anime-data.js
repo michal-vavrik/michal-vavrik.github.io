@@ -9,19 +9,13 @@
  * Modul vrací pole položek seřazené vzestupně podle číselné hodnoty pole
  * Number - stejně jako Python: `sorted(GetData(), key=lambda x: int(x["Number"]))`.
  *
- * Uložené úpravy z edit módu (Krok 12/13) se persistují do localStorage
- * (web nemá přístup k souborovému systému jako Python WriteDataToTheFile()) -
- * pokud jsou v localStorage nějaká data, load() je použije místo data/anime.json.
- *
- * toJsonString() (Krok 16, bez Python vzoru) vrací aktuální data ve stejném
- * textovém formátu, aby si je uživatel mohl stáhnout jako soubor.
- *
- * importFromObject() (Krok 17, bez Python vzoru) přijme obsah nahraného
- * souboru ve stejném formátu a nahradí jím aktuální data.
+ * Všechny změny (aktualizace i úpravy z edit módu) zapisuje do
+ * data/anime.json pomocný program (tools/anime_proxy.py, volá ho
+ * js/anime-sync.js); v prohlížeči se žádné úpravy dat neukládají.
  *
  * addItem() (Krok 20) přidá nově zjištěné anime z tlačítka Aktualizovat ->
  * Seznam (js/anime-sync.js) do dat v paměti; zapsání do data/anime.json
- * (případně uložení do prohlížeče) zajistí js/anime-sync.js.
+ * zajistí js/anime-sync.js.
  *
  * Nepublikovaná anime (bez Python vzoru): pomocník zapisuje do data/anime.json
  * a img/anime v počítači, web (GitHub Pages) je ale ukáže až po nahrání do
@@ -34,11 +28,9 @@ window.AnimeData = (function () {
 
 	var DATA_URL = 'data/anime.json?v=anime-data-1';
 
-	// Uložené úpravy z edit módu (mirror Python WriteDataToTheFile() /
-	// GetData(), ř. 1518-1521 a 1284-1292 - tam se přepisuje/čte přímo
-	// data/anime.json, web nemá přístup k souborovému systému, takže jako
-	// "soubor" slouží localStorage).
-	var STORAGE_KEY = 'anime-data-overrides';
+	// Dřívější úpravy uložené jen v prohlížeči (před zápisem úprav do
+	// data/anime.json). Už se nečtou, load() je jen smaže, aby nepřekážely.
+	var LEGACY_STORAGE_KEY = 'anime-data-overrides';
 
 	// Anime zapsaná pomocníkem do data/anime.json, která web ještě nemá:
 	// { items: { Number: položka }, images: { Image: { name: FavoriteName, src: data URL } } }.
@@ -53,57 +45,12 @@ window.AnimeData = (function () {
 	// Obrázky nových anime pro zobrazení (Image -> { name, src }), viz imageSource().
 	var pendingImages = {};
 
-	function readStoredItems() {
+	function removeLegacyOverrides() {
 		try {
-			var raw = window.localStorage.getItem(STORAGE_KEY);
-			if (!raw) {
-				return null;
-			}
-			var parsed = JSON.parse(raw);
-			return Object.keys(parsed).map(function (key) {
-				return parsed[key];
-			});
+			window.localStorage.removeItem(LEGACY_STORAGE_KEY);
 		} catch (error) {
-			return null;
+			// Soukromý režim prohlížeče může odmítnout i mazání - nevadí, klíč se nečte.
 		}
-	}
-
-	// Sdílený tvar dat pro localStorage i export - objekt klíčovaný Number,
-	// hodnoty seřazené podle Number vzestupně (mirror Python
-	// WriteDataToTheFile(), ř. 1518-1521).
-	function buildJsonPayload(items) {
-		var sorted = items.slice().sort(function (a, b) {
-			return parseNumber(a.Number) - parseNumber(b.Number);
-		});
-		var jsonData = {};
-		sorted.forEach(function (item) {
-			jsonData[item.Number] = item;
-		});
-		return jsonData;
-	}
-
-	/**
-	 * Uloží aktuální data do localStorage stejným tvarem jako Python
-	 * WriteDataToTheFile() (objekt klíčovaný Number, hodnoty seřazené
-	 * podle Number vzestupně).
-	 */
-	function save(items) {
-		try {
-			window.localStorage.setItem(STORAGE_KEY, JSON.stringify(buildJsonPayload(items)));
-		} catch (error) {
-			// Soukromý režim prohlížeče může zápis odmítnout - úpravy pak
-			// platí jen do konce zobrazení stránky (v paměti zůstávají).
-		}
-	}
-
-	/**
-	 * Zjistí, jestli jsou v prohlížeči uložené úpravy, které při načtení
-	 * přebíjí data/anime.json (Krok 20 - ČSFD hodnocení zapsaná pomocníkem
-	 * do souboru je pak nutné uložit i sem, jinak by je stránka neukázala).
-	 * @returns {boolean}
-	 */
-	function hasStoredItems() {
-		return readStoredItems() !== null;
 	}
 
 	function isPendingItem(item, key) {
@@ -217,36 +164,53 @@ window.AnimeData = (function () {
 	}
 
 	/**
-	 * Uloží do prohlížeče obrázky přidaných anime a s `inFile` i samotná
-	 * anime, aby je stránka ukazovala, dokud web nemá novou verzi
-	 * data/anime.json a img/anime (js/anime-sync.js po zápisu pomocníkem).
-	 * Anime, která se do souboru nezapsala, drží uložené úpravy (save()).
+	 * Uloží do prohlížeče přidaná anime i s obrázky, aby je stránka
+	 * ukazovala, dokud web nemá novou verzi data/anime.json a img/anime
+	 * (js/anime-sync.js po zápisu pomocníkem do souboru).
 	 * @param {Array} items - přidaná anime
-	 * @param {boolean} inFile - pomocník je zapsal do data/anime.json
 	 */
-	function keepAdded(items, inFile) {
+	function keepAdded(items) {
 		var pending = readPending();
 		items.forEach(function (item) {
 			var key = String(item.Image);
 			if (pendingImages[key] && pendingImages[key].name === item.FavoriteName) {
 				pending.images[key] = pendingImages[key];
 			}
-			if (inFile) {
-				pending.items[item.Number] = item;
-			}
+			pending.items[item.Number] = item;
 		});
 		writePending(pending);
 	}
 
 	/**
-	 * Vrátí data ve stejném textovém formátu jako Python WriteDataToTheFile()
-	 * (`json.dump(JsonData, File, indent = 4, ensure_ascii = False)`) - pro
-	 * stažení do souboru (Krok 16, bez Python vzoru - web nemá přístup
-	 * k souborovému systému jako Python `open(DATA_PATH, "w")`, uživatel si
-	 * tak aktuální data stáhne přes prohlížeč).
+	 * Promítne úpravy z edit módu, které pomocník zapsal do data/anime.json,
+	 * i do nepublikovaných anime v prohlížeči - jinak by je stránka po
+	 * obnovení ukázala v původní podobě. Změna Number anime překlíčuje.
+	 * @param {Array<{number: string, changes: Object<string, {from: string, to: string}>}>} edits
 	 */
-	function toJsonString(items) {
-		return JSON.stringify(buildJsonPayload(items), null, 4);
+	function keepEdited(edits) {
+		var pending = readPending();
+		var byNumber = {};
+		edits.forEach(function (edit) {
+			byNumber[edit.number] = edit.changes;
+		});
+		var changed = false;
+		var items = {};
+		Object.keys(pending.items).forEach(function (key) {
+			var item = pending.items[key];
+			var changes = byNumber[key];
+			if (changes) {
+				item = Object.assign({}, item);
+				Object.keys(changes).forEach(function (field) {
+					item[field] = changes[field].to;
+				});
+				changed = true;
+			}
+			items[item.Number] = item;
+		});
+		if (changed) {
+			pending.items = items;
+			writePending(pending);
+		}
 	}
 
 	function parseNumber(value) {
@@ -279,10 +243,8 @@ window.AnimeData = (function () {
 	}
 
 	/**
-	 * Načte data - pokud v localStorage existují dříve uložené úpravy
-	 * (mirror Python GetData(), ř. 1284-1292 - čte se to, co bylo naposledy
-	 * zapsáno), použijí se ty; jinak se stáhnou výchozí data ze souboru
-	 * a doplní se k nim nepublikovaná anime (mergePending()).
+	 * Načte data ze souboru data/anime.json (mirror Python GetData(),
+	 * ř. 1284-1292) a doplní k nim nepublikovaná anime (mergePending()).
 	 * Výsledek se seřadí podle Number vzestupně a uloží do interního cache.
 	 * Opakované volání vrací stejné pole.
 	 */
@@ -290,17 +252,7 @@ window.AnimeData = (function () {
 		if (state.promise) {
 			return state.promise;
 		}
-		var stored = readStoredItems();
-		if (stored) {
-			stored.sort(function (a, b) {
-				return parseNumber(a.Number) - parseNumber(b.Number);
-			});
-			// Uložené úpravy už nová anime obsahují, z nepublikovaných se berou jen obrázky.
-			rememberImages(readPending().images);
-			state.items = stored;
-			state.promise = Promise.resolve(stored);
-			return state.promise;
-		}
+		removeLegacyOverrides();
 		state.promise = fetch(DATA_URL, { cache: 'no-cache' })
 			.then(function (response) {
 				if (!response.ok) {
@@ -352,60 +304,6 @@ window.AnimeData = (function () {
 	}
 
 	/**
-	 * Smaže uložené úpravy z localStorage a znovu načte výchozí data ze
-	 * souboru data/anime.json (Krok 15, bez Python vzoru - web-only reset
-	 * úprav uložených přes save()). Nepublikovaná anime zůstanou - nejsou
-	 * to úpravy, pomocník je do souboru v počítači zapsal.
-	 * @returns {Promise<Array>}
-	 */
-	function reset() {
-		try {
-			window.localStorage.removeItem(STORAGE_KEY);
-		} catch (error) {
-			// Soukromý režim prohlížeče může odmítnout i mazání - v takovém
-			// případě uložené úpravy stejně nebyly zapsané (viz save()).
-		}
-		state.items = null;
-		state.promise = null;
-		return load();
-	}
-
-	/**
-	 * Zpracuje obsah nahraného souboru (stejný tvar jako export/data/anime.json)
-	 * - ověří základní strukturu, nahradí jím aktuální data a persistuje je do
-	 * localStorage (Krok 17, bez Python vzoru - Python žádný import ze souboru
-	 * nemá, GetData() vždy čte jen pevně daný DATA_PATH).
-	 * @param {*} raw - výsledek JSON.parse() nahraného souboru.
-	 * @returns {Array} pole položek seřazené podle Number vzestupně.
-	 * @throws {Error} pokud tvar dat neodpovídá očekávanému formátu.
-	 */
-	function importFromObject(raw) {
-		if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-			throw new Error('Invalid anime data: expected an object keyed by Number.');
-		}
-		var keys = Object.keys(raw);
-		if (keys.length === 0) {
-			throw new Error('Invalid anime data: no items found.');
-		}
-		var items = keys.map(function (key) {
-			return raw[key];
-		});
-		var isValidItem = items.every(function (item) {
-			return item && typeof item === 'object' && typeof item.Number === 'string' && typeof item.NameEn === 'string';
-		});
-		if (!isValidItem) {
-			throw new Error('Invalid anime data: items are missing required fields.');
-		}
-		items.sort(function (a, b) {
-			return parseNumber(a.Number) - parseNumber(b.Number);
-		});
-		state.items = items;
-		state.promise = Promise.resolve(items);
-		save(items);
-		return items;
-	}
-
-	/**
 	 * Seřadí cachovaná data podle sloupce a uloží nové pořadí (mirror Python
 	 * MainWindow.Sort(), ř. 346-362 - `AnimeData = sorted(AnimeData, ...)`).
 	 * @param {string} column - klíč sloupce (AnimeColumns.COLUMNS[].key)
@@ -441,14 +339,10 @@ window.AnimeData = (function () {
 		getItems: getItems,
 		addItem: addItem,
 		sortItems: sortItems,
-		save: save,
-		hasStoredItems: hasStoredItems,
-		reset: reset,
-		toJsonString: toJsonString,
-		importFromObject: importFromObject,
 		setImage: setImage,
 		imageSource: imageSource,
 		keepAdded: keepAdded,
+		keepEdited: keepEdited,
 		mergePending: mergePending
 	};
 })();

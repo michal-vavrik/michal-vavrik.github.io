@@ -7,10 +7,10 @@
 		<link rel="stylesheet" type="text/css" href="css/main.css?v=header-scroll-1">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=hide-locked-menu-2">
 		<link rel="stylesheet" type="text/css" href="css/i18n.css">
-		<link rel="stylesheet" type="text/css" href="css/anime.css?v=anime-push-1">
+		<link rel="stylesheet" type="text/css" href="css/anime.css?v=anime-action-bar-1">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
-		<script src="js/auth.js"></script>
+		<script src="js/auth.js?v=anime-role-1"></script>
 	</head>
 
 	<body class="subpage">
@@ -82,71 +82,64 @@
 			</div>
 		</div>
 
-		<script src="js/i18n.js?v=anime-push-1"></script>
+		<script src="js/i18n.js?v=anime-role-1"></script>
 		<script src="js/lang-switcher.js"></script>
-		<script src="js/auth-ui.js?v=snake-1"></script>
+		<script src="js/auth-ui.js?v=anime-role-1"></script>
 		<script src="js/menu.js"></script>
 
 		<main class="anime">
 			<h1 class="anime__title" data-i18n="anime.title">Anime list</h1>
-			<p class="anime__status" id="anime-status" data-i18n="anime.status.loading">Načítám anime data…</p>
 
-			<div class="anime__search">
-				<img class="anime__search-icon" src="img/anime/icons/Search.png" alt="" aria-hidden="true">
-				<input type="text" id="anime-search" class="anime__search-input" data-i18n-placeholder="anime.search.placeholder" data-i18n-aria-label="anime.search.ariaLabel" placeholder="Hledej anime..." autocomplete="off">
+			<!-- Lepivá lišta: hledání, action-bar (jen pro roli s přístupem všude) a hlavička sloupců. -->
+			<div class="anime__toolbar" id="anime-toolbar">
+				<div class="anime__toolbar-row">
+					<div class="anime__search">
+						<img class="anime__search-icon" src="img/anime/icons/Search.png" alt="" aria-hidden="true">
+						<input type="text" id="anime-search" class="anime__search-input" data-i18n-placeholder="anime.search.placeholder" data-i18n-aria-label="anime.search.ariaLabel" placeholder="Hledej anime..." autocomplete="off">
+					</div>
+
+					<div class="anime__action-bar" id="anime-action-bar" hidden>
+						<div class="anime__action-buttons">
+							<button type="button" id="anime-update-toggle" class="anime__edit-btn anime__edit-btn--update" data-i18n="anime.update.button" aria-expanded="false" aria-controls="anime-update-menu" disabled>Aktualizovat</button>
+							<button type="button" id="anime-push-btn" class="anime__edit-btn anime__edit-btn--push" data-i18n="anime.push.button" data-i18n-title="anime.push.title" disabled>Push</button>
+							<button type="button" id="anime-edit-toggle" class="anime__edit-btn" data-i18n="anime.edit.start" aria-pressed="false">Upravit</button>
+						</div>
+						<p class="anime__edit-error" id="anime-edit-error" role="alert" hidden></p>
+
+						<div class="anime__update-panel">
+							<div class="anime__update-menu" id="anime-update-menu" role="group" data-i18n-aria-label="anime.update.menuLabel" hidden>
+								<button type="button" id="anime-update-watched-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="watched" data-i18n="anime.update.watched">Zhlédnuté epizody</button>
+								<button type="button" id="anime-update-csfd-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="csfd" data-i18n="anime.update.csfd">ČSFD hodnocení</button>
+								<button type="button" id="anime-update-mal-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="mal" data-i18n="anime.update.mal">MAL hodnocení</button>
+								<button type="button" id="anime-update-list-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="list" data-i18n="anime.update.list">Seznam</button>
+								<button type="button" id="anime-update-all-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="all" data-i18n="anime.update.all">Všechno</button>
+							</div>
+							<p class="anime__update-info" id="anime-update-info" role="status"></p>
+							<p class="anime__edit-error" id="anime-update-error" role="alert" hidden></p>
+						</div>
+					</div>
+				</div>
+
+				<div class="anime__header-wrap" id="anime-header-wrap" hidden>
+					<div class="anime__header" id="anime-header" role="row"></div>
+				</div>
 			</div>
+
+			<p class="anime__load-error" id="anime-load-error" data-i18n="anime.loadError" role="alert" hidden>Nepodařilo se načíst anime data. Zkuste stránku obnovit.</p>
 
 			<div class="anime__list-wrap" id="anime-list-wrap" hidden>
-				<div class="anime__header" id="anime-header" role="row"></div>
 				<div class="anime__list" id="anime-list" role="list"></div>
-			</div>
-
-			<div class="anime__bottom-bar">
-				<p class="anime__edit-error" id="anime-edit-error" data-i18n="anime.edit.error" role="alert" hidden>Některé hodnoty nejsou platné. Opravte zvýrazněná pole.</p>
-				<p class="anime__edit-error" id="anime-import-error" data-i18n="anime.import.error" role="alert" hidden>Nepodařilo se načíst soubor. Zkontrolujte, že jde o platný export dat.</p>
-				<input type="file" id="anime-import-input" accept=".json,application/json" hidden>
-				<button type="button" id="anime-import-btn" class="anime__edit-btn anime__edit-btn--import" data-i18n="anime.import.button">Importovat data</button>
-				<button type="button" id="anime-export-btn" class="anime__edit-btn anime__edit-btn--export" data-i18n="anime.export.button">Exportovat data</button>
-				<button type="button" id="anime-reset-btn" class="anime__edit-btn anime__edit-btn--reset" data-i18n="anime.reset.button">Obnovit původní data</button>
-				<button type="button" id="anime-update-toggle" class="anime__edit-btn anime__edit-btn--update" data-i18n="anime.update.button" aria-expanded="false" aria-controls="anime-update-menu" disabled>Aktualizovat</button>
-				<button type="button" id="anime-push-btn" class="anime__edit-btn anime__edit-btn--push" data-i18n="anime.push.button" data-i18n-title="anime.push.title" disabled>Push</button>
-				<button type="button" id="anime-edit-toggle" class="anime__edit-btn" data-i18n="anime.edit.start" aria-pressed="false">Upravit</button>
-
-				<div class="anime__update-panel">
-					<div class="anime__update-menu" id="anime-update-menu" role="group" data-i18n-aria-label="anime.update.menuLabel" hidden>
-						<button type="button" id="anime-update-watched-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="watched" data-i18n="anime.update.watched">Zhlédnuté epizody</button>
-						<button type="button" id="anime-update-csfd-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="csfd" data-i18n="anime.update.csfd">ČSFD hodnocení</button>
-						<button type="button" id="anime-update-mal-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="mal" data-i18n="anime.update.mal">MAL hodnocení</button>
-						<button type="button" id="anime-update-list-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="list" data-i18n="anime.update.list">Seznam</button>
-						<button type="button" id="anime-update-all-btn" class="anime__edit-btn anime__edit-btn--update" data-update-action="all" data-i18n="anime.update.all">Všechno</button>
-					</div>
-					<p class="anime__update-info" id="anime-update-info" role="status"></p>
-					<p class="anime__edit-error" id="anime-update-error" role="alert" hidden></p>
-				</div>
 			</div>
 		</main>
 
-		<div class="auth-modal anime-reset-modal" id="anime-reset-modal" hidden>
-			<div class="auth-modal__backdrop" data-anime-reset-cancel></div>
-			<div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="anime-reset-title" aria-describedby="anime-reset-message">
-				<div class="auth-modal__icon" aria-hidden="true">↻</div>
-				<h2 class="auth-modal__title" id="anime-reset-title" data-i18n="anime.resetModal.title">Obnovit původní data?</h2>
-				<p class="auth-modal__lead" id="anime-reset-message" data-i18n="anime.resetModal.message">Všechny provedené úpravy budou nenávratně smazány.</p>
-				<div class="anime-reset-modal__actions">
-					<button type="button" class="auth-modal__logout" data-anime-reset-cancel data-i18n="anime.resetModal.cancel">Zrušit</button>
-					<button type="button" class="auth-modal__submit" id="anime-reset-confirm" data-i18n="anime.resetModal.confirm">Obnovit</button>
-				</div>
-			</div>
-		</div>
-
-		<script src="js/anime-data.js?v=anime-pending-1"></script>
+		<script src="js/anime-data.js?v=anime-action-bar-1"></script>
 		<script src="js/anime-columns.js?v=anime-edit-1"></script>
 		<script src="js/anime-row-view.js?v=anime-live-cells-1"></script>
-		<script src="js/anime-view.js?v=anime-live-cells-1"></script>
-		<script src="js/anime-proxy.js?v=anime-push-1"></script>
-		<script src="js/anime-sync.js?v=anime-live-cells-1"></script>
-		<script src="js/anime-update.js?v=anime-live-cells-1"></script>
-		<script src="js/anime-page.js?v=anime-live-cells-1"></script>
+		<script src="js/anime-view.js?v=anime-action-bar-1"></script>
+		<script src="js/anime-proxy.js?v=anime-action-bar-1"></script>
+		<script src="js/anime-sync.js?v=anime-action-bar-1"></script>
+		<script src="js/anime-update.js?v=anime-action-bar-1"></script>
+		<script src="js/anime-page.js?v=anime-action-bar-1"></script>
 
 	</body>
 </html>

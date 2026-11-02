@@ -15,8 +15,8 @@
  *  - Položka se přidá (js/anime-data.js addItem()) až když je celá hotová,
  *    takže chyba nikdy nezanechá rozpracovanou položku. Přidaná anime zapíše
  *    pomocník do data/anime.json na konci jako Python WriteDataToTheFile();
- *    při zastavení chybou zapíše ta, která už jsou hotová. Uložení do
- *    prohlížeče a chyba zápisu se řeší jako u ČSFD hodnocení (viz níže).
+ *    při zastavení chybou zapíše ta, která už jsou hotová. Když zápis do
+ *    souboru selže, zůstanou přidaná anime jen na stránce do jejího obnovení.
  *  - Obrázek se stahuje jako poslední krok položky, aby po chybě nezůstal
  *    soubor, který žádná položka nepoužívá.
  *  - Web (GitHub Pages) ukáže nová anime a obrázky až po nahrání souborů do
@@ -46,8 +46,8 @@
  *  - Chyby, které by postihly všechna anime (pomocník neběží, síť požadavky
  *    blokuje), běh zastaví; už zjištěná hodnocení se zapíšou.
  *  - Nečíselné CsfdID se přeskočí bez dotazu na ČSFD.
- *  - Jsou-li v prohlížeči uložené úpravy (přebíjí data/anime.json), uloží se
- *    hodnocení i tam. Když zápis do souboru selže, zůstanou jen v prohlížeči.
+ *  - Když zápis do souboru selže, zůstanou hodnocení jen na stránce do jejího
+ *    obnovení (v prohlížeči se data neukládají).
  *
  * MAL hodnocení mirror Python UpdateMAL() (ř. 481-489) a GetMalRating()
  * (ř. 1503) a probíhá stejně jako ČSFD (mění jen MalRating, stejné odchylky).
@@ -59,12 +59,16 @@
  * anime, které je v oblíbených a není DROPPED; pomocník State zapíše do
  * data/anime.json. Stránka seriálu bez nalezených řad dá "DONE" jako skript.
  * Odchylky jako u ČSFD (přeskočení chyb jednoho anime, zápis hotového po
- * zastavení, uložení do prohlížeče). Navíc se přeskočí seriál, jehož název
+ * zastavení). Navíc se přeskočí seriál, jehož název
  * v adrese pomocník nepovoluje nebo jehož stránka přesměruje jinam než na
  * stránku seriálu (Python by vzal cílovou stránku a nejspíš zapsal "DONE").
  *
  * Tlačítko Push (publish()) ve skriptu obdobu nemá: pomocník na žádost
  * uživatele commitne data/anime.json a nové obrázky a pushne je na GitHub.
+ *
+ * Uložení úprav z edit módu (saveEdits()) odpovídá Python WriteDataToTheFile()
+ * po ULOŽIT: pomocník změněné hodnoty zapíše do data/anime.json; odmítne je,
+ * když se soubor mezitím změnil (hodnota "from" nesedí).
  */
 window.AnimeSync = (function () {
 	'use strict';
@@ -105,6 +109,8 @@ window.AnimeSync = (function () {
 	var LIST_MIN_HELPER_VERSION = 7;
 	// Tlačítko Push (POST /publish).
 	var PUBLISH_MIN_HELPER_VERSION = 8;
+	// Uložení úprav z edit módu (POST /anime-edits).
+	var EDITS_MIN_HELPER_VERSION = 9;
 
 	// Python GetNewFavoriteData() (ř. 1357) - prázdná položka, jejíž pořadí klíčů
 	// určuje pořadí v exportovaných datech.
@@ -685,20 +691,16 @@ window.AnimeSync = (function () {
 
 	/**
 	 * Nechá pomocníka zapsat výsledek aktualizace do data/anime.json (`write`).
-	 * Uložené úpravy v prohlížeči soubor přebíjí, proto se v takovém případě
-	 * data uloží i tam; když zápis do souboru selže, zůstanou aspoň v prohlížeči.
-	 * @returns {Promise<{savedTo: string, result: *, error: Object}>} savedTo
-	 *     'file' s odpovědí pomocníka, nebo 'browser' s chybou zápisu
+	 * Chyba zápisu se nevyhazuje, ale vrací, aby šlo nahlásit i to, co se
+	 * zjistit podařilo.
+	 * @returns {Promise<{savedTo: ?string, result: *, error: Object}>} savedTo
+	 *     'file' s odpovědí pomocníka, nebo null s chybou zápisu
 	 */
-	function persistUpdate(data, write) {
+	function persistUpdate(write) {
 		return Promise.resolve().then(write).then(function (result) {
-			if (data.hasStoredItems()) {
-				data.save(data.getItems());
-			}
 			return { savedTo: 'file', result: result };
 		}, function (error) {
-			data.save(data.getItems());
-			return { savedTo: 'browser', error: error };
+			return { savedTo: null, error: error };
 		});
 	}
 
@@ -715,7 +717,7 @@ window.AnimeSync = (function () {
 	 *
 	 * @param {Object} deps
 	 * @param {Object} deps.proxy - AnimeProxy (health, fetchPage, saveImage, saveAnimeItems)
-	 * @param {Object} deps.data - AnimeData (getItems, addItem, save, hasStoredItems, setImage, keepAdded)
+	 * @param {Object} deps.data - AnimeData (getItems, addItem, setImage, keepAdded)
 	 * @param {function(number)} [deps.onTotal] - počet nových seriálů
 	 * @param {function(number)} [deps.onProgress] - průběh v procentech 0-100
 	 * @param {function(Object, Array)} [deps.onItemAdded] - hotová položka a všechny položky
@@ -723,8 +725,8 @@ window.AnimeSync = (function () {
 	 * @returns {Promise<{total: number, added: Array<Object>, savedTo: ?string}>}
 	 *     `savedTo` je 'file', nebo null, když nepřibylo žádné anime. Při
 	 *     zastavení chybou má chyba navíc `added` (počet přidaných anime)
-	 *     a `savedTo` ('file', 'browser' nebo null). Selže-li jen zápis do
-	 *     souboru, je to chyba `data-save-failed` se `savedTo` 'browser'.
+	 *     a `savedTo` ('file' nebo null). Selže-li jen zápis do souboru, je to
+	 *     chyba `data-save-failed` se `savedTo` null.
 	 */
 	function updateList(deps) {
 		return exclusive(function () {
@@ -793,10 +795,12 @@ window.AnimeSync = (function () {
 			if (added.length === 0) {
 				return Promise.resolve({ savedTo: null });
 			}
-			return persistUpdate(data, function () {
+			return persistUpdate(function () {
 				return proxy.saveAnimeItems(added);
 			}).then(function (saved) {
-				data.keepAdded(added, saved.savedTo === 'file');
+				if (saved.savedTo === 'file') {
+					data.keepAdded(added);
+				}
 				return saved;
 			});
 		}
@@ -856,7 +860,7 @@ window.AnimeSync = (function () {
 	 *
 	 * @param {Object} deps
 	 * @param {Object} deps.proxy - AnimeProxy (health, fetchPage, saveCsfdRatings)
-	 * @param {Object} deps.data - AnimeData (getItems, save, hasStoredItems)
+	 * @param {Object} deps.data - AnimeData (getItems)
 	 * @param {function(number)} [deps.onProgress] - průběh v procentech 0-100
 	 * @param {function(Object, string)} [deps.onItemUpdated] - zavolá se hned po
 	 *     zjištění hodnoty jednoho anime (položka, název pole), aby šel řádek
@@ -866,8 +870,8 @@ window.AnimeSync = (function () {
 	 *     savedTo: ?string, notInFile: Array<{name: string, number: string}>}>}
 	 *     `savedTo` je 'file', nebo null, když se žádné hodnocení nezjistilo.
 	 *     Při zastavení chybou má chyba navíc `updated`, `failures`, `notInFile`
-	 *     a `savedTo` ('file', 'browser' nebo null). Selže-li jen zápis do
-	 *     souboru, je to chyba `data-save-failed` se `savedTo` 'browser'.
+	 *     a `savedTo` ('file' nebo null). Selže-li jen zápis do souboru, je to
+	 *     chyba `data-save-failed` se `savedTo` null.
 	 */
 	function updateCsfd(deps) {
 		return exclusive(function () {
@@ -963,12 +967,12 @@ window.AnimeSync = (function () {
 			});
 		}
 
-		// Zapíše zjištěné hodnoty do data/anime.json (a případně do prohlížeče, viz persistUpdate()).
+		// Zapíše zjištěné hodnoty do data/anime.json (viz persistUpdate()).
 		function persist() {
 			if (updated === 0) {
 				return Promise.resolve({ savedTo: null, notInFile: [] });
 			}
-			return persistUpdate(data, function () {
+			return persistUpdate(function () {
 				return source.save(proxy, values);
 			}).then(function (saved) {
 				if (saved.error) {
@@ -1042,6 +1046,29 @@ window.AnimeSync = (function () {
 		});
 	}
 
+	/**
+	 * Uloží úpravy z edit módu do data/anime.json přes pomocníka (Python
+	 * WriteDataToTheFile() po ULOŽIT). Sdílí zámek s aktualizacemi.
+	 * @param {Object} deps
+	 * @param {Object} deps.proxy - AnimeProxy (health, saveAnimeEdits)
+	 * @param {Array<{number: string, changes: Object<string, {from: string, to: string}>}>} deps.edits
+	 *     změněná pole podle původního Number; `from` je hodnota, ze které úprava vychází
+	 * @returns {Promise<{changed: number}>}
+	 */
+	function saveEdits(deps) {
+		return exclusive(function () {
+			return deps.proxy.health().then(function (health) {
+				if (!(health.version >= EDITS_MIN_HELPER_VERSION)) {
+					throw syncError('helper-outdated', '');
+				}
+				if (!health.dataFile) {
+					throw syncError('data-file-missing', '');
+				}
+				return deps.proxy.saveAnimeEdits(deps.edits);
+			});
+		});
+	}
+
 	return {
 		FAVORITES_URL: FAVORITES_URL,
 		EXCEPTION_ANIME: EXCEPTION_ANIME,
@@ -1065,6 +1092,7 @@ window.AnimeSync = (function () {
 		parseSerialSeasons: parseSerialSeasons,
 		checkIfReallyNotFinished: checkIfReallyNotFinished,
 		updateWatched: updateWatched,
-		publish: publish
+		publish: publish,
+		saveEdits: saveEdits
 	};
 })();

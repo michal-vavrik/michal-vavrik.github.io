@@ -77,10 +77,50 @@ window.AnimeView = (function () {
 		}
 	}
 
+	var scrollSynced = false;
+
+	/**
+	 * Hlavička je v lepivé liště mimo kontejner seznamu, takže vodorovný
+	 * scroll obou obalů se drží v souladu ručně. Zámek na zdrojový prvek
+	 * brání ozvěně (nastavení scrollLeft vyvolá scroll i na druhé straně).
+	 */
+	function syncHorizontalScroll(listWrap, headerWrap) {
+		var lockedBy = null;
+		var unlockTimer = null;
+
+		function follow(source, target) {
+			source.addEventListener('scroll', function () {
+				if (lockedBy && lockedBy !== source) {
+					return;
+				}
+				lockedBy = source;
+				clearTimeout(unlockTimer);
+				unlockTimer = setTimeout(function () {
+					lockedBy = null;
+				}, 100);
+				if (target.scrollLeft !== source.scrollLeft) {
+					target.scrollLeft = source.scrollLeft;
+				}
+			}, { passive: true });
+		}
+
+		follow(listWrap, headerWrap);
+		follow(headerWrap, listWrap);
+	}
+
 	function showList() {
 		var wrap = document.getElementById('anime-list-wrap');
+		var headerWrap = document.getElementById('anime-header-wrap');
 		if (wrap) {
 			wrap.hidden = false;
+		}
+		if (headerWrap) {
+			headerWrap.hidden = false;
+		}
+		if (wrap && headerWrap && !scrollSynced) {
+			scrollSynced = true;
+			syncHorizontalScroll(wrap, headerWrap);
+			headerWrap.scrollLeft = wrap.scrollLeft;
 		}
 	}
 

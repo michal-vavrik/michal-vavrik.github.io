@@ -22,23 +22,27 @@
  * Bez Python vzoru: chyba (neběžící pomocný program, změněná stránka zdroje,
  * ...) se zobrazí v liště a ovládání se hned odemkne. Výsledky zjištěné před
  * chybou (přidaná anime, hodnocení, zhlédnuté epizody) se zapíšou do
- * data/anime.json, případně zůstanou v prohlížeči. Během aktualizace jsou
- * navíc zamčené Upravit, Importovat, Obnovit a Push, protože by měnily stejná
- * data; Aktualizovat je neaktivní v edit módu.
+ * data/anime.json; když selže i zápis, zůstanou jen na stránce do jejího
+ * obnovení. Během aktualizace jsou navíc zamčené Upravit a Push, protože by
+ * měnily stejná data; Aktualizovat je neaktivní v edit módu. Upravit a Push
+ * se zamykají i během ukládání úprav z edit módu (setSaving()).
  *
  * Tlačítko Push (bez Python vzoru) nechá pomocný program commitnout
  * data/anime.json s novými obrázky a pushnout je na GitHub. Spouští se jen
  * kliknutím, zamyká ovládání jako aktualizace a výsledek zůstane
  * v informačním řádku až do další akce.
+ *
+ * Tlačítka jsou v action-baru, který stránka ukáže jen roli s přístupem
+ * všude (js/anime-page.js).
  */
 window.AnimeUpdate = (function () {
 	'use strict';
 
 	var DEFAULT_DONE_DELAY_MS = 2000;
 
-	// Tlačítka, která se během aktualizace a Push zamykají. Řazení hlavičky zamyká
-	// třída is-locked a kontrola isBusy() v js/anime-page.js.
-	var LOCKED_IDS = ['anime-edit-toggle', 'anime-import-btn', 'anime-reset-btn', 'anime-push-btn'];
+	// Tlačítka, která se během aktualizace, Push a ukládání úprav zamykají. Řazení
+	// hlavičky zamyká třída is-locked a kontrola isBusy() v js/anime-page.js.
+	var LOCKED_IDS = ['anime-edit-toggle', 'anime-push-btn'];
 
 	var i18n = window.I18n;
 
@@ -51,6 +55,8 @@ window.AnimeUpdate = (function () {
 	var ready = false;
 	var editMode = false;
 	var busy = false;
+	// Stránka ukládá úpravy z edit módu (js/anime-page.js).
+	var saving = false;
 	var menuOpen = false;
 	var unlockTimer = null;
 
@@ -58,7 +64,7 @@ window.AnimeUpdate = (function () {
 	var currentAction = null;
 	// {action, kind: 'start' | 'progress' | 'done', percent, count} - text v informačním řádku.
 	var progress = null;
-	// Výsledek posledního Push ({committed, pushed, commit, files, browserOnly}); zůstane vidět do další akce.
+	// Výsledek posledního Push ({committed, pushed, commit, files}); zůstane vidět do další akce.
 	var pushResult = null;
 	// {action, error, kept, keptKey, skipped, notInFile} - poslední chyba, počet
 	// anime uložených před ní a anime přeskočená nebo nezapsaná do souboru.
@@ -78,8 +84,7 @@ window.AnimeUpdate = (function () {
 
 	function pushMessage(result) {
 		var key = result.committed ? 'anime.push.done' : (result.pushed ? 'anime.push.donePushed' : 'anime.push.nothing');
-		var text = i18n.t(key, { commit: result.commit, count: result.files });
-		return result.browserOnly ? text + ' ' + i18n.t('anime.push.browserOnly') : text;
+		return i18n.t(key, { commit: result.commit, count: result.files });
 	}
 
 	function renderInfo() {
@@ -188,7 +193,7 @@ window.AnimeUpdate = (function () {
 		if (!els) {
 			return;
 		}
-		var blocked = !ready || busy || editMode;
+		var blocked = !ready || busy || saving || editMode;
 		els.toggle.disabled = blocked;
 		if (editMode) {
 			els.toggle.setAttribute('data-i18n-title', 'anime.update.disabledEdit');
@@ -203,7 +208,7 @@ window.AnimeUpdate = (function () {
 		LOCKED_IDS.forEach(function (id) {
 			var el = byId(id);
 			if (el) {
-				el.disabled = busy;
+				el.disabled = busy || saving;
 			}
 		});
 		if (els.header) {
@@ -296,7 +301,7 @@ window.AnimeUpdate = (function () {
 		}).then(function (result) {
 			finish(result.total);
 		}, function (error) {
-			var keptKey = 'anime.update.list.kept' + (error && error.savedTo === 'file' ? 'File' : 'Browser');
+			var keptKey = 'anime.update.list.kept' + (error && error.savedTo === 'file' ? 'File' : 'Unsaved');
 			fail(error, added, keptKey);
 		});
 	}
@@ -310,7 +315,7 @@ window.AnimeUpdate = (function () {
 	 * @param {string} action - 'csfd', 'mal' nebo 'watched'
 	 * @param {function(Object): Promise} update - AnimeSync.updateCsfd, updateMal nebo updateWatched
 	 * @param {string} label - co se aktualizuje, v hlášení do konzole
-	 * @param {string} keptBase - začátek klíčů textu o hodnotách uložených před chybou (+ 'File' / 'Browser')
+	 * @param {string} keptBase - začátek klíčů textu o hodnotách uložených před chybou (+ 'File' / 'Unsaved')
 	 */
 	function runItems(action, update, label, keptBase) {
 		if (busy || !ready || editMode) {
@@ -345,7 +350,7 @@ window.AnimeUpdate = (function () {
 			if (error && error.updated > 0) {
 				renderAllItems();
 			}
-			var keptKey = keptBase + (error && error.savedTo === 'file' ? 'File' : 'Browser');
+			var keptKey = keptBase + (error && error.savedTo === 'file' ? 'File' : 'Unsaved');
 			fail(error, (error && error.updated) || 0, keptKey);
 		});
 	}
@@ -382,16 +387,12 @@ window.AnimeUpdate = (function () {
 	 * ani nenačtená data; výsledek zůstane vidět do další akce.
 	 */
 	function runPush() {
-		if (busy) {
+		if (busy || saving) {
 			return;
 		}
 		begin('push');
 		window.AnimeSync.publish({ proxy: window.AnimeProxy }).then(function (result) {
-			pushResult = {
-				committed: result.committed, pushed: result.pushed, commit: result.commit, files: result.files,
-				// Úpravy jen v prohlížeči (edit mód, import, nezapsané výsledky) se do repozitáře nedostanou.
-				browserOnly: Boolean(options.data && options.data.hasStoredItems && options.data.hasStoredItems())
-			};
+			pushResult = { committed: result.committed, pushed: result.pushed, commit: result.commit, files: result.files };
 			progress = null;
 			renderInfo();
 			busy = false;
@@ -449,8 +450,6 @@ window.AnimeUpdate = (function () {
 			if (!menuOpen) {
 				return;
 			}
-			// Panel je v DOM až za tlačítky lišty, takže ho po otevření dostaneme do dohledu.
-			els.menu.scrollIntoView({ block: 'nearest' });
 			if (event.detail === 0) {
 				// Z klávesnice (Enter/mezerník) se jinak k podtlačítkům nedá dojít bez průchodu přes Upravit.
 				var first = actionButtons.filter(function (button) {
@@ -493,14 +492,25 @@ window.AnimeUpdate = (function () {
 		refreshControls();
 	}
 
+	/**
+	 * Stránka právě ukládá úpravy z edit módu přes pomocníka: zamkne Upravit
+	 * a Push stejně jako během aktualizace.
+	 * @param {boolean} value
+	 */
+	function setSaving(value) {
+		saving = Boolean(value);
+		refreshControls();
+	}
+
 	function isBusy() {
-		return busy;
+		return busy || saving;
 	}
 
 	return {
 		init: init,
 		setReady: setReady,
 		setEditMode: setEditMode,
+		setSaving: setSaving,
 		isBusy: isBusy
 	};
 })();

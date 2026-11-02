@@ -371,13 +371,24 @@ window.AnimeSyncTests = (function () {
 			window.localStorage.removeItem(key);
 			var itemA = { Number: '9013', FavoriteName: 'New A', Image: '9013', NameEn: 'New A EN' };
 			var itemB = { Number: '9014', FavoriteName: 'New B', Image: '9014', NameEn: 'New B EN' };
-			Data.keepAdded([itemA], true);
+			Data.keepAdded([itemA]);
 			runner.equal('keepAdded: anime zapsané do souboru se uloží i s obrázkem', JSON.parse(window.localStorage.getItem(key)),
 				{ items: { 9013: itemA }, images: { 9013: { name: 'New A', src: image } } });
 			Data.setImage('9014', 'New B', image);
-			Data.keepAdded([itemB], false);
-			runner.equal('keepAdded: bez zápisu do souboru jen obrázek (anime drží uložené úpravy)', JSON.parse(window.localStorage.getItem(key)),
-				{ items: { 9013: itemA }, images: { 9013: { name: 'New A', src: image }, 9014: { name: 'New B', src: image } } });
+			Data.keepAdded([itemB]);
+			runner.equal('keepAdded: další anime se přidají k uloženým', JSON.parse(window.localStorage.getItem(key)),
+				{ items: { 9013: itemA, 9014: itemB }, images: { 9013: { name: 'New A', src: image }, 9014: { name: 'New B', src: image } } });
+			Data.keepEdited([
+				{ number: '9014', changes: { Number: { from: '9014', to: '9020' }, NameEn: { from: 'New B EN', to: 'B2' } } },
+				{ number: '1', changes: { MyRating: { from: '80%', to: '85%' } } }
+			]);
+			var renumbered = { Number: '9020', FavoriteName: 'New B', Image: '9014', NameEn: 'B2' };
+			runner.equal('keepEdited: úpravy nepublikovaných anime se promítnou, změna Number je překlíčuje, obrázek zůstane',
+				JSON.parse(window.localStorage.getItem(key)),
+				{ items: { 9013: itemA, 9020: renumbered }, images: { 9013: { name: 'New A', src: image }, 9014: { name: 'New B', src: image } } });
+			var before = window.localStorage.getItem(key);
+			Data.keepEdited([{ number: '1', changes: { MyRating: { from: '80%', to: '85%' } } }]);
+			runner.equal('keepEdited: úpravy jiných anime záznam nemění', window.localStorage.getItem(key), before);
 		} finally {
 			if (previous === null) {
 				window.localStorage.removeItem(key);
@@ -779,15 +790,14 @@ window.AnimeSyncTests = (function () {
 	 * Spustí aktualizaci s atrapou pomocníka a dat.
 	 * @param {Object} setup - routes (adresa -> text | {text, finalUrl} | Error), items (null = data nejsou načtená),
 	 *   health, imageError (number -> Error | null), writeError (chyba zápisu do souboru),
-	 *   storedItems (jsou uložené úpravy v prohlížeči), noImageData (pomocník obrázek nevrátí)
-	 * @returns {Promise<{result, error, events, calls, images, items, writes, saves, kept}>}
+	 *   noImageData (pomocník obrázek nevrátí)
+	 * @returns {Promise<{result, error, events, calls, images, items, writes, kept}>}
 	 */
 	function runUpdate(setup) {
 		var events = [];
 		var calls = [];
 		var images = [];
 		var writes = [];
-		var saves = [];
 		var kept = [];
 		var items = setup.items === null ? null : (setup.items || knownItems());
 		var proxy = {
@@ -843,18 +853,11 @@ window.AnimeSyncTests = (function () {
 				items.push(item);
 				return items;
 			},
-			save: function (all) {
-				saves.push(all.map(function (item) { return item.Number; }));
-				events.push('save');
-			},
-			hasStoredItems: function () {
-				return Boolean(setup.storedItems);
-			},
 			setImage: function (image, name, src) {
 				events.push('show:' + image + '/' + name + '/' + src);
 			},
-			keepAdded: function (added, inFile) {
-				kept.push([added.map(function (item) { return item.Number; }), inFile]);
+			keepAdded: function (added) {
+				kept.push(added.map(function (item) { return item.Number; }));
 			}
 		};
 		return Sync.updateList({
@@ -867,9 +870,9 @@ window.AnimeSyncTests = (function () {
 				events.push('added:' + item.Number + '/' + all.length);
 			}
 		}).then(function (result) {
-			return { result: result, error: null, events: events, calls: calls, images: images, items: items, writes: writes, saves: saves, kept: kept };
+			return { result: result, error: null, events: events, calls: calls, images: images, items: items, writes: writes, kept: kept };
 		}, function (error) {
-			return { result: null, error: error, events: events, calls: calls, images: images, items: items, writes: writes, saves: saves, kept: kept };
+			return { result: null, error: error, events: events, calls: calls, images: images, items: items, writes: writes, kept: kept };
 		});
 	}
 
@@ -921,8 +924,7 @@ window.AnimeSyncTests = (function () {
 					runner.equal('tok: původní položky zůstanou', run.items.slice(0, 2), knownItems());
 					runner.equal('tok: vrácené položky', run.result && run.result.added, [expectedItemA(13), expectedItemB(14)]);
 					runner.equal('tok: do souboru jdou jen přidaná anime', run.writes, [[expectedItemA(13), expectedItemB(14)]]);
-					runner.equal('tok: bez uložených úprav se do prohlížeče neukládá, jen nepublikovaná anime', [run.saves, run.kept],
-						[[], [[['13', '14'], true]]]);
+					runner.equal('tok: do prohlížeče jdou jen nepublikovaná anime zapsaná do souboru', run.kept, [['13', '14']]);
 					runner.equal('tok: zapsáno do souboru', run.result && [run.result.total, run.result.savedTo], [2, 'file']);
 				});
 			},
@@ -930,24 +932,18 @@ window.AnimeSyncTests = (function () {
 				return runUpdate({ routes: twoNewFavorites(), noImageData: true }).then(function (run) {
 					runner.equal('pomocník obrázek nevrátí: anime se přidají bez obrázku z prohlížeče', [
 						run.events.filter(function (event) { return event.indexOf('show:') === 0; }), numbersOf(run.items), run.kept
-					], [[], ['3', '10', '13', '14'], [[['13', '14'], true]]]);
-				});
-			},
-			function () {
-				return runUpdate({ routes: twoNewFavorites(), storedItems: true }).then(function (run) {
-					runner.equal('s uloženými úpravami: zapíše soubor i prohlížeč', [run.events.slice(-2), run.saves, run.result && run.result.savedTo, run.kept],
-						[['write', 'save'], [['3', '10', '13', '14']], 'file', [[['13', '14'], true]]]);
+					], [[], ['3', '10', '13', '14'], [['13', '14']]]);
 				});
 			},
 			function () {
 				return runUpdate({ routes: twoNewFavorites(), writeError: makeError('item-exists', '13', 409) }).then(function (run) {
 					runner.equal('zápis do souboru selže: chyba data-save-failed s příčinou', errorSummary(run.error),
 						{ code: 'data-save-failed', detail: 'item-exists 13' });
-					runner.equal('zápis do souboru selže: anime zůstanou v prohlížeči',
-						[run.error && run.error.savedTo, run.error && run.error.added, run.saves, numbersOf(run.items)],
-						['browser', 2, [['3', '10', '13', '14']], ['3', '10', '13', '14']]);
+					runner.equal('zápis do souboru selže: anime zůstanou jen v paměti stránky',
+						[run.error && run.error.savedTo, run.error && run.error.added, numbersOf(run.items)],
+						[null, 2, ['3', '10', '13', '14']]);
 					runner.equal('zápis do souboru selže: chyba nemá anime', Boolean(run.error && run.error.favorite), false);
-					runner.equal('zápis do souboru selže: z nepublikovaných jen obrázky', run.kept, [[['13', '14'], false]]);
+					runner.equal('zápis do souboru selže: do prohlížeče se nic neuloží', run.kept, []);
 				});
 			},
 			function () {
@@ -1034,17 +1030,17 @@ window.AnimeSyncTests = (function () {
 					runner.equal('chyba uprostřed: první anime zůstane, druhé se nepřidá a nemá obrázek',
 						[run.items.map(function (item) { return item.Number; }), run.images.length], [['3', '10', '13'], 1]);
 					runner.equal('chyba uprostřed: hotové anime se zapíše do souboru',
-						[run.writes, run.error && run.error.added, run.error && run.error.savedTo, run.saves, run.kept],
-						[[[expectedItemA(13)]], 1, 'file', [], [[['13'], true]]]);
+						[run.writes, run.error && run.error.added, run.error && run.error.savedTo, run.kept],
+						[[[expectedItemA(13)]], 1, 'file', [['13']]]);
 				});
 			},
 			function () {
 				var routes = twoNewFavorites();
 				routes[Sync.malSearchUrl('New B')] = { text: MAL_NOT_FOUND, status: 404 };
 				return runUpdate({ routes: routes, writeError: makeError('helper-unreachable', '') }).then(function (run) {
-					runner.equal('chyba uprostřed a selhaný zápis: zůstane původní chyba, anime jen v prohlížeči',
-						[run.error && run.error.code, run.error && run.error.added, run.error && run.error.savedTo, run.saves],
-						['mal-not-found', 1, 'browser', [['3', '10', '13']]]);
+					runner.equal('chyba uprostřed a selhaný zápis: zůstane původní chyba, anime jen v paměti stránky',
+						[run.error && run.error.code, run.error && run.error.added, run.error && run.error.savedTo, run.kept, numbersOf(run.items)],
+						['mal-not-found', 1, null, [], ['3', '10', '13']]);
 				});
 			},
 			function () {
@@ -1052,8 +1048,8 @@ window.AnimeSyncTests = (function () {
 				routes[Sync.malSearchUrl('New A')] = { text: MAL_NOT_FOUND, status: 404 };
 				return runUpdate({ routes: routes }).then(function (run) {
 					runner.equal('chyba u prvního anime: nic se nezapisuje',
-						[run.error && run.error.code, run.writes, run.saves, run.error && run.error.added, run.error && run.error.savedTo, run.kept],
-						['mal-not-found', [], [], 0, null, []]);
+						[run.error && run.error.code, run.writes, run.error && run.error.added, run.error && run.error.savedTo, run.kept],
+						['mal-not-found', [], 0, null, []]);
 				});
 			},
 			function () {
@@ -1172,7 +1168,7 @@ window.AnimeSyncTests = (function () {
 	/**
 	 * Spustí aktualizaci ČSFD hodnocení s atrapou pomocníka a dat.
 	 * @param {Object} setup - routes (adresa -> text | Error), items, health, healthError, healthGate,
-	 *     missing (čísla, která v souboru nejsou), writeError, storedItems (jsou uložené úpravy v prohlížeči)
+	 *     missing (čísla, která v souboru nejsou), writeError
 	 */
 	function runCsfdUpdate(setup) {
 		return runFieldUpdate(setup, { update: Sync.updateCsfd, save: 'saveCsfdRatings', field: 'CsfdRating', version: 2 });
@@ -1191,7 +1187,6 @@ window.AnimeSyncTests = (function () {
 	function runFieldUpdate(setup, kind) {
 		var events = [];
 		var calls = [];
-		var saves = [];
 		var writes = [];
 		// [Number, pole, hodnota, počet stažených stránek v tu chvíli] - překreslení řádku během aktualizace.
 		var rowUpdates = [];
@@ -1237,13 +1232,6 @@ window.AnimeSyncTests = (function () {
 		var data = {
 			getItems: function () {
 				return items;
-			},
-			save: function (all) {
-				saves.push(all.map(function (item) { return item[kind.field]; }));
-				events.push('save');
-			},
-			hasStoredItems: function () {
-				return Boolean(setup.storedItems);
 			}
 		};
 		return kind.update({
@@ -1257,9 +1245,9 @@ window.AnimeSyncTests = (function () {
 				}
 			}
 		}).then(function (result) {
-			return { result: result, error: null, events: events, calls: calls, saves: saves, writes: writes, items: items, rowUpdates: rowUpdates };
+			return { result: result, error: null, events: events, calls: calls, writes: writes, items: items, rowUpdates: rowUpdates };
 		}, function (error) {
-			return { result: null, error: error, events: events, calls: calls, saves: saves, writes: writes, items: items, rowUpdates: rowUpdates };
+			return { result: null, error: error, events: events, calls: calls, writes: writes, items: items, rowUpdates: rowUpdates };
 		});
 	}
 
@@ -1287,7 +1275,6 @@ window.AnimeSyncTests = (function () {
 					runner.equal('ČSFD: řádek se překreslí hned po zjištění hodnocení, před stažením dalšího', run.rowUpdates,
 						[['1', 'CsfdRating', '81%', 1], ['2', 'CsfdRating', '50%', 2], ['3', 'CsfdRating', '?%', 3]]);
 					runner.equal('ČSFD: do souboru jdou všechna zjištěná hodnocení', run.writes, [{ 1: '81%', 2: '50%', 3: '?%' }]);
-					runner.equal('ČSFD: bez uložených úprav se do prohlížeče neukládá', run.saves, []);
 					runner.equal('ČSFD: výsledek', run.result,
 						{ total: 3, updated: 3, changed: 2, failures: [], savedTo: 'file', notInFile: [] });
 				});
@@ -1306,21 +1293,13 @@ window.AnimeSyncTests = (function () {
 			function () {
 				var routes = {};
 				routes[filmUrl(101)] = ratingPage('81%');
-				return runCsfdUpdate({ routes: routes, items: ratingItems(1), storedItems: true }).then(function (run) {
-					runner.equal('ČSFD s uloženými úpravami: zapíše soubor i prohlížeč', [run.events.slice(-2), run.writes, run.saves],
-						[['write', 'save'], [{ 1: '81%' }], [['81%']]]);
-					runner.equal('ČSFD s uloženými úpravami: výsledek', run.result && run.result.savedTo, 'file');
-				});
-			},
-			function () {
-				var routes = {};
-				routes[filmUrl(101)] = ratingPage('81%');
 				routes[filmUrl(102)] = ratingPage('82%');
 				routes[filmUrl(103)] = ratingPage('83%');
-				return runCsfdUpdate({ routes: routes, missing: ['2', '3'], storedItems: true }).then(function (run) {
+				return runCsfdUpdate({ routes: routes, missing: ['2', '3'] }).then(function (run) {
 					runner.equal('ČSFD anime mimo soubor: vypíšou se', run.result && run.result.notInFile,
 						[{ name: 'Anime 2', number: '2' }, { name: 'Anime 3', number: '3' }]);
-					runner.equal('ČSFD anime mimo soubor: hodnocení zůstanou v prohlížeči', run.saves, [['81%', '82%', '83%']]);
+					runner.equal('ČSFD anime mimo soubor: hodnocení zůstanou vidět na stránce, zápis jen jeden',
+						[ratingsOf(run.items), run.events.slice(-1), run.result && run.result.savedTo], [['81%', '82%', '83%'], ['write'], 'file']);
 				});
 			},
 			function () {
@@ -1360,7 +1339,7 @@ window.AnimeSyncTests = (function () {
 				routes[filmUrl(102)] = makeError('timeout', '');
 				return runCsfdUpdate({ routes: routes, items: ratingItems(2) }).then(function (run) {
 					runner.equal('ČSFD nic nezjištěno: soubor se nezapisuje',
-						[run.writes, run.saves, run.result && run.result.savedTo, run.result && run.result.failures.length], [[], [], null, 2]);
+						[run.writes, run.result && run.result.savedTo, run.result && run.result.failures.length], [[], null, 2]);
 				});
 			},
 			function () {
@@ -1388,8 +1367,8 @@ window.AnimeSyncTests = (function () {
 				return runCsfdUpdate({ routes: routes }).then(function (run) {
 					runner.equal('ČSFD neopravitelná chyba: zastaví hned', [errorSummary(run.error), run.error && run.error.favorite, run.calls.length],
 						[{ code: 'redirect-blocked', detail: 'zscaler' }, 'Anime 2', 2]);
-					runner.equal('ČSFD neopravitelná chyba: hotové se zapíše do souboru', [run.writes, run.saves, savedState(run.error)],
-						[[{ 1: '77%' }], [], ['file', 1, []]]);
+					runner.equal('ČSFD neopravitelná chyba: hotové se zapíše do souboru', [run.writes, savedState(run.error)],
+						[[{ 1: '77%' }], ['file', 1, []]]);
 				});
 			},
 			function () {
@@ -1397,9 +1376,9 @@ window.AnimeSyncTests = (function () {
 				routes[filmUrl(101)] = ratingPage('77%');
 				routes[filmUrl(102)] = makeError('unreachable', 'http://127.0.0.1:8787');
 				return runCsfdUpdate({ routes: routes, writeError: makeError('unreachable', 'http://127.0.0.1:8787') }).then(function (run) {
-					runner.equal('ČSFD pomocník přestal odpovídat: hotové zůstane v prohlížeči',
-						[errorSummary(run.error), run.writes.length, run.saves, savedState(run.error)],
-						[{ code: 'unreachable', detail: 'http://127.0.0.1:8787' }, 1, [['77%', '50%', '50%']], ['browser', 1, []]]);
+					runner.equal('ČSFD pomocník přestal odpovídat: hotové zůstane jen v paměti stránky',
+						[errorSummary(run.error), run.writes.length, ratingsOf(run.items), savedState(run.error)],
+						[{ code: 'unreachable', detail: 'http://127.0.0.1:8787' }, 1, ['77%', '50%', '50%'], [null, 1, []]]);
 				});
 			},
 			function () {
@@ -1410,8 +1389,8 @@ window.AnimeSyncTests = (function () {
 				return runCsfdUpdate({ routes: routes, writeError: makeError('data-write-failed', 'PermissionError', 500) }).then(function (run) {
 					runner.equal('ČSFD zápis do souboru selže: chyba s příčinou', errorSummary(run.error),
 						{ code: 'data-save-failed', detail: 'data-write-failed PermissionError' });
-					runner.equal('ČSFD zápis do souboru selže: hodnocení zůstanou v prohlížeči', [run.saves, savedState(run.error)],
-						[[['81%', '50%', '83%']], ['browser', 2, []]]);
+					runner.equal('ČSFD zápis do souboru selže: hodnocení zůstanou jen v paměti stránky', [ratingsOf(run.items), savedState(run.error)],
+						[['81%', '50%', '83%'], [null, 2, []]]);
 					runner.equal('ČSFD zápis do souboru selže: přeskočená anime zůstanou v hlášení',
 						run.error && run.error.failures.map(function (f) { return f.number; }), ['2']);
 				});
@@ -1421,14 +1400,14 @@ window.AnimeSyncTests = (function () {
 				routes[filmUrl(101)] = makeError('unreachable', 'http://127.0.0.1:8787');
 				return runCsfdUpdate({ routes: routes }).then(function (run) {
 					runner.equal('ČSFD pomocník přestal odpovídat hned: bez uložení',
-						[errorSummary(run.error), run.writes, run.saves, savedState(run.error)],
-						[{ code: 'unreachable', detail: 'http://127.0.0.1:8787' }, [], [], [null, 0, []]]);
+						[errorSummary(run.error), run.writes, savedState(run.error)],
+						[{ code: 'unreachable', detail: 'http://127.0.0.1:8787' }, [], [null, 0, []]]);
 				});
 			},
 			function () {
 				return runCsfdUpdate({ routes: {}, healthError: makeError('unreachable', 'x') }).then(function (run) {
-					runner.equal('ČSFD pomocník neběží: nic se nestahuje', [errorSummary(run.error), run.calls, run.saves, run.writes],
-						[{ code: 'unreachable', detail: 'x' }, [], [], []]);
+					runner.equal('ČSFD pomocník neběží: nic se nestahuje', [errorSummary(run.error), run.calls, run.writes],
+						[{ code: 'unreachable', detail: 'x' }, [], []]);
 				});
 			},
 			function () {
@@ -1498,7 +1477,6 @@ window.AnimeSyncTests = (function () {
 					runner.equal('MAL: řádek se překreslí hned po zjištění hodnocení', run.rowUpdates,
 						[['1', 'MalRating', '76%', 1], ['2', 'MalRating', '?%', 1], ['3', 'MalRating', '?%', 2], ['4', 'MalRating', '60%', 3]]);
 					runner.equal('MAL: do souboru jdou všechna zjištěná hodnocení', run.writes, [{ 1: '76%', 2: '?%', 3: '?%', 4: '60%' }]);
-					runner.equal('MAL: bez uložených úprav se do prohlížeče neukládá', run.saves, []);
 					runner.equal('MAL: výsledek', run.result,
 						{ total: 4, updated: 4, changed: 2, failures: [], savedTo: 'file', notInFile: [] });
 				});
@@ -1511,7 +1489,7 @@ window.AnimeSyncTests = (function () {
 				routes[malUrl(201)] = makeError('upstream-http', '404', 404);
 				routes[malUrl(202)] = '<html>jiná stránka</html>';
 				routes[malUrl(204)] = malAnimePage('8.01');
-				return runMalUpdate({ routes: routes, items: items, storedItems: true }).then(function (run) {
+				return runMalUpdate({ routes: routes, items: items }).then(function (run) {
 					runner.equal('MAL přeskočení: bez chyby', run.error && run.error.message, null);
 					runner.equal('MAL přeskočení: nečíselné ID bez dotazu', run.calls, [malUrl(201), malUrl(202), malUrl(204)]);
 					runner.equal('MAL přeskočení: seznam selhaných', run.result && run.result.failures, [
@@ -1519,8 +1497,7 @@ window.AnimeSyncTests = (function () {
 						{ name: 'Anime 2', number: '2', code: 'parse-error', detail: 'mal-rating' },
 						{ name: 'Anime 3', number: '3', code: 'bad-mal-id', detail: 'abc' }
 					]);
-					runner.equal('MAL přeskočení: do souboru jen zjištěná, s uloženými úpravami i do prohlížeče',
-						[run.writes, run.saves], [[{ 4: '80%' }], [['60%', '60%', '60%', '80%']]]);
+					runner.equal('MAL přeskočení: do souboru jen zjištěná', run.writes, [{ 4: '80%' }]);
 				});
 			},
 			function () {
@@ -1546,9 +1523,9 @@ window.AnimeSyncTests = (function () {
 				routes[malUrl(201)] = malAnimePage('9.0');
 				return runMalUpdate({ routes: routes, items: ratingItems(1), writeError: makeError('data-write-failed', 'PermissionError', 500) })
 					.then(function (run) {
-						runner.equal('MAL zápis do souboru selže: hodnocení zůstanou v prohlížeči',
-							[errorSummary(run.error), run.saves, savedState(run.error)],
-							[{ code: 'data-save-failed', detail: 'data-write-failed PermissionError' }, [['90%']], ['browser', 1, []]]);
+						runner.equal('MAL zápis do souboru selže: hodnocení zůstanou jen v paměti stránky',
+							[errorSummary(run.error), ratingsOf(run.items, 'MalRating'), savedState(run.error)],
+							[{ code: 'data-save-failed', detail: 'data-write-failed PermissionError' }, ['90%'], [null, 1, []]]);
 					});
 			},
 			function () {
@@ -1654,7 +1631,6 @@ window.AnimeSyncTests = (function () {
 						['50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%', '50%60%']);
 					runner.equal('Zhlédnuté: do souboru jdou jen zjištěné stavy', run.writes,
 						[{ 1: 'DONE', 2: 'S02E05', 5: 'S02E--', 6: 'S02E--', 7: 'DONE', 8: 'DONE', 9: 'DONE' }]);
-					runner.equal('Zhlédnuté: bez uložených úprav se do prohlížeče neukládá', run.saves, []);
 					runner.equal('Zhlédnuté: výsledek', run.result,
 						{ total: 9, updated: 7, changed: 6, failures: [], savedTo: 'file', notInFile: [] });
 				});
@@ -1663,9 +1639,9 @@ window.AnimeSyncTests = (function () {
 				var routes = {};
 				routes[Sync.FAVORITES_URL] = favoritesPage([watchedFavorite('A', 'a', '01', '24', true), watchedFavorite('B', 'b', '01', '24', true)]);
 				return runWatchedUpdate({ routes: routes, items: [watchedItem(1, 'A', 'S01E01'), watchedItem(2, 'B', 'S01E01')],
-					missing: ['2'], storedItems: true }).then(function (run) {
-					runner.equal('Zhlédnuté s uloženými úpravami: zapíše soubor i prohlížeč', [run.events.slice(-2), run.writes, run.saves],
-						[['write', 'save'], [{ 1: 'DONE', 2: 'DONE' }], [['DONE', 'DONE']]]);
+					missing: ['2'] }).then(function (run) {
+					runner.equal('Zhlédnuté anime mimo soubor: jen jeden zápis do souboru', [run.events.slice(-1), run.writes],
+						[['write'], [{ 1: 'DONE', 2: 'DONE' }]]);
 					runner.equal('Zhlédnuté anime mimo soubor: vypíšou se', run.result && run.result.notInFile, [{ name: 'Anime 2', number: '2' }]);
 				});
 			},
@@ -1777,9 +1753,9 @@ window.AnimeSyncTests = (function () {
 				routes[Sync.FAVORITES_URL] = favoritesPage([watchedFavorite('A', 'a', '01', '24', true)]);
 				return runWatchedUpdate({ routes: routes, items: [watchedItem(1, 'A', 'S01E01'), watchedItem(2, 'Z', 'S01E01')],
 					writeError: makeError('data-write-failed', 'PermissionError', 500) }).then(function (run) {
-					runner.equal('Zhlédnuté zápis do souboru selže: stavy zůstanou v prohlížeči',
-						[errorSummary(run.error), run.saves, savedState(run.error)],
-						[{ code: 'data-save-failed', detail: 'data-write-failed PermissionError' }, [['DONE', 'S01E01']], ['browser', 1, []]]);
+					runner.equal('Zhlédnuté zápis do souboru selže: stavy zůstanou jen v paměti stránky',
+						[errorSummary(run.error), ratingsOf(run.items, 'State'), savedState(run.error)],
+						[{ code: 'data-save-failed', detail: 'data-write-failed PermissionError' }, ['DONE', 'S01E01'], [null, 1, []]]);
 				});
 			},
 			function () {
@@ -1971,6 +1947,138 @@ window.AnimeSyncTests = (function () {
 		]);
 	}
 
+	/* ---------------------------------- Edit mód ---------------------------------- */
+
+	var SAMPLE_EDITS = [{ number: '3', changes: { MyRating: { from: '80%', to: '85%' }, NameEn: { from: '', to: 'Three' } } }];
+
+	/**
+	 * Sync.saveEdits() s atrapou pomocníka.
+	 * @param {Object} setup - version (výchozí 9), dataFile (výchozí true), healthError, saveError, gate (Promise před výsledkem)
+	 */
+	function runSaveEdits(setup) {
+		var events = [];
+		var sent = [];
+		var proxy = {
+			health: function () {
+				events.push('health');
+				if (setup.healthError) {
+					return Promise.reject(setup.healthError);
+				}
+				var version = setup.version === undefined ? 9 : setup.version;
+				return Promise.resolve({ version: version, cookieConfigured: false, maxImageNumber: 0, dataFile: setup.dataFile !== false });
+			},
+			saveAnimeEdits: function (edits) {
+				events.push('edits');
+				sent.push(edits);
+				if (setup.saveError) {
+					return Promise.reject(setup.saveError);
+				}
+				var result = { changed: 1 };
+				return setup.gate ? setup.gate.then(function () { return result; }) : Promise.resolve(result);
+			}
+		};
+		return Sync.saveEdits({ proxy: proxy, edits: SAMPLE_EDITS }).then(function (result) {
+			return { result: result, error: null, events: events, sent: sent };
+		}, function (error) {
+			return { result: null, error: error, events: events, sent: sent };
+		});
+	}
+
+	function editTests(runner) {
+		var base = Client.baseUrl();
+
+		return sequence([
+			function () {
+				var body = JSON.stringify({ ok: true, changed: 1 });
+				return withFetch(function () { return reply(body, 200); }, function (stub) {
+					return Client.saveAnimeEdits(SAMPLE_EDITS).then(function (result) {
+						runner.equal('saveAnimeEdits: výsledek', result, { changed: 1 });
+						runner.equal('saveAnimeEdits: požadavek', [
+							stub.calls[0].url, stub.calls[0].init.method, stub.calls[0].init.headers['Content-Type'],
+							stub.calls[0].init.headers['X-Anime-Proxy'], JSON.parse(stub.calls[0].init.body), stub.calls.length
+						], [base + '/anime-edits', 'POST', 'application/json', '1', { edits: SAMPLE_EDITS }, 1]);
+					});
+				});
+			},
+			function () {
+				var invalid = [{ ok: true }, { ok: true, changed: '1' }, { changed: 1 }];
+				var index = 0;
+				return withFetch(function () { return reply(JSON.stringify(invalid[index++]), 200); }, function () {
+					return Promise.all(invalid.map(function () { return summarizeError(Client.saveAnimeEdits(SAMPLE_EDITS)); }));
+				}).then(function (errors) {
+					var expected = { code: 'unexpected-response', detail: 'anime-edits', status: 0 };
+					runner.equal('saveAnimeEdits: neplatná odpověď', errors, [expected, expected, expected]);
+				});
+			},
+			function () {
+				return withFetch(function () {
+					return reply('{}', 409, { 'X-Proxy-Error': 'data-conflict', 'X-Proxy-Detail': '3 MyRating' });
+				}, function () {
+					return summarizeError(Client.saveAnimeEdits(SAMPLE_EDITS)).then(function (error) {
+						runner.equal('saveAnimeEdits: konflikt se souborem', error, { code: 'data-conflict', detail: '3 MyRating', status: 409 });
+					});
+				});
+			},
+			function () {
+				return runSaveEdits({}).then(function (run) {
+					runner.equal('Sync.saveEdits: zjistí verzi a pošle úpravy beze změny', [run.result, run.events, run.sent],
+						[{ changed: 1 }, ['health', 'edits'], [SAMPLE_EDITS]]);
+				});
+			},
+			function () {
+				return runSaveEdits({ version: 8 }).then(function (run) {
+					runner.equal('Sync.saveEdits: pomocník verze 8 úpravy neumí', [errorSummary(run.error), run.events],
+						[{ code: 'helper-outdated', detail: '' }, ['health']]);
+				});
+			},
+			function () {
+				return runSaveEdits({ dataFile: false }).then(function (run) {
+					runner.equal('Sync.saveEdits: bez datového souboru se nic neposílá', [errorSummary(run.error), run.events],
+						[{ code: 'data-file-missing', detail: '' }, ['health']]);
+				});
+			},
+			function () {
+				return runSaveEdits({ healthError: makeError('unreachable', base) }).then(function (run) {
+					runner.equal('Sync.saveEdits: pomocník neodpovídá', [errorSummary(run.error), run.events],
+						[{ code: 'unreachable', detail: base }, ['health']]);
+					return runSaveEdits({ saveError: makeError('number-exists', '7', 409) });
+				}).then(function (run) {
+					runner.equal('Sync.saveEdits: chyba zápisu se předá a zámek se uvolní', [errorSummary(run.error), run.events],
+						[{ code: 'number-exists', detail: '7' }, ['health', 'edits']]);
+					return runSaveEdits({});
+				}).then(function (run) {
+					runner.equal('Sync.saveEdits: po chybě lze uložit znovu', run.events, ['health', 'edits']);
+				});
+			},
+			function () {
+				// Uložení úprav sdílí zámek s aktualizacemi i s Push.
+				var release;
+				var gate = new Promise(function (resolve) { release = resolve; });
+				var update = runMalUpdate({ routes: {}, items: ratingItems(1), healthGate: gate });
+				return Promise.resolve().then(function () {
+					return runSaveEdits({});
+				}).then(function (blocked) {
+					runner.equal('uložení úprav během aktualizace se odmítne', [errorSummary(blocked.error), blocked.events],
+						[{ code: 'already-running', detail: '' }, []]);
+					release();
+					return update;
+				}).then(function () {
+					var releaseSave;
+					var saveGate = new Promise(function (resolve) { releaseSave = resolve; });
+					var save = runSaveEdits({ gate: saveGate });
+					return Promise.all([runPublish({}), runMalUpdate({ routes: {}, items: ratingItems(1) })]).then(function (others) {
+						runner.equal('během ukládání úprav se Push i aktualizace odmítnou', others.map(function (other) { return errorSummary(other.error); }),
+							[{ code: 'already-running', detail: '' }, { code: 'already-running', detail: '' }]);
+						releaseSave();
+						return save;
+					});
+				}).then(function (saved) {
+					runner.equal('původní uložení doběhne', [saved.result, saved.events], [{ changed: 1 }, ['health', 'edits']]);
+				});
+			}
+		]);
+	}
+
 	/* ---------------------------------- spuštění ---------------------------------- */
 
 	/** @returns {Promise<Object>} souhrn ve tvaru NV194TestRunner.summarize() */
@@ -1988,7 +2096,8 @@ window.AnimeSyncTests = (function () {
 			['tok ČSFD hodnocení', csfdFlows],
 			['tok MAL hodnocení', malFlows],
 			['tok zhlédnutých epizod', watchedFlows],
-			['Push', publishTests]
+			['Push', publishTests],
+			['Edit mód', editTests]
 		];
 		return sequence(groups.map(function (group) {
 			return function () {

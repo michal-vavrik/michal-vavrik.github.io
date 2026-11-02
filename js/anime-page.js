@@ -5,31 +5,32 @@
  * zajišťuje interaktivní řazení (klik na hlavičku) a hledání podle
  * NameEn/NameJa (mirror Python MainWindow.Sort() a SearchForAnime()).
  * Klávesová zkratka Escape v poli hledání vyprázdní filtr (web-only,
- * Python aplikace žádné klávesové zkratky nemá).
+ * Python aplikace žádné klávesové zkratky nemá). Když se data načíst
+ * nepodaří, ukáže se místo seznamu hláška #anime-load-error.
+ *
+ * Action-bar (Aktualizovat, Push, Upravit) vidí a používá jen role FULL
+ * (js/auth.js). Role Anime má stránku jen ke čtení a na pomocníka se vůbec
+ * neobrací. Role se na stránce za běhu nezmění: přihlásit se dá jen
+ * z odhlášeného stavu a odhlášení vede pryč ze stránky (js/auth-ui.js).
+ *
  * Tlačítko UPRAVIT/ULOŽIT přepíná edit mód (mirror Python aSwitchEdit(),
- * ř. 576-608) - platné úpravy se uloží trvale do localStorage
- * (js/anime-data.js save()), mirror Python WriteDataToTheFile().
- * Uložení validuje Number/rating/Date sloupce (web-only, Python žádnou
- * validaci vstupu nedělá) - neplatné hodnoty uložení zablokují.
- * Tlačítko "Obnovit původní data" smaže uložené úpravy a znovu načte
- * výchozí data (Krok 15, bez Python vzoru), po potvrzení v modalu
- * mirroring .quiz-reset-modal z nv194.html/js.
- * Tlačítko "Exportovat data" stáhne aktuální data jako soubor AnimeData.json
- * (Krok 16, bez Python vzoru - web nemá přístup k souborovému systému).
- * Tlačítko "Importovat data" nahraje soubor stejného formátu a nahradí jím
- * aktuální data (Krok 17, bez Python vzoru) - při neplatném souboru se
- * zobrazí chybová hláška a data zůstanou beze změny.
- * Opuštění stránky v edit módu s neuloženou editací zobrazí potvrzovací
- * dialog prohlížeče (Krok 18, bez Python vzoru).
- * Krok 19 (bez Python vzoru): přístupnostní polish - role="alert" na
- * chybové hlášky, aria-pressed na tlačítku UPRAVIT/ULOŽIT, aria-sort na
- * řaditelných sloupcích hlavičky (js/anime-view.js), aria-label na
- * editovatelných polích (js/anime-row-view.js) a aria-invalid na neplatných
- * hodnotách po kliknutí na ULOŽIT.
- * Krok 20: tlačítko AKTUALIZOVAT s podtlačítky (js/anime-update.js, mirror
- * Python aUpdate*PBClicked()) - každé nově přidané anime, nové hodnocení
- * i zhlédnutá epizoda se hned vykreslí a během aktualizace je zamčené
- * řazení hlavičky.
+ * ř. 576-608). Uložení zapíše změněné hodnoty přes pomocníka do
+ * data/anime.json (js/anime-sync.js saveEdits(), mirror Python
+ * WriteDataToTheFile()). Změněné hodnoty se před zápisem ověří (web-only,
+ * Python žádnou validaci vstupu nedělá): neplatná hodnota nebo stejné
+ * Number u více anime uložení zablokuje. Když se zápis nepovede, edit mód
+ * zůstane i s rozepsanými hodnotami. Opuštění stránky v edit módu zobrazí
+ * potvrzovací dialog prohlížeče.
+ *
+ * Tlačítko AKTUALIZOVAT s podtlačítky a Push řídí js/anime-update.js
+ * (mirror Python aUpdate*PBClicked()) - každé nově přidané anime, nové
+ * hodnocení i zhlédnutá epizoda se hned vykreslí a během aktualizace je
+ * zamčené řazení hlavičky.
+ *
+ * Přístupnost: role="alert" na chybových hláškách, aria-pressed na tlačítku
+ * UPRAVIT/ULOŽIT, aria-sort na řaditelných sloupcích hlavičky
+ * (js/anime-view.js), aria-label na editovatelných polích
+ * (js/anime-row-view.js) a aria-invalid na neplatných hodnotách.
  */
 (function () {
 	'use strict';
@@ -43,19 +44,32 @@
 	// ActualSorting = {"Column": "Number", "Ascending": True}.
 	var sortState = { column: 'Number', ascending: true };
 
-	// Aktuální stav zobrazení statusu, aby ho šlo znovu přeložit po změně jazyka.
-	var statusState = { kind: 'loading', count: 0 };
-
 	// Aktuální hledaný text (mirror Python Self.BottomBar.SearchLE, prázdné = vše viditelné).
 	var searchText = '';
 
 	// Edit mód (mirror Python globální gEditMode, ř. 67).
 	var editMode = false;
 
-	function pickLoadedKey(count) {
-		if (count === 1) return 'anime.status.loaded.one';
-		if (count >= 2 && count <= 4) return 'anime.status.loaded.few';
-		return 'anime.status.loaded.many';
+	// Úpravy se právě zapisují přes pomocníka.
+	var saving = false;
+
+	// Zobrazená chyba edit módu, aby ji šlo přeložit po změně jazyka:
+	// { key } = text z i18n, { error } = chyba zápisu, null = žádná.
+	var editError = null;
+
+	var NUMBER_PATTERN = /^[1-9]\d{0,5}$/;
+	var DATE_PATTERN = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/;
+	// Stejný limit jako MAX_EDIT_VALUE v tools/anime_proxy.py.
+	var MAX_TEXT_LENGTH = 20000;
+
+	function canManage() {
+		var auth = window.SiteAuth;
+		return Boolean(auth) && typeof auth.role === 'function' && auth.role() === auth.ROLES.FULL;
+	}
+
+	function columnByKey(key) {
+		var columns = (window.AnimeColumns && window.AnimeColumns.COLUMNS) || [];
+		return columns.filter(function (c) { return c.key === key; })[0];
 	}
 
 	/**
@@ -79,27 +93,12 @@
 		}
 	}
 
-	function renderStatus() {
-		var el = document.getElementById('anime-status');
-		if (!el || !i18n) {
-			return;
+	function renderItems() {
+		var items = data.getItems();
+		view.renderList(items, editMode);
+		if (searchText !== '') {
+			applySearch();
 		}
-		if (statusState.kind === 'loading') {
-			el.textContent = i18n.t('anime.status.loading');
-			return;
-		}
-		if (statusState.kind === 'error') {
-			el.textContent = i18n.t('anime.status.error');
-			return;
-		}
-		if (statusState.kind === 'loaded') {
-			el.textContent = i18n.t(pickLoadedKey(statusState.count), { count: statusState.count });
-		}
-	}
-
-	function setStatus(kind, count) {
-		statusState = { kind: kind, count: count || 0 };
-		renderStatus();
 	}
 
 	function setEditButtonText() {
@@ -112,141 +111,280 @@
 		if (!btn || !i18n) {
 			return;
 		}
-		btn.textContent = i18n.t(editMode ? 'anime.edit.save' : 'anime.edit.start');
+		var key = saving ? 'anime.edit.saving' : (editMode ? 'anime.edit.save' : 'anime.edit.start');
+		btn.setAttribute('data-i18n', key);
+		btn.textContent = i18n.t(key);
 		btn.setAttribute('aria-pressed', String(editMode));
 	}
 
-	function setEditError(show) {
-		var el = document.getElementById('anime-edit-error');
-		if (el) {
-			el.hidden = !show;
+	// Text chyby zápisu: anime.edit.saveError.<kód>, jinak texty aktualizace
+	// (pomocník neběží, ...), jinak obecná hláška s kódem v podrobnostech.
+	function saveErrorText(error) {
+		var code = typeof error.code === 'string' ? error.code : '';
+		var keys = code ? ['anime.edit.saveError.' + code, 'anime.update.error.' + code] : [];
+		var text = null;
+		for (var i = 0; i < keys.length && text === null; i++) {
+			var translated = i18n.t(keys[i]);
+			if (translated !== keys[i]) {
+				text = translated;
+			}
 		}
+		var known = text !== null;
+		var parts = [known ? text : i18n.t('anime.edit.saveError.generic')];
+		var detail = known ? error.detail : [code, error.detail || error.message].filter(Boolean).join(' ');
+		if (detail) {
+			parts.push(i18n.t('anime.update.error.detail', { detail: detail }));
+		}
+		return parts.join(' ');
 	}
 
-	function setImportError(show) {
-		var el = document.getElementById('anime-import-error');
-		if (el) {
-			el.hidden = !show;
+	function renderEditError() {
+		var el = document.getElementById('anime-edit-error');
+		if (!el || !i18n) {
+			return;
 		}
+		var text = '';
+		if (editError && editError.key) {
+			text = i18n.t(editError.key);
+		} else if (editError && editError.error) {
+			text = saveErrorText(editError.error);
+		}
+		el.textContent = text;
+		el.hidden = text === '';
+	}
+
+	function setEditError(next) {
+		editError = next;
+		renderEditError();
+	}
+
+	function valueOf(item, key) {
+		var value = item[key];
+		return value === undefined || value === null ? '' : String(value);
+	}
+
+	// Text, který <textarea> pro hodnotu ukáže (js/anime-row-view.js nahrazuje " / " novým řádkem).
+	function displayedValue(value) {
+		return value.replace(/ \/ /g, '\n').replace(/\r\n?/g, '\n');
 	}
 
 	/**
-	 * Ověří, zda hodnota z <textarea> odpovídá typu sloupce. Bez ekvivalentu
-	 * v Python aplikaci (ta žádnou validaci vstupu nedělá) - doplněno jen pro
-	 * web verzi, aby nebylo možné uložit zjevně nesmyslná data.
-	 * - Number: musí být celé nezáporné číslo.
+	 * Převede text z <textarea> na hodnotu do dat, nebo vrátí null, když není
+	 * platná (web-only, Python žádnou validaci vstupu nedělá):
+	 * - Number: celé kladné číslo bez úvodních nul (klíč v data/anime.json).
 	 * - Rating sloupce: číslo 0-100 (volitelně s "%"), nebo "?" - placeholder
-	 *   pro "zatím nehodnoceno" (mirror Python `int(x.replace("?", "0"))`
-	 *   v js/anime-data.js parseIntValue()).
+	 *   pro "zatím nehodnoceno"; "%" se doplní (mirror Python aSwitchEdit(), ř. 586-589).
 	 * - Date: prázdné, nebo formát DD.MM.RRRR (mirror formátu v datech).
+	 * - Ostatní text beze změny (Python ukládá toPlainText()), jen s limitem délky.
 	 */
-	function isValidValue(colDef, rawValue) {
-		var value = rawValue.trim();
+	function parseEditValue(colDef, raw) {
+		var value = raw.trim();
 		if (colDef.key === 'Number') {
-			return /^\d+$/.test(value);
+			return NUMBER_PATTERN.test(value) ? value : null;
 		}
 		if (colDef.isRating) {
 			var cleaned = value.replace(/%$/, '');
 			if (cleaned === '?') {
-				return true;
+				return '?%';
 			}
 			if (!/^\d{1,3}$/.test(cleaned)) {
-				return false;
+				return null;
 			}
-			var n = parseInt(cleaned, 10);
-			return n >= 0 && n <= 100;
+			var rating = parseInt(cleaned, 10);
+			return rating <= 100 ? String(rating) + '%' : null;
 		}
 		if (colDef.sortType === 'date') {
 			if (value === '') {
-				return true;
+				return '';
 			}
-			var match = /^(\d{1,2})\.(\d{1,2})\.(\d{4})$/.exec(value);
+			var match = DATE_PATTERN.exec(value);
 			if (!match) {
-				return false;
+				return null;
 			}
 			var day = parseInt(match[1], 10);
 			var month = parseInt(match[2], 10);
-			return day >= 1 && day <= 31 && month >= 1 && month <= 12;
+			return day >= 1 && day <= 31 && month >= 1 && month <= 12 ? value : null;
 		}
-		return true;
+		return raw.length <= MAX_TEXT_LENGTH ? raw : null;
+	}
+
+	function markInvalid(input, invalid) {
+		input.classList.toggle('anime-row__edit-input--invalid', invalid);
+		input.setAttribute('aria-invalid', String(invalid));
 	}
 
 	/**
-	 * Přečte hodnoty z <textarea> aktuálně vykreslených řádků a uloží je
-	 * zpět do dat v paměti. Rating sloupcům bez "%" ho doplní (mirror Python
-	 * aSwitchEdit(), ř. 580-599). Pokud je některá hodnota neplatná, uložení
-	 * se zablokuje a neplatná pole se zvýrazní (Krok 13, bez Python vzoru).
-	 * @returns {boolean} true, pokud byly hodnoty uloženy.
+	 * Projde <textarea> všech řádků (i skrytých hledáním; řádky odpovídají
+	 * položkám v pořadí) a zjistí, co se změnilo. Pole, která uživatel nezměnil,
+	 * se neověřují ani neposílají. Neplatná pole a Number použité u více anime
+	 * se zvýrazní.
+	 * @returns {{edits: Array, invalid: boolean, duplicate: boolean}} edits ve
+	 *     tvaru pro AnimeSync.saveEdits(): {number, changes: {pole: {from, to}}}
 	 */
-	function commitEdits(items) {
+	function collectEdits(items) {
+		var result = { edits: [], invalid: false, duplicate: false };
 		var host = document.getElementById('anime-list');
-		var columns = window.AnimeColumns && window.AnimeColumns.COLUMNS;
-		if (!host || !columns) {
-			return true;
+		if (!host) {
+			return result;
 		}
 		var rows = host.children;
-		var hasError = false;
-		var i, j, inputs, input, key, colDef;
+		var finalNumbers = items.map(function (item) { return valueOf(item, 'Number'); });
+		var numberInputs = [];
 
-		for (i = 0; i < rows.length && i < items.length; i++) {
-			inputs = rows[i].querySelectorAll('textarea[data-column]');
-			for (j = 0; j < inputs.length; j++) {
-				input = inputs[j];
-				key = input.getAttribute('data-column');
-				colDef = columns.filter(function (c) { return c.key === key; })[0];
-				var valid = !colDef || isValidValue(colDef, input.value);
-				input.classList.toggle('anime-row__edit-input--invalid', !valid);
-				input.setAttribute('aria-invalid', String(!valid));
-				if (!valid) {
-					hasError = true;
+		for (var i = 0; i < rows.length && i < items.length; i++) {
+			var item = items[i];
+			var changes = {};
+			var changed = false;
+			var inputs = rows[i].querySelectorAll('textarea[data-column]');
+			for (var j = 0; j < inputs.length; j++) {
+				var input = inputs[j];
+				var key = input.getAttribute('data-column');
+				var colDef = columnByKey(key);
+				var from = valueOf(item, key);
+				var to = from;
+				if (colDef && input.value !== displayedValue(from)) {
+					to = parseEditValue(colDef, input.value);
+				}
+				markInvalid(input, to === null);
+				if (to === null) {
+					result.invalid = true;
+					continue;
+				}
+				if (to !== from) {
+					changes[key] = { from: from, to: to };
+					changed = true;
+				}
+				if (key === 'Number') {
+					finalNumbers[i] = to;
+					numberInputs.push({ input: input, index: i });
 				}
 			}
-		}
-		if (hasError) {
-			return false;
-		}
-
-		for (i = 0; i < rows.length && i < items.length; i++) {
-			inputs = rows[i].querySelectorAll('textarea[data-column]');
-			for (j = 0; j < inputs.length; j++) {
-				input = inputs[j];
-				key = input.getAttribute('data-column');
-				colDef = columns.filter(function (c) { return c.key === key; })[0];
-				var value = input.value;
-				if (colDef && colDef.isRating && value.indexOf('%') === -1) {
-					value = value + '%';
-				}
-				items[i][key] = value;
+			if (changed) {
+				result.edits.push({ number: valueOf(item, 'Number'), changes: changes });
 			}
 		}
-		return true;
+
+		var counts = {};
+		finalNumbers.forEach(function (number) {
+			counts[number] = (counts[number] || 0) + 1;
+		});
+		numberInputs.forEach(function (entry) {
+			if (counts[finalNumbers[entry.index]] > 1) {
+				markInvalid(entry.input, true);
+				result.duplicate = true;
+			}
+		});
+		return result;
 	}
 
-	document.addEventListener('DOMContentLoaded', function () {
-		// Statická část stránky je v HTML až za skriptem js/i18n.js, takže při
-		// načtení ještě nemusela dostat překlad - jakmile existuje v DOM,
-		// doplní se zde (stejně jako v js/nv194-page.js).
-		if (i18n) {
-			i18n.applyStatic();
-		}
+	// Zapsané úpravy promítne do dat v paměti (klíčem je původní Number).
+	function applyEdits(items, edits) {
+		var byNumber = {};
+		items.forEach(function (item) {
+			byNumber[valueOf(item, 'Number')] = item;
+		});
+		edits.forEach(function (edit) {
+			var item = byNumber[edit.number];
+			if (item) {
+				Object.keys(edit.changes).forEach(function (field) {
+					item[field] = edit.changes[field].to;
+				});
+			}
+		});
+	}
 
-		// Data se počítá už během `applyStatic` (initial i18n), ale text „Načítám…"
-		// necháme dosadit i po změně jazyka během načítání.
-		document.addEventListener('site:langchange', renderStatus);
-		document.addEventListener('site:langchange', setEditButtonText);
+	function setInputsReadOnly(readOnly) {
+		var inputs = document.querySelectorAll('#anime-list textarea[data-column]');
+		Array.prototype.forEach.call(inputs, function (input) {
+			input.readOnly = readOnly;
+		});
+	}
+
+	function setSaving(value) {
+		saving = value;
+		setInputsReadOnly(value);
+		if (update) {
+			update.setSaving(value);
+		}
+		setEditButtonText();
+	}
+
+	function finishEditing() {
+		editMode = false;
+		renderItems();
+		setEditButtonText();
+	}
+
+	/**
+	 * ULOŽIT: ověří změněné hodnoty a zapíše je přes pomocníka do
+	 * data/anime.json (mirror Python aSwitchEdit() + WriteDataToTheFile()).
+	 * Beze změn jen ukončí edit mód. Po chybě zůstane edit mód s rozepsanými
+	 * hodnotami a ukáže se důvod.
+	 */
+	function saveEdits(items) {
+		var result = collectEdits(items);
+		if (result.invalid || result.duplicate) {
+			setEditError({ key: result.invalid ? 'anime.edit.error' : 'anime.edit.duplicateNumber' });
+			return;
+		}
+		setEditError(null);
+		if (result.edits.length === 0) {
+			finishEditing();
+			return;
+		}
+		setSaving(true);
+		Promise.resolve().then(function () {
+			return window.AnimeSync.saveEdits({ proxy: window.AnimeProxy, edits: result.edits });
+		}).then(function () {
+			applyEdits(items, result.edits);
+			if (typeof data.keepEdited === 'function') {
+				data.keepEdited(result.edits);
+			}
+			saving = false;
+			if (update) {
+				update.setSaving(false);
+			}
+			finishEditing();
+		}, function (error) {
+			setSaving(false);
+			setEditError({ error: error || {} });
+		});
+	}
+
+	function onEditClick() {
+		var items = data && data.getItems && data.getItems();
+		if (!items || !view || saving) {
+			return;
+		}
+		if (editMode) {
+			saveEdits(items);
+			return;
+		}
+		editMode = true;
+		setEditError(null);
+		renderItems();
+		setEditButtonText();
+	}
+
+	/**
+	 * Zpřístupní action-bar roli FULL: Aktualizovat, Push a edit mód.
+	 * @returns {boolean} true, pokud je action-bar aktivní
+	 */
+	function initActionBar() {
+		var actionBar = document.getElementById('anime-action-bar');
+		if (!actionBar || !canManage()) {
+			return false;
+		}
+		actionBar.hidden = false;
 
 		if (update) {
 			update.init({
 				data: data,
 				// Nově přidané anime se vykreslí hned, ne až po skončení celé aktualizace.
-				onItemsChanged: function (items) {
+				onItemsChanged: function () {
 					if (view) {
-						view.renderList(items, editMode);
+						renderItems();
 					}
-					if (searchText !== '') {
-						applySearch();
-					}
-					setStatus('loaded', items.length);
 				},
 				// Nové hodnocení nebo zhlédnutá epizoda se ukáže v řádku hned po zjištění.
 				onItemUpdated: function (item, field) {
@@ -257,12 +395,50 @@
 			});
 		}
 
+		var editBtn = document.getElementById('anime-edit-toggle');
+		if (editBtn) {
+			editBtn.addEventListener('click', onEditClick);
+		}
+		document.addEventListener('site:langchange', setEditButtonText);
+		document.addEventListener('site:langchange', renderEditError);
+
+		window.addEventListener('beforeunload', function (event) {
+			// Varování před opuštěním stránky s neuloženou editací (web-only,
+			// Python aplikace žádné potvrzení při zavření nemá).
+			if (editMode) {
+				event.preventDefault();
+				event.returnValue = '';
+			}
+		});
+		return true;
+	}
+
+	function showLoadError(error) {
+		if (error && window.console && typeof window.console.error === 'function') {
+			window.console.error('Anime data load failed:', error);
+		}
+		var el = document.getElementById('anime-load-error');
+		if (el) {
+			el.hidden = false;
+		}
+	}
+
+	document.addEventListener('DOMContentLoaded', function () {
+		// Statická část stránky je v HTML až za skriptem js/i18n.js, takže při
+		// načtení ještě nemusela dostat překlad - jakmile existuje v DOM,
+		// doplní se zde (stejně jako v js/nv194-page.js).
+		if (i18n) {
+			i18n.applyStatic();
+		}
+
+		var manage = initActionBar();
+
 		var header = document.getElementById('anime-header');
 		if (header) {
 			// Klik na hlavičku řadí seznam (mirror Python MainWindow.Sort(), ř. 346-373).
 			header.addEventListener('click', function (event) {
 				var cell = event.target.closest('.anime__header-cell--sortable');
-				if (!cell || !data) {
+				if (!cell || !data || !view || saving) {
 					return;
 				}
 				// Python během aktualizace hlavičku zablokuje (EnableButtonsWhileUpdate(), ř. 610-628).
@@ -270,8 +446,7 @@
 					return;
 				}
 				var column = cell.getAttribute('data-column');
-				var columns = window.AnimeColumns && window.AnimeColumns.COLUMNS;
-				var colDef = columns && columns.filter(function (c) { return c.key === column; })[0];
+				var colDef = columnByKey(column);
 				if (!colDef) {
 					return;
 				}
@@ -282,15 +457,10 @@
 					sortState.ascending = !colDef.isRating;
 					sortState.column = column;
 				}
-				var items = data.sortItems(column, colDef.sortType, sortState.ascending);
-				if (view) {
-					view.renderHeader(sortState);
-					view.renderList(items, editMode);
-				}
+				data.sortItems(column, colDef.sortType, sortState.ascending);
+				view.renderHeader(sortState);
 				// Po přeřazení znovu skryjeme neodpovídající řádky (Python Sort(), ř. 372-373).
-				if (searchText !== '') {
-					applySearch();
-				}
+				renderItems();
 			});
 		}
 
@@ -311,193 +481,18 @@
 			});
 		}
 
-		var editBtn = document.getElementById('anime-edit-toggle');
-		if (editBtn) {
-			// UPRAVIT/ULOŽIT přepíná edit mód (mirror Python aSwitchEdit(), ř. 576-608).
-			editBtn.addEventListener('click', function () {
-				var items = data && data.getItems && data.getItems();
-				if (!items || !view) {
-					return;
-				}
-				if (editMode) {
-					if (!commitEdits(items)) {
-						setEditError(true);
-						return;
-					}
-					setEditError(false);
-					// Trvalé uložení do localStorage (mirror Python WriteDataToTheFile(),
-					// ř. 1518-1521 - tam se přímo přepíše data/anime.json).
-					if (data.save) {
-						data.save(items);
-					}
-				}
-				editMode = !editMode;
-				view.renderList(items, editMode);
-				if (searchText !== '') {
-					applySearch();
-				}
-				setEditButtonText();
-			});
-		}
-
-		window.addEventListener('beforeunload', function (event) {
-			// Varování před opuštěním stránky s neuloženou editací (web-only,
-			// Python aplikace žádné potvrzení při zavření nemá).
-			if (editMode) {
-				event.preventDefault();
-				event.returnValue = '';
-			}
-		});
-
-		var importBtn = document.getElementById('anime-import-btn');
-		var importInput = document.getElementById('anime-import-input');
-		if (importBtn && importInput) {
-			// Import ze souboru (Krok 17, bez Python vzoru) - nahradí aktuální
-			// data obsahem nahraného souboru a persistuje je do localStorage
-			// (js/anime-data.js importFromObject()).
-			importBtn.addEventListener('click', function () {
-				importInput.click();
-			});
-			importInput.addEventListener('change', function () {
-				var file = importInput.files && importInput.files[0];
-				importInput.value = '';
-				if (!file) {
-					return;
-				}
-				var reader = new FileReader();
-				reader.onload = function () {
-					try {
-						var raw = JSON.parse(String(reader.result));
-						var items = data.importFromObject(raw);
-						setImportError(false);
-						editMode = false;
-						setEditError(false);
-						if (view) {
-							view.renderHeader(sortState);
-							view.renderList(items, editMode);
-						}
-						if (searchText !== '') {
-							applySearch();
-						}
-						setEditButtonText();
-						setStatus('loaded', items.length);
-					} catch (error) {
-						setImportError(true);
-					}
-				};
-				reader.onerror = function () {
-					setImportError(true);
-				};
-				reader.readAsText(file);
-			});
-		}
-
-		var exportBtn = document.getElementById('anime-export-btn');
-		if (exportBtn) {
-			// Stažení aktuálních dat jako soubor (Krok 16, bez Python vzoru -
-			// web nemá přístup k souborovému systému jako Python
-			// WriteDataToTheFile(), uživatel si tak data stáhne přes prohlížeč).
-			exportBtn.addEventListener('click', function () {
-				var items = data && data.getItems && data.getItems();
-				if (!items || !data.toJsonString) {
-					return;
-				}
-				var json = data.toJsonString(items);
-				var blob = new Blob([json], { type: 'application/json' });
-				var url = URL.createObjectURL(blob);
-				var link = document.createElement('a');
-				link.href = url;
-				link.download = 'AnimeData.json';
-				document.body.appendChild(link);
-				link.click();
-				document.body.removeChild(link);
-				URL.revokeObjectURL(url);
-			});
-		}
-
-		var resetBtn = document.getElementById('anime-reset-btn');
-		var resetModal = document.getElementById('anime-reset-modal');
-		var resetConfirmBtn = document.getElementById('anime-reset-confirm');
-		var resetCancelEls = document.querySelectorAll('[data-anime-reset-cancel]');
-
-		function openResetModal() {
-			if (!resetModal) {
-				return;
-			}
-			resetModal.hidden = false;
-			if (resetConfirmBtn) {
-				resetConfirmBtn.focus();
-			}
-		}
-
-		function closeResetModal() {
-			if (!resetModal) {
-				return;
-			}
-			resetModal.hidden = true;
-			if (resetBtn) {
-				resetBtn.focus();
-			}
-		}
-
-		if (resetBtn) {
-			resetBtn.addEventListener('click', openResetModal);
-		}
-
-		resetCancelEls.forEach(function (el) {
-			el.addEventListener('click', closeResetModal);
-		});
-
-		document.addEventListener('keydown', function (event) {
-			if (event.key === 'Escape' && resetModal && !resetModal.hidden) {
-				closeResetModal();
-			}
-		});
-
-		if (resetConfirmBtn) {
-			// Potvrzení smaže uložené úpravy a znovu načte výchozí data
-			// (mirror Python GetData() bez existujícího souboru úprav).
-			resetConfirmBtn.addEventListener('click', function () {
-				if (!data || typeof data.reset !== 'function') {
-					return;
-				}
-				closeResetModal();
-				editMode = false;
-				setEditError(false);
-				data.reset().then(function (items) {
-					if (view) {
-						view.renderHeader(sortState);
-						view.renderList(items, editMode);
-					}
-					if (searchText !== '') {
-						applySearch();
-					}
-					setEditButtonText();
-					setStatus('loaded', items.length);
-				});
-			});
-		}
-
-		if (!data || typeof data.load !== 'function') {
-			setStatus('error');
+		if (!data || typeof data.load !== 'function' || !view) {
+			showLoadError(new Error('Anime scripts are missing.'));
 			return;
 		}
 
 		data.load().then(function (items) {
-			if (view && typeof view.renderHeader === 'function') {
-				view.renderHeader(sortState);
-				view.renderList(items, editMode);
-				view.showList();
-			}
-			setStatus('loaded', items.length);
-			if (update) {
+			view.renderHeader(sortState);
+			view.renderList(items, editMode);
+			view.showList();
+			if (manage && update) {
 				update.setReady(true);
 			}
-		}).catch(function (error) {
-			if (window.console && typeof window.console.error === 'function') {
-				window.console.error('Anime data load failed:', error);
-			}
-			setStatus('error');
-		});
+		}).catch(showLoadError);
 	});
 })();

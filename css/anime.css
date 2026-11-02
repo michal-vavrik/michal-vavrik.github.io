@@ -6,11 +6,12 @@
  */
 
 .anime {
+	--anime-pad-x: 24px;
 	position: relative;
 	z-index: 1;
 	max-width: none;
 	margin: 0 auto;
-	padding: 100px 24px 60px;
+	padding: 100px var(--anime-pad-x) 60px;
 	color: #eee;
 }
 
@@ -23,15 +24,33 @@
 	color: #fb0;
 }
 
-.anime__status {
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-	font-size: 1rem;
-	color: rgba(255, 255, 255, 0.75);
-	background: rgba(0, 0, 0, 0.35);
-	padding: 12px 16px;
-	border-radius: 8px;
-	display: inline-block;
-	margin-bottom: 20px;
+/*
+ * Lepivá lišta: vlevo hledání, vpravo action-bar a pod nimi hlavička
+ * sloupců. Při scrollování zůstává u horního okraje okna. Záporné okraje
+ * roztáhnou pozadí přes vodorovný padding .anime, aby pod lištou
+ * neprosvítaly řádky.
+ */
+.anime__toolbar {
+	position: sticky;
+	top: 0;
+	z-index: 5;
+	margin: 0 calc(-1 * var(--anime-pad-x));
+	padding: 12px var(--anime-pad-x) 0;
+	background: rgba(10, 13, 24, 0.92);
+	-webkit-backdrop-filter: blur(10px);
+	backdrop-filter: blur(10px);
+}
+
+/*
+ * Grid místo flex-wrap: dlouhý text průběhu aktualizace v action-baru tak
+ * nemůže odsunout hledání na samostatný řádek.
+ */
+.anime__toolbar-row {
+	display: grid;
+	grid-template-columns: minmax(0, 350px) minmax(0, 1fr);
+	align-items: start;
+	gap: 12px 24px;
+	padding-bottom: 12px;
 }
 
 /*
@@ -42,11 +61,9 @@
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	max-width: 350px;
 	background: rgba(0, 0, 0, 0.35);
 	border-radius: 8px;
 	padding: 0 14px;
-	margin-bottom: 20px;
 }
 
 .anime__search-icon {
@@ -75,12 +92,39 @@
 /*
  * Kontejner seznamu. Horizontální scroll umožní zobrazit všechny sloupce
  * i na užších obrazovkách; na menších rozlišeních se navíc zmenší hlavička,
- * řádky a písmo (viz "Responzivita" níže).
+ * řádky a písmo (viz "Responzivita" níže). Hlavička je v lepivé liště, a tak
+ * má vlastní obal - js/anime-view.js drží oba vodorovné scrolly v souladu.
  */
 .anime__list-wrap {
 	overflow-x: auto;
 	background: transparent;
 	border-radius: 12px;
+}
+
+.anime__header-wrap {
+	overflow-x: auto;
+	scrollbar-width: none;
+	border-radius: 8px 8px 0 0;
+}
+
+.anime__header-wrap::-webkit-scrollbar {
+	display: none;
+}
+
+/* Chyba načtení dat (bez Python vzoru - Python data čte z disku). */
+.anime__load-error {
+	display: inline-block;
+	margin: 16px 0 0;
+	padding: 12px 16px;
+	border-radius: 8px;
+	background: rgba(0, 0, 0, 0.35);
+	color: #f66;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	font-size: 1rem;
+}
+
+.anime__load-error[hidden] {
+	display: none;
 }
 
 /*
@@ -311,79 +355,81 @@
 }
 
 /*
- * Chybová hláška pod tlačítkem, zobrazí se při neplatné hodnotě.
+ * Chybová hláška pod tlačítky (neplatná hodnota nebo neúspěšné uložení
+ * úprav).
  */
 .anime__edit-error {
 	color: #f66;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 	font-size: 0.9rem;
-	margin: 0 16px 0 0;
-	align-self: center;
+	margin: 8px 0 0;
+	text-align: right;
 }
 
 /*
- * Spodní lišta s tlačítky (Python Self.BottomBar, MainWindow.CreateWidgets,
- * ř. 996-1061). Tlačítka se dělí o řádek na stejné díly a když se nevejdou,
- * zalomí se - globální `button { width: 100% }` by je jinak rozdělilo na
- * samostatné řádky. Pod tlačítky je panel aktualizace (.anime__update-panel).
+ * Action-bar v lepivé liště (Python Self.BottomBar, MainWindow.CreateWidgets,
+ * ř. 996-1061). Vidí ho jen role s přístupem všude, viz js/anime-page.js.
+ * Tlačítka jsou zarovnaná doprava a zalomí se, když se nevejdou - globální
+ * `button { width: 100% }` by je jinak rozdělilo na samostatné řádky. Pod
+ * tlačítky je chyba úprav a panel aktualizace (.anime__update-panel).
  */
-.anime__bottom-bar {
+.anime__action-bar {
+	min-width: 0;
+}
+
+.anime__action-bar[hidden] {
+	display: none;
+}
+
+.anime__action-buttons {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: flex-end;
-	margin-top: 16px;
+	gap: 8px 12px;
 }
 
-.anime__bottom-bar > .anime__edit-btn {
-	flex: 1 1 150px;
+.anime__action-buttons > .anime__edit-btn,
+.anime__update-menu > .anime__edit-btn {
+	flex: 0 0 auto;
 	width: auto;
-}
-
-.anime__bottom-bar > .anime__edit-error {
-	flex: 0 0 100%;
-	margin: 0 0 8px;
+	margin: 0;
 }
 
 /*
  * Panel aktualizace pod tlačítky: podtlačítka po kliknutí na AKTUALIZOVAT
  * (Python Self.UpdateGB, ř. 1022-1053), informační řádek průběhu (Python
  * Self.BottomBar.InfoL, barva #fb0) a chyba aktualizace. Tlačítka nad ním tak
- * zůstávají na místě, ať se zobrazí cokoli z toho.
+ * zůstávají na místě, ať se zobrazí cokoli z toho. Lišta je lepivá, takže
+ * dlouhé hlášky scrollují uvnitř panelu a nezakryjí celé okno.
  */
 .anime__update-panel {
-	flex: 0 0 100%;
+	max-height: 30vh;
+	overflow-y: auto;
 }
 
 .anime__update-info {
-	margin: 8px 0;
+	margin: 8px 0 0;
 	color: #fb0;
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 	font-size: 0.95rem;
+	text-align: right;
 }
 
 .anime__update-info:empty {
 	display: none;
 }
 
-.anime__update-panel > .anime__edit-error {
-	margin: 8px 0;
-}
-
 /* Bez [hidden] pravidla by `display: flex` přebilo atribut `hidden`. */
 .anime__update-menu {
 	display: flex;
 	flex-wrap: wrap;
-	column-gap: 12px;
+	justify-content: flex-end;
+	gap: 8px 12px;
+	margin-top: 8px;
 }
 
 .anime__update-menu[hidden] {
 	display: none;
-}
-
-.anime__update-menu > .anime__edit-btn {
-	flex: 1 1 150px;
-	width: auto;
-	margin-right: 0;
 }
 
 .anime__edit-btn {
@@ -411,54 +457,6 @@
 }
 
 /*
- * Tlačítko obnovy původních dat (Krok 15, bez Python vzoru - web-only
- * reset localStorage úprav zavedených v Kroku 14).
- */
-.anime__edit-btn--reset {
-	background: rgba(255, 255, 255, 0.1);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	color: #e8edf5;
-	margin-right: 12px;
-}
-
-.anime__edit-btn--reset:hover:not(:disabled) {
-	background: rgba(248, 113, 113, 0.2);
-	border-color: rgba(248, 113, 113, 0.55);
-}
-
-/*
- * Tlačítko exportu dat do souboru (Krok 16, bez Python vzoru - web nemá
- * přístup k souborovému systému jako Python WriteDataToTheFile()).
- */
-.anime__edit-btn--export {
-	background: rgba(255, 255, 255, 0.1);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	color: #e8edf5;
-	margin-right: 12px;
-}
-
-.anime__edit-btn--export:hover:not(:disabled) {
-	background: rgba(96, 165, 250, 0.2);
-	border-color: rgba(96, 165, 250, 0.55);
-}
-
-/*
- * Tlačítko importu dat ze souboru (Krok 17, bez Python vzoru - Python
- * žádný import ze souboru nemá, GetData() vždy čte jen pevně daný DATA_PATH).
- */
-.anime__edit-btn--import {
-	background: rgba(255, 255, 255, 0.1);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	color: #e8edf5;
-	margin-right: 12px;
-}
-
-.anime__edit-btn--import:hover:not(:disabled) {
-	background: rgba(74, 222, 128, 0.2);
-	border-color: rgba(74, 222, 128, 0.55);
-}
-
-/*
  * Tlačítko AKTUALIZOVAT a jeho podtlačítka (Python Self.UpdatePB a
  * Self.Update*PB, MainWindow.CreateWidgets ř. 1028-1057).
  */
@@ -466,7 +464,6 @@
 	background: rgba(255, 255, 255, 0.1);
 	border: 1px solid rgba(255, 255, 255, 0.18);
 	color: #e8edf5;
-	margin-right: 12px;
 }
 
 .anime__edit-btn--update:hover:not(:disabled),
@@ -483,7 +480,6 @@
 	background: rgba(255, 255, 255, 0.1);
 	border: 1px solid rgba(255, 255, 255, 0.18);
 	color: #e8edf5;
-	margin-right: 12px;
 }
 
 .anime__edit-btn--push:hover:not(:disabled) {
@@ -509,25 +505,6 @@
 }
 
 /*
- * Potvrzovací modal obnovy dat - vychází ze sdílené `.auth-modal` (viz
- * css/auth.css), stejný vzor jako `.quiz-reset-modal` v css/nv194.css.
- */
-.anime-reset-modal {
-	z-index: 1200;
-}
-
-.anime-reset-modal__actions {
-	display: flex;
-	flex-direction: column;
-	gap: 10px;
-}
-
-.anime-reset-modal__actions .auth-modal__submit,
-.anime-reset-modal__actions .auth-modal__logout {
-	margin-top: 0;
-}
-
-/*
  * --- Responzivita ---
  * Python aplikace na menších rozlišeních vše proporčně zmenšuje pomocí
  * gSizeRatio (AnimeList.pyw, ř. 1245: screen_width / 1920). Web nemá
@@ -538,15 +515,32 @@
  */
 @media (max-width: 900px) {
 	.anime {
-		padding: 84px 16px 48px;
+		--anime-pad-x: 16px;
+		padding: 84px var(--anime-pad-x) 48px;
 	}
 
 	.anime__title {
 		font-size: 1.6rem;
 	}
 
-	.anime__search {
-		max-width: none;
+	/* Hledání přes celou šířku, tlačítka action-baru pod ním. */
+	.anime__toolbar-row {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.anime__action-buttons,
+	.anime__update-menu {
+		justify-content: flex-start;
+	}
+
+	.anime__action-buttons > .anime__edit-btn,
+	.anime__update-menu > .anime__edit-btn {
+		flex: 1 1 auto;
+	}
+
+	.anime__edit-error,
+	.anime__update-info {
+		text-align: left;
 	}
 
 	.anime__header {
@@ -585,7 +579,8 @@
 
 @media (max-width: 600px) {
 	.anime {
-		padding: 76px 10px 40px;
+		--anime-pad-x: 10px;
+		padding: 76px var(--anime-pad-x) 40px;
 	}
 
 	.anime__header {

@@ -79,8 +79,28 @@ SHOW_B["mal_redirect"] = "https://myanimelist.net/anime/33333/New_Show_B"
 MAL_NOT_FOUND = "<html><body>No titles that matched your query were found.</body></html>"
 
 PUSH_TITLE_EN = ('Commits data/anime.json and new images from img/anime with the message "feat: anime list update" '
-                 'and pushes them to GitHub (branch main). Changes saved only in the browser are not published.')
+                 'and pushes them to GitHub (branch main).')
 PUSH_NOTHING = "Není co publikovat: data/anime.json ani obrázky se nezměnily a vše už je na GitHubu."
+
+# Úpravy uložené v prohlížeči dřívější verzí stránky (klíč js/anime-data.js LEGACY_STORAGE_KEY);
+# vloží se jen při prvním načtení, aby šlo ověřit, že je stránka smazala.
+LEGACY_OVERRIDES_SCRIPT = (
+    "if (sessionStorage.getItem('test-legacy-seeded') === null) {"
+    "sessionStorage.setItem('test-legacy-seeded', '1');"
+    "localStorage.setItem('anime-data-overrides', %s);}"
+)
+
+# Zaznamená adresy všech fetch() požadavků stránky do window.__fetches.
+FETCH_LOG_SCRIPT = """
+window.__fetches = [];
+(function () {
+    const original = window.fetch;
+    window.fetch = function (input) {
+        window.__fetches.push(String(input && input.url ? input.url : input));
+        return original.apply(this, arguments);
+    };
+})();
+"""
 
 
 def favorites_page(entries):
@@ -312,6 +332,8 @@ class UpdateListTests(SiteBrowserCase):
         self.write_data_file(SEED_DATA)
         # S hodnotou stránka dostane tato data místo souboru pomocníka (web bez nahraných změn).
         self.served_data = None
+        # Pravda = web místo dat vrátí chybu serveru.
+        self.data_error = False
         self.web = FakeWeb()
         self.web.serve(FAVORITES_URL, favorites_page([
             KNOWN_FAVORITE,
@@ -352,31 +374,30 @@ class UpdateListTests(SiteBrowserCase):
             return handle.read()
 
     def serve_data_file(self, route):
+        if self.data_error:
+            route.fulfill(status=500, content_type="text/plain", body="Server error")
+            return
         body = self.read_data_file() if self.served_data is None else self.python_json(self.served_data)
         route.fulfill(status=200, content_type="application/json; charset=utf-8", body=body)
 
-    def open_page(self, helper_url, lang="cs", seed=None, stored=True):
-        """Otevře stránku; se `stored=False` nemá prohlížeč uložené úpravy a data čte ze souboru."""
-        context = self.browser.new_context(viewport={"width": 1400, "height": 900})
+    def open_page(self, helper_url, lang="cs", role="full", init_script="", viewport=None, wait_list=True):
+        """Otevře stránku přihlášenou rolí `role`; data čte ze souboru pomocníka (nebo `served_data`)."""
+        context = self.browser.new_context(viewport=viewport or {"width": 1400, "height": 900})
         self.addCleanup(context.close)
         context.route(re.compile(r"/data/anime\.json(\?|$)"), self.serve_data_file)
-        seed_script = (
-            "if (localStorage.getItem('anime-data-overrides') === null) {"
-            "localStorage.setItem('anime-data-overrides', %s);}"
-            % json.dumps(json.dumps(SEED_DATA if seed is None else seed))
-        ) if stored else ""
-        # Data se vloží jen poprvé, aby po znovunačtení zůstala uložená aktualizace.
+        role_script = "sessionStorage.setItem('site-auth-role', %s);" % json.dumps(role) if role else ""
         context.add_init_script(
-            "sessionStorage.setItem('site-auth-role', 'full');"
-            "localStorage.setItem('site-lang', %s);"
+            role_script
+            + "localStorage.setItem('site-lang', %s);"
             "localStorage.setItem('anime-proxy-url', %s);"
-            % (json.dumps(lang), json.dumps(helper_url)) + seed_script
+            % (json.dumps(lang), json.dumps(helper_url)) + init_script
         )
         page = context.new_page()
         page.on("console", lambda message: self.console.append((message.type, message.text)))
         page.on("pageerror", lambda error: self.page_errors.append(str(error)))
         page.goto(self.origin + "/anime.html")
-        expect(page.locator("#anime-list-wrap")).to_be_visible()
+        if wait_list:
+            expect(page.locator("#anime-list-wrap")).to_be_visible()
         return page
 
     def run_list_update(self, page):
@@ -385,13 +406,6 @@ class UpdateListTests(SiteBrowserCase):
 
     def row_numbers(self, page):
         return page.locator("#anime-list .anime-row").evaluate_all("rows => rows.map(row => row.dataset.number)")
-
-    def stored_items(self, page):
-        raw = page.evaluate("() => localStorage.getItem('anime-data-overrides')")
-        return json.loads(raw)
-
-    def has_stored_items(self, page):
-        return page.evaluate("() => localStorage.getItem('anime-data-overrides') !== null")
 
     def pending(self, page):
         """Nepublikovaná anime v prohlížeči (js/anime-data.js PENDING_KEY), nebo None."""
@@ -455,7 +469,7 @@ class UpdateListTests(SiteBrowserCase):
 
     def test_list_update_adds_new_favorites(self):
         helper = self.start_helper()
-        page = self.open_page(helper, stored=False)
+        page = self.open_page(helper)
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004"])
         page.evaluate(INFO_LOG_SCRIPT)
 
@@ -480,8 +494,7 @@ class UpdateListTests(SiteBrowserCase):
 
         # Nové anime dostanou číslo o jedna vyšší než dosavadní maximum.
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
-        # Pomocník je zapsal do souboru s daty jako Python WriteDataToTheFile(); prohlížeč bez
-        # uložených úprav nic neukládá.
+        # Pomocník je zapsal do souboru s daty jako Python WriteDataToTheFile().
         saved = json.loads(self.read_data_file())
         self.assertEqual(list(saved), ["9001", "9002", "9004", "9005", "9006"])
         for number, show in (("9005", SHOW_A), ("9006", SHOW_B)):
@@ -491,7 +504,6 @@ class UpdateListTests(SiteBrowserCase):
             self.assertEqual(item, expected_item(show, int(number), item["Date"]))
         self.assertEqual(self.read_data_file(), self.python_json(saved))
         self.assertEqual({number: saved[number] for number in SEED_DATA}, SEED_DATA)
-        self.assertFalse(self.has_stored_items(page))
 
         # Obrázky uložil pomocník pod stejným číslem, jaké má anime.
         self.assertEqual(sorted(os.listdir(self.images_dir)), ["9005.jpg", "9006.jpg"])
@@ -531,7 +543,6 @@ class UpdateListTests(SiteBrowserCase):
         page.reload()
         expect(page.locator("#anime-list-wrap")).to_be_visible()
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
-        self.assertFalse(self.has_stored_items(page))
         self.assertIsNone(self.pending(page))
         row = page.locator('.anime-row[data-number="9005"]')
         row.scroll_into_view_if_needed()
@@ -542,7 +553,7 @@ class UpdateListTests(SiteBrowserCase):
     def test_new_anime_stay_visible_until_the_web_has_them(self):
         # Web (GitHub Pages) má starou verzi data/anime.json a img/anime, dokud se změny nenahrají.
         self.served_data = SEED_DATA
-        page = self.open_page(self.start_helper(), stored=False)
+        page = self.open_page(self.start_helper())
         self.run_list_update(page)
         expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo. Celkem 2 nové anime.")
         self.expect_unlocked(page)
@@ -555,7 +566,6 @@ class UpdateListTests(SiteBrowserCase):
             expect(page.locator('.anime-row[data-number="9005"] .anime-row__cell--NameEn')).to_have_text("New Show A EN")
             self.expect_shown_image(page, "9005")
             self.expect_shown_image(page, "9006")
-            self.assertFalse(self.has_stored_items(page))
             self.assertEqual(self.pending(page)["items"], {"9005": saved["9005"], "9006": saved["9006"]})
 
         # Nová anime jsou v datech, takže je další Seznam nepřidá znovu.
@@ -573,58 +583,37 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.page_errors, [])
         self.assertEqual(self.unexpected_console_errors(), [])
 
-    def test_list_update_with_stored_edits_writes_data_file_and_browser(self):
-        # Uložené úpravy v prohlížeči přebíjí soubor: nová anime se uloží i tam, úpravy zůstanou jen v prohlížeči.
-        seed = json.loads(json.dumps(SEED_DATA))
-        seed["9001"]["MyRating"] = "95%"
-        page = self.open_page(self.start_helper(), seed=seed)
-
-        self.run_list_update(page)
-        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo. Celkem 2 nové anime.")
-        self.expect_unlocked(page)
-
-        saved = json.loads(self.read_data_file())
-        self.assertEqual(list(saved), ["9001", "9002", "9004", "9005", "9006"])
-        self.assertEqual({number: saved[number] for number in SEED_DATA}, SEED_DATA)
-        stored = self.stored_items(page)
-        self.assertEqual(stored, dict(seed, **{"9005": saved["9005"], "9006": saved["9006"]}))
-
-        page.reload()
-        expect(page.locator("#anime-list-wrap")).to_be_visible()
-        self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
-        expect(page.locator('.anime-row[data-number="9001"] .anime-row__cell--MyRating')).to_have_text("95%")
-        # Uložené úpravy anime už obsahují, z prohlížeče se berou obrázky.
-        self.expect_shown_image(page, "9005")
-
-    def test_list_update_keeps_anime_in_browser_when_data_file_cannot_be_written(self):
-        page = self.open_page(self.start_helper(), stored=False)
+    def test_list_update_reports_anime_not_written_to_data_file(self):
+        page = self.open_page(self.start_helper())
         expect(page.locator("#anime-list .anime-row")).to_have_count(3)
         self.write_data_file(b"{")
 
         self.run_list_update(page)
         expect(page.locator("#anime-update-error")).to_have_text(
             "Výsledek aktualizace se nepodařilo zapsat do data/anime.json. Podrobnosti: data-file-invalid. "
-            "Přidaná anime (2) zůstala uložená jen v prohlížeči, do souboru je dostanete přes Exportovat data.")
+            "Přidaná anime (2) se nepodařilo zapsat do data/anime.json, po obnovení stránky zmizí. "
+            "Spusťte aktualizaci znovu.")
         self.expect_unlocked(page)
         self.assertEqual(self.read_data_file(), b"{")
+        # Do obnovení stránky jsou anime vidět i s obrázky, které pomocník uložil.
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005", "9006"])
-        self.assertEqual(list(self.stored_items(page)), ["9001", "9002", "9004", "9005", "9006"])
+        self.expect_shown_image(page, "9005")
         self.assertEqual(sorted(os.listdir(self.images_dir)), ["9005.jpg", "9006.jpg"])
-        # Anime nejsou v souboru, drží je uložené úpravy; z nepublikovaných jsou jen obrázky.
-        pending = self.pending(page)
-        self.assertEqual((pending["items"], sorted(pending["images"])), ({}, ["9005", "9006"]))
+        # Prohlížeč si drží jen anime zapsaná do souboru.
+        self.assertIsNone(self.pending(page))
+        self.assertIsNone(page.evaluate("() => localStorage.getItem('anime-data-overrides')"))
 
     def test_list_update_requires_helper_that_can_write_data_file(self):
         # Pomocník verze 6 nevrací uložený obrázek (verze 5 by ho stahovala ze serialy.sx).
         with mock.patch.object(proxy, "VERSION", 6):
-            page = self.open_page(self.start_helper(), stored=False)
+            page = self.open_page(self.start_helper())
             self.run_list_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
                 "Pomocný program je zastaralý a tuto aktualizaci neumí provést. "
                 "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
         self.expect_unlocked(page)
 
-        page = self.open_page(self.start_helper(data_path=os.path.join(self.tmp, "missing.json")), stored=False)
+        page = self.open_page(self.start_helper(data_path=os.path.join(self.tmp, "missing.json")))
         self.run_list_update(page)
         expect(page.locator("#anime-update-error")).to_contain_text("Pomocný program nenašel soubor s daty")
         self.expect_unlocked(page)
@@ -706,7 +695,7 @@ class UpdateListTests(SiteBrowserCase):
 
     def test_error_in_the_middle_keeps_added_anime_and_update_can_be_repeated(self):
         self.web.serve(SHOW_B["mal_search"], MAL_NOT_FOUND, status=404)
-        page = self.open_page(self.start_helper(), stored=False)
+        page = self.open_page(self.start_helper())
 
         self.run_list_update(page)
         error = page.locator("#anime-update-error")
@@ -717,7 +706,6 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004", "9005"])
         # Hotové anime zapsal pomocník do souboru, rozpracované po sobě nezanechá ani obrázek.
         self.assertEqual(list(json.loads(self.read_data_file())), ["9001", "9002", "9004", "9005"])
-        self.assertFalse(self.has_stored_items(page))
         self.assertEqual(os.listdir(self.images_dir), ["9005.jpg"])
 
         # Po opravě zdroje se doplní jen to, co chybí.
@@ -739,10 +727,10 @@ class UpdateListTests(SiteBrowserCase):
         info = page.locator("#anime-update-info")
         expect(info).to_have_text("0.00% Aktualizuji anime list. Celkem 2 nové anime.")
         expect(page.locator("#anime-update-menu")).to_be_hidden()
-        for selector in ("#anime-update-toggle", "#anime-edit-toggle", "#anime-import-btn", "#anime-reset-btn",
-                         "#anime-push-btn"):
+        for selector in ("#anime-update-toggle", "#anime-edit-toggle", "#anime-push-btn"):
             expect(page.locator(selector)).to_be_disabled()
-        expect(page.locator("#anime-export-btn")).to_be_enabled()
+        # Hledání aktualizace nezamyká.
+        expect(page.locator("#anime-search")).to_be_enabled()
         expect(page.locator("#anime-header")).to_have_class(re.compile(r"\bis-locked\b"))
 
         # Řazení hlavičky je zamčené, i když se kliknutí k prvku nějak dostane.
@@ -757,7 +745,7 @@ class UpdateListTests(SiteBrowserCase):
         self.web.release.set()
         expect(info).to_have_text("100.00% Done. 2 new anime in total.")
         self.expect_unlocked(page)
-        for selector in ("#anime-edit-toggle", "#anime-import-btn", "#anime-reset-btn", "#anime-push-btn"):
+        for selector in ("#anime-edit-toggle", "#anime-push-btn"):
             expect(page.locator(selector)).to_be_enabled()
         expect(page.locator("#anime-header")).not_to_have_class(re.compile(r"\bis-locked\b"))
         header.click()
@@ -801,6 +789,363 @@ class UpdateListTests(SiteBrowserCase):
         expect(page.locator("#anime-update-info")).to_have_text("100.00% No new anime.")
         self.expect_unlocked(page)
 
+    # ----------------------------- Lišta, role a načtení -----------------------------
+
+    def box(self, page, selector):
+        return page.locator(selector).bounding_box()
+
+    def write_many_anime(self, count=40):
+        self.write_data_file({str(number): seed_item(number) for number in range(9001, 9001 + count)})
+
+    def test_toolbar_has_search_and_action_bar_on_one_row(self):
+        page = self.open_page(self.start_helper())
+        for selector in ("#anime-import-btn", "#anime-import-input", "#anime-import-error", "#anime-export-btn",
+                         "#anime-reset-btn", "#anime-reset-modal", "#anime-status"):
+            expect(page.locator(selector)).to_have_count(0)
+        expect(page.locator("#anime-toolbar #anime-action-bar")).to_be_visible()
+        expect(page.locator("#anime-action-bar button:visible")).to_have_text(["Aktualizovat", "Push", "Upravit"])
+
+        # Vlevo hledání, vpravo vedle něj tlačítka action-baru na stejném řádku.
+        row = self.box(page, ".anime__toolbar-row")
+        search = self.box(page, ".anime__search")
+        first = self.box(page, "#anime-update-toggle")
+        last = self.box(page, "#anime-edit-toggle")
+        self.assertAlmostEqual(search["x"], row["x"], delta=1)
+        self.assertGreater(first["x"], search["x"] + search["width"])
+        self.assertAlmostEqual(last["x"] + last["width"], row["x"] + row["width"], delta=1)
+        self.assertLess(abs(first["y"] - search["y"]), 5)
+        # Hlavička sloupců je v liště pod nimi.
+        header = self.box(page, "#anime-header-wrap")
+        self.assertGreaterEqual(header["y"], search["y"] + search["height"])
+
+        # Podtlačítka aktualizace se ukážou v action-baru a hledání neposunou.
+        page.locator("#anime-update-toggle").click()
+        expect(page.locator("#anime-update-menu")).to_be_visible()
+        menu = self.box(page, "#anime-update-menu")
+        self.assertGreater(menu["x"], search["x"] + search["width"])
+        self.assertGreaterEqual(menu["y"], first["y"] + first["height"])
+        self.assertEqual(self.box(page, ".anime__search"), search)
+        self.assertEqual(self.page_errors, [])
+
+    def test_toolbar_and_header_stay_visible_while_scrolling(self):
+        self.write_many_anime()
+        page = self.open_page(self.start_helper())
+        expect(page.locator("#anime-list .anime-row")).to_have_count(40)
+        toolbar = page.locator("#anime-toolbar")
+        self.assertGreater(toolbar.bounding_box()["y"], 50)
+
+        page.evaluate("() => window.scrollTo(0, 3000)")
+        page.wait_for_function("() => window.scrollY >= 3000")
+        box = toolbar.bounding_box()
+        self.assertAlmostEqual(box["y"], 0, delta=1)
+        header = self.box(page, "#anime-header-wrap")
+        self.assertGreater(header["y"], box["y"])
+        self.assertLessEqual(header["y"] + header["height"], box["y"] + box["height"] + 1)
+        for selector in ("#anime-search", "#anime-update-toggle", "#anime-push-btn", "#anime-edit-toggle"):
+            expect(page.locator(selector)).to_be_in_viewport()
+        # Lišta je nad řádky seznamu, které pod ní odjíždějí.
+        covered = page.evaluate(
+            "([x, y]) => Boolean(document.elementFromPoint(x, y).closest('#anime-toolbar'))",
+            [box["x"] + box["width"] / 2, box["y"] + box["height"] - 2])
+        self.assertTrue(covered)
+
+        # Lišta jde používat i po odscrollování.
+        page.locator("#anime-search").fill("Known 9040")
+        expect(page.locator("#anime-list .anime-row:visible")).to_have_count(1)
+        self.assertEqual(self.page_errors, [])
+
+    def test_narrow_screen_puts_action_bar_below_search(self):
+        page = self.open_page(self.start_helper(), viewport={"width": 600, "height": 800})
+        row = self.box(page, ".anime__toolbar-row")
+        search = self.box(page, ".anime__search")
+        self.assertAlmostEqual(search["width"], row["width"], delta=1)
+        for selector in ("#anime-update-toggle", "#anime-push-btn", "#anime-edit-toggle"):
+            button = self.box(page, selector)
+            self.assertGreaterEqual(button["y"], search["y"] + search["height"])
+            self.assertLessEqual(button["x"] + button["width"], 600)
+
+        # Hlavička je mimo kontejner seznamu, vodorovně se ale posouvají spolu.
+        list_wrap = page.locator("#anime-list-wrap")
+        header_wrap = page.locator("#anime-header-wrap")
+        self.assertGreater(list_wrap.evaluate("el => el.scrollWidth - el.clientWidth"), 200)
+        list_wrap.evaluate("el => { el.scrollLeft = 150; }")
+        page.wait_for_function("() => document.getElementById('anime-header-wrap').scrollLeft === 150")
+        # Zámek proti ozvěně drží 100 ms.
+        page.wait_for_timeout(300)
+        header_wrap.evaluate("el => { el.scrollLeft = 40; }")
+        page.wait_for_function("() => document.getElementById('anime-list-wrap').scrollLeft === 40")
+        self.assertEqual(self.page_errors, [])
+
+    def test_anime_role_sees_read_only_list(self):
+        helper = self.start_helper()
+        page = self.open_page(helper, role="anime", init_script=FETCH_LOG_SCRIPT)
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        expect(page.locator("#anime-action-bar")).to_be_hidden()
+        for selector in ("#anime-update-toggle", "#anime-push-btn", "#anime-edit-toggle"):
+            expect(page.locator(selector)).to_be_hidden()
+
+        # Hledání a řazení fungují i jen pro čtení.
+        page.locator("#anime-search").fill("Known 9002")
+        expect(page.locator("#anime-list .anime-row:visible")).to_have_count(1)
+        page.locator('.anime__header-cell[data-column="Number"]').click()
+        expect(page.locator('.anime__header-cell[data-column="Number"]')).to_have_attribute("data-sort", "desc")
+
+        # Na pomocníka se stránka vůbec neobrací.
+        fetches = page.evaluate("() => window.__fetches")
+        self.assertTrue(any(url.startswith("data/anime.json") for url in fetches), fetches)
+        self.assertEqual([url for url in fetches if url.startswith(helper)], [])
+        self.assertEqual(self.unexpected_console_errors(), [])
+        self.assertEqual(self.page_errors, [])
+
+    def test_anime_password_gives_access_to_anime_page_only(self):
+        context = self.browser.new_context(viewport={"width": 1400, "height": 900})
+        self.addCleanup(context.close)
+        context.route(re.compile(r"/data/anime\.json(\?|$)"), self.serve_data_file)
+        context.add_init_script("localStorage.setItem('site-lang', 'cs');")
+        page = context.new_page()
+        page.on("pageerror", lambda error: self.page_errors.append(str(error)))
+
+        def login(password):
+            page.locator("#auth-btn").click()
+            page.locator("#auth-password").fill(password)
+            page.locator("#auth-password").press("Enter")
+            expect(page.locator("#auth-modal")).to_be_hidden()
+
+        page.goto(self.origin + "/index.html")
+        login("my-anime-list")
+        expect(page.locator("#auth-btn")).to_have_attribute("title", "Přístup ke stránce Anime")
+        expect(page.locator('.menu__link[href="anime.html"]')).not_to_have_attribute("hidden", "")
+        for link in ("nv194.html", "personal.html", "cv.html", "games.html", "contact.html"):
+            expect(page.locator('.menu__link[href="%s"]' % link)).to_have_attribute("hidden", "")
+
+        page.goto(self.origin + "/anime.html")
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        expect(page.locator("#anime-action-bar")).to_be_hidden()
+
+        for protected in ("nv194.html", "personal.html", "cv.html"):
+            page.goto(self.origin + "/" + protected)
+            expect(page).to_have_url(re.compile(r"/index\.html$"))
+            expect(page.locator("#auth-modal")).to_be_visible()
+            page.keyboard.press("Escape")
+            expect(page.locator("#auth-modal")).to_be_hidden()
+
+        # Heslo s přístupem všude odemkne i action-bar.
+        page.goto(self.origin + "/index.html")
+        page.evaluate("() => SiteAuth.logout()")
+        login("IWANTTOBUILDAGAIN")
+        expect(page.locator("#auth-btn")).to_have_attribute("title", "Přístup ke všem stránkám")
+        page.goto(self.origin + "/anime.html")
+        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
+        expect(page.locator("#anime-action-bar")).to_be_visible()
+        self.assertEqual(self.page_errors, [])
+
+    def test_load_error_is_shown_instead_of_list(self):
+        self.data_error = True
+        page = self.open_page(self.start_helper(), wait_list=False)
+        error = page.locator("#anime-load-error")
+        expect(error).to_have_text("Nepodařilo se načíst anime data. Zkuste stránku obnovit.")
+        expect(error).to_be_visible()
+        expect(page.locator("#anime-list-wrap")).to_be_hidden()
+        expect(page.locator("#anime-header-wrap")).to_be_hidden()
+        # Bez dat nejde spustit aktualizace.
+        expect(page.locator("#anime-update-toggle")).to_be_disabled()
+        page.evaluate("() => I18n.setLang('en')")
+        expect(error).to_have_text("Failed to load anime data. Try reloading the page.")
+        self.assertTrue(any(kind == "error" and text.startswith("Anime data load failed:")
+                            for kind, text in self.console))
+        self.assertEqual(self.page_errors, [])
+
+    def test_legacy_browser_overrides_are_removed_on_load(self):
+        legacy = {"9001": dict(SEED_DATA["9001"], NameEn="Stará úprava")}
+        page = self.open_page(self.start_helper(), init_script=LEGACY_OVERRIDES_SCRIPT % json.dumps(json.dumps(legacy)))
+        # Seznam je ze souboru, uložené úpravy z dřívější verze stránky se smazaly.
+        self.assertEqual(self.row_numbers(page), ["9001", "9002", "9004"])
+        expect(page.locator('.anime-row[data-number="9001"] .anime-row__cell--NameEn')).to_have_text("Known 9001 EN")
+        self.assertIsNone(page.evaluate("() => localStorage.getItem('anime-data-overrides')"))
+        page.reload()
+        expect(page.locator("#anime-list-wrap")).to_be_visible()
+        self.assertIsNone(page.evaluate("() => localStorage.getItem('anime-data-overrides')"))
+        self.assertEqual(self.page_errors, [])
+
+    # ----------------------------- Edit mód -----------------------------
+
+    def edit_input(self, page, number, column):
+        return page.locator('.anime-row[data-number="%s"] textarea[data-column="%s"]' % (number, column))
+
+    def edit_requests(self, page):
+        return [url for url in page.evaluate("() => window.__fetches") if url.endswith("/anime-edits")]
+
+    def test_edit_mode_saves_changes_to_data_file(self):
+        page = self.open_page(self.start_helper(), init_script=FETCH_LOG_SCRIPT)
+        edit = page.locator("#anime-edit-toggle")
+        expect(edit).to_have_text("Upravit")
+        edit.click()
+        expect(edit).to_have_text("Uložit")
+        expect(edit).to_have_attribute("aria-pressed", "true")
+        expect(self.edit_input(page, "9001", "MyRating")).to_have_value("72%")
+
+        self.edit_input(page, "9001", "MyRating").fill("95")
+        self.edit_input(page, "9004", "NameEn").fill("Přejmenované anime")
+        self.edit_input(page, "9002", "Number").fill("9010")
+        edit.click()
+        expect(edit).to_have_text("Upravit")
+        expect(edit).to_have_attribute("aria-pressed", "false")
+        expect(page.locator("#anime-edit-error")).to_be_hidden()
+        expect(page.locator("#anime-list textarea")).to_have_count(0)
+        expect(page.locator('.anime-row[data-number="9001"] .anime-row__cell--MyRating')).to_have_text("95%")
+        expect(page.locator('.anime-row[data-number="9004"] .anime-row__cell--NameEn')).to_have_text(
+            "Přejmenované anime")
+        self.assertEqual(self.row_numbers(page), ["9001", "9010", "9004"])
+        self.assertEqual(len(self.edit_requests(page)), 1)
+
+        # Pomocník zapsal jen změněné hodnoty ve formátu Python skriptu a seřadil anime podle čísla.
+        expected = json.loads(json.dumps(SEED_DATA))
+        expected["9001"]["MyRating"] = "95%"
+        expected["9004"]["NameEn"] = "Přejmenované anime"
+        renumbered = expected.pop("9002")
+        renumbered["Number"] = "9010"
+        expected["9010"] = renumbered
+        self.assertEqual(self.read_data_file(), self.python_json(expected))
+
+        # Úpravy přežijí znovunačtení stránky a další úpravy navazují na uložené hodnoty.
+        page.reload()
+        expect(page.locator("#anime-list-wrap")).to_be_visible()
+        self.assertEqual(self.row_numbers(page), ["9001", "9004", "9010"])
+        expect(page.locator('.anime-row[data-number="9001"] .anime-row__cell--MyRating')).to_have_text("95%")
+        edit.click()
+        self.edit_input(page, "9010", "MyRating").fill("?")
+        edit.click()
+        expect(edit).to_have_text("Upravit")
+        expected["9010"]["MyRating"] = "?%"
+        self.assertEqual(self.read_data_file(), self.python_json(expected))
+        self.assertIsNone(page.evaluate("() => localStorage.getItem('anime-data-overrides')"))
+        self.assertEqual(self.unexpected_console_errors(), [])
+        self.assertEqual(self.page_errors, [])
+
+    def test_edit_mode_without_changes_makes_no_request(self):
+        page = self.open_page(self.start_helper(), init_script=FETCH_LOG_SCRIPT)
+        before = self.read_data_file()
+        edit = page.locator("#anime-edit-toggle")
+        edit.click()
+        # Změna vrácená na původní hodnotu není změna.
+        self.edit_input(page, "9001", "NameEn").fill("Jiný název")
+        self.edit_input(page, "9001", "NameEn").fill("Known 9001 EN")
+        edit.click()
+        expect(edit).to_have_text("Upravit")
+        expect(page.locator("#anime-list textarea")).to_have_count(0)
+        self.assertEqual(self.edit_requests(page), [])
+        self.assertEqual(self.read_data_file(), before)
+
+    def test_edit_mode_rejects_invalid_values_and_duplicate_numbers(self):
+        page = self.open_page(self.start_helper(), init_script=FETCH_LOG_SCRIPT)
+        before = self.read_data_file()
+        edit = page.locator("#anime-edit-toggle")
+        error = page.locator("#anime-edit-error")
+        invalid = re.compile(r"\banime-row__edit-input--invalid\b")
+        edit.click()
+        rating = self.edit_input(page, "9001", "MyRating")
+        date_input = self.edit_input(page, "9002", "Date")
+        rating.fill("150")
+        date_input.fill("31.13.2024")
+        edit.click()
+        expect(error).to_have_text("Některé hodnoty nejsou platné. Opravte zvýrazněná pole.")
+        expect(edit).to_have_text("Uložit")
+        expect(rating).to_have_class(invalid)
+        expect(rating).to_have_attribute("aria-invalid", "true")
+        expect(date_input).to_have_class(invalid)
+        expect(self.edit_input(page, "9004", "MyRating")).not_to_have_class(invalid)
+
+        # Stejné číslo u dvou anime zvýrazní obě pole Number.
+        rating.fill("95")
+        date_input.fill("1.2.2024")
+        self.edit_input(page, "9002", "Number").fill("9001")
+        edit.click()
+        expect(error).to_have_text("Stejné číslo (Number) má více anime. Opravte zvýrazněná pole.")
+        expect(rating).not_to_have_class(invalid)
+        expect(rating).to_have_attribute("aria-invalid", "false")
+        expect(self.edit_input(page, "9001", "Number")).to_have_class(invalid)
+        expect(self.edit_input(page, "9002", "Number")).to_have_class(invalid)
+        expect(self.edit_input(page, "9004", "Number")).not_to_have_class(invalid)
+        self.assertEqual(self.edit_requests(page), [])
+        self.assertEqual(self.read_data_file(), before)
+
+        # Po opravě se úpravy uloží a chyba zmizí.
+        self.edit_input(page, "9002", "Number").fill("9003")
+        edit.click()
+        expect(edit).to_have_text("Upravit")
+        expect(error).to_be_hidden()
+        saved = json.loads(self.read_data_file())
+        self.assertEqual(list(saved), ["9001", "9003", "9004"])
+        self.assertEqual((saved["9001"]["MyRating"], saved["9003"]["Date"], saved["9003"]["Number"]),
+                         ("95%", "1.2.2024", "9003"))
+
+    def test_edit_mode_keeps_changes_when_data_file_changed_meanwhile(self):
+        # Web ukazuje starší data, než má soubor pomocníka.
+        self.served_data = SEED_DATA
+        self.write_data_file(dict(SEED_DATA, **{"9001": dict(SEED_DATA["9001"], MyRating="80%")}))
+        before = self.read_data_file()
+        page = self.open_page(self.start_helper())
+        edit = page.locator("#anime-edit-toggle")
+        edit.click()
+        self.edit_input(page, "9001", "MyRating").fill("95")
+        self.edit_input(page, "9002", "NameEn").fill("Nový název")
+        edit.click()
+        expect(page.locator("#anime-edit-error")).to_have_text(
+            "Úpravy se neuložily: data/anime.json se mezitím změnil (např. aktualizací nebo v jiném okně). "
+            "Obnovte stránku a úpravy zopakujte. Podrobnosti: 9001 MyRating.")
+        # Edit mód zůstal i s rozepsanými hodnotami, které jdou dál upravovat.
+        expect(edit).to_have_text("Uložit")
+        expect(edit).to_be_enabled()
+        expect(self.edit_input(page, "9001", "MyRating")).to_have_value("95")
+        expect(self.edit_input(page, "9002", "NameEn")).to_have_value("Nový název")
+        expect(self.edit_input(page, "9001", "MyRating")).to_be_editable()
+        expect(page.locator("#anime-update-toggle")).to_be_disabled()
+        self.assertEqual(self.read_data_file(), before)
+
+        # Chyba se přeloží s jazykem stránky.
+        page.evaluate("() => I18n.setLang('en')")
+        expect(page.locator("#anime-edit-error")).to_have_text(
+            "The changes were not saved: data/anime.json has changed in the meantime (for example by an update "
+            "or in another window). Reload the page and make the changes again. Details: 9001 MyRating.")
+        expect(edit).to_have_text("Save")
+
+    def test_edit_mode_reports_unavailable_or_outdated_helper(self):
+        page = self.open_page("http://127.0.0.1:%d" % free_port())
+        edit = page.locator("#anime-edit-toggle")
+        edit.click()
+        self.edit_input(page, "9001", "MyRating").fill("95")
+        edit.click()
+        expect(page.locator("#anime-edit-error")).to_contain_text("Pomocný program pro aktualizaci neodpovídá.")
+        expect(edit).to_have_text("Uložit")
+        expect(self.edit_input(page, "9001", "MyRating")).to_have_value("95")
+
+        # Pomocník verze 8 úpravy zapisovat neumí - stránka to pozná dřív, než ho zavolá.
+        before = self.read_data_file()
+        with mock.patch.object(proxy, "VERSION", 8):
+            page = self.open_page(self.start_helper())
+            edit = page.locator("#anime-edit-toggle")
+            edit.click()
+            self.edit_input(page, "9001", "MyRating").fill("95")
+            edit.click()
+            expect(page.locator("#anime-edit-error")).to_have_text(
+                "Pomocný program je zastaralý a úpravy uložit neumí. "
+                "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
+        expect(edit).to_have_text("Uložit")
+        self.assertEqual(self.read_data_file(), before)
+
+        # Úspěšné uložení chybu smaže.
+        page = self.open_page(self.start_helper())
+        edit = page.locator("#anime-edit-toggle")
+        edit.click()
+        self.edit_input(page, "9001", "MyRating").fill("abc")
+        edit.click()
+        expect(page.locator("#anime-edit-error")).to_be_visible()
+        self.edit_input(page, "9001", "MyRating").fill("95")
+        edit.click()
+        expect(edit).to_have_text("Upravit")
+        expect(page.locator("#anime-edit-error")).to_be_hidden()
+        self.assertEqual(json.loads(self.read_data_file())["9001"]["MyRating"], "95%")
+
     # ----------------------------- ČSFD hodnocení -----------------------------
 
     def run_csfd_update(self, page):
@@ -824,7 +1169,7 @@ class UpdateListTests(SiteBrowserCase):
         self.serve_rating("9002", "70%")
         self.serve_rating("9004", "? %")
         # ČSFD přihlášení nepotřebuje, pomocník bez cookie stačí.
-        page = self.open_page(self.start_helper(proxy.Config()), stored=False)
+        page = self.open_page(self.start_helper(proxy.Config()))
         page.evaluate(INFO_LOG_SCRIPT)
 
         self.run_csfd_update(page)
@@ -846,9 +1191,8 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.csfd_cells(page), ["81%", "70%", "?%"])
         expect(page.locator("#anime-update-error")).to_be_hidden()
 
-        # Hodnocení zapsal pomocník do souboru ve formátu Python skriptu; prohlížeč si nic neuložil.
+        # Hodnocení zapsal pomocník do souboru ve formátu Python skriptu.
         self.assertEqual(self.read_data_file(), self.python_json(self.expected_data({"9001": "81%", "9004": "?%"})))
-        self.assertFalse(self.has_stored_items(page))
 
         # Po znovunačtení stránka ukáže hodnocení ze souboru.
         page.reload()
@@ -861,7 +1205,7 @@ class UpdateListTests(SiteBrowserCase):
         self.serve_rating("9002", "45%")
         self.serve_rating("9004", "81%")
         self.web.hold_prefix = CSFD_FILM_PREFIX + "9004"
-        page = self.open_page(self.start_helper(proxy.Config()), stored=False)
+        page = self.open_page(self.start_helper(proxy.Config()))
         expect(page.locator("#anime-list .anime-row")).to_have_count(3)
         page.locator("#anime-search").fill("9001")
         rows = page.locator("#anime-list .anime-row")
@@ -890,25 +1234,9 @@ class UpdateListTests(SiteBrowserCase):
                          self.python_json(self.expected_data({"9001": "96%", "9002": "45%", "9004": "81%"})))
         self.assertEqual(self.unexpected_console_errors(), [])
 
-    def test_csfd_update_with_browser_edits_writes_file_and_browser(self):
-        self.serve_rating("9001", "81%")
-        self.serve_rating("9002", "70%")
-        self.serve_rating("9004", "66%")
-        page = self.open_page(self.start_helper())
-
-        self.run_csfd_update(page)
-        expect(page.locator("#anime-update-info")).to_have_text("100.00% Hotovo")
-        self.expect_unlocked(page)
-        # Uložené úpravy v prohlížeči přebíjí soubor, proto se hodnocení uložila i tam.
-        expected = self.expected_data({"9001": "81%", "9004": "66%"})
-        self.assertEqual(self.read_data_file(), self.python_json(expected))
-        self.assertEqual(self.stored_items(page), expected)
-        page.reload()
-        expect(page.locator("#anime-list .anime-row")).to_have_count(3)
-        self.assertEqual(self.csfd_cells(page), ["81%", "70%", "66%"])
-
     def test_csfd_update_reports_anime_missing_from_data_file(self):
-        # Anime 9004 je jen v prohlížeči (např. přidané Seznamem a zatím neexportované).
+        # Web ukazuje anime 9004, které v souboru pomocníka chybí (např. ho mezitím někdo smazal).
+        self.served_data = SEED_DATA
         self.write_data_file({number: SEED_DATA[number] for number in ("9001", "9002")})
         self.serve_rating("9001", "81%")
         self.serve_rating("9002", "70%")
@@ -922,35 +1250,36 @@ class UpdateListTests(SiteBrowserCase):
             "V souboru data/anime.json chybí 1 anime, jejich hodnocení se do něj nezapsalo: Known 9004 EN.")
         self.assertEqual(json.loads(self.read_data_file()),
                          {number: dict(SEED_DATA[number], CsfdRating=rating) for number, rating in (("9001", "81%"), ("9002", "70%"))})
-        self.assertEqual(self.stored_items(page)["9004"]["CsfdRating"], "66%")
+        self.assertEqual(self.csfd_cells(page), ["81%", "70%", "66%"])
 
-    def test_csfd_update_keeps_ratings_in_browser_when_data_file_cannot_be_written(self):
+    def test_csfd_update_reports_ratings_not_written_to_data_file(self):
         self.serve_rating("9001", "81%")
         self.serve_rating("9002", "70%")
         self.serve_rating("9004", "66%")
-        page = self.open_page(self.start_helper(), stored=False)
+        page = self.open_page(self.start_helper())
         expect(page.locator("#anime-list .anime-row")).to_have_count(3)
         self.write_data_file(b"{")
 
         self.run_csfd_update(page)
         expect(page.locator("#anime-update-error")).to_have_text(
             "Výsledek aktualizace se nepodařilo zapsat do data/anime.json. Podrobnosti: data-file-invalid. "
-            "Zjištěná hodnocení (3) zůstala uložená jen v prohlížeči, do souboru je dostanete přes Exportovat data.")
+            "Zjištěná hodnocení (3) se nepodařilo zapsat do data/anime.json, po obnovení stránky zmizí. "
+            "Spusťte aktualizaci znovu.")
         self.expect_unlocked(page)
         self.assertEqual(self.read_data_file(), b"{")
         self.assertEqual(self.csfd_cells(page), ["81%", "70%", "66%"])
-        self.assertEqual(self.stored_items(page), self.expected_data({"9001": "81%", "9004": "66%"}))
+        self.assertIsNone(page.evaluate("() => localStorage.getItem('anime-data-overrides')"))
 
     def test_csfd_update_requires_helper_that_can_write_data_file(self):
         with mock.patch.object(proxy, "VERSION", 1):
-            page = self.open_page(self.start_helper(), stored=False)
+            page = self.open_page(self.start_helper())
             self.run_csfd_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
                 "Pomocný program je zastaralý a tuto aktualizaci neumí provést. "
                 "Ukončete ho a spusťte znovu příkazem „python tools/anime_proxy.py“.")
         self.expect_unlocked(page)
 
-        page = self.open_page(self.start_helper(data_path=os.path.join(self.tmp, "missing.json")), stored=False)
+        page = self.open_page(self.start_helper(data_path=os.path.join(self.tmp, "missing.json")))
         self.run_csfd_update(page)
         expect(page.locator("#anime-update-error")).to_contain_text("Pomocný program nenašel soubor s daty")
         self.expect_unlocked(page)
@@ -970,7 +1299,6 @@ class UpdateListTests(SiteBrowserCase):
         expect(page.locator("#anime-update-error")).to_have_text(
             "ČSFD hodnocení se nepodařilo zjistit u 1 anime, zůstalo původní: Known 9002 EN.")
         self.assertEqual(self.csfd_cells(page), ["81%", "70%", "66%"])
-        self.assertEqual(self.stored_items(page)["9004"]["CsfdRating"], "66%")
         self.assertEqual(self.read_data_file(), self.python_json(self.expected_data({"9001": "81%", "9004": "66%"})))
         self.assertTrue(any("CSFD rating not updated" in text for kind, text in self.console if kind == "warning"))
 
@@ -1011,7 +1339,6 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.web.urls, [CSFD_FILM_PREFIX + "9001", CSFD_FILM_PREFIX + "9002"])
         self.assertEqual(self.csfd_cells(page), ["81%", "70%", "70%"])
         self.assertEqual(self.read_data_file(), self.python_json(self.expected_data({"9001": "81%"})))
-        self.assertEqual(self.stored_items(page)["9001"]["CsfdRating"], "81%")
 
     def test_csfd_update_in_english(self):
         self.serve_rating("9001", "81%")
@@ -1049,7 +1376,7 @@ class UpdateListTests(SiteBrowserCase):
         self.web.serve(MAL_ANIME_PREFIX + "9004",
                        '<div class="score-label score-na">N/A</div><div>Members <strong>169</strong></div>')
         # MAL přihlášení nepotřebuje, pomocník bez cookie stačí.
-        page = self.open_page(self.start_helper(proxy.Config()), stored=False)
+        page = self.open_page(self.start_helper(proxy.Config()))
         page.evaluate(INFO_LOG_SCRIPT)
 
         self.run_mal_update(page)
@@ -1072,12 +1399,11 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.csfd_cells(page), ["70%", "70%", "70%"])
         expect(page.locator("#anime-update-error")).to_be_hidden()
 
-        # Pomocník zapsal jen MalRating, ve formátu Python skriptu; prohlížeč si nic neuložil.
+        # Pomocník zapsal jen MalRating, ve formátu Python skriptu.
         expected = json.loads(json.dumps(seed))
         expected["9001"]["MalRating"] = "76%"
         expected["9004"]["MalRating"] = "?%"
         self.assertEqual(self.read_data_file(), self.python_json(expected))
-        self.assertFalse(self.has_stored_items(page))
 
         page.reload()
         expect(page.locator("#anime-list .anime-row")).to_have_count(3)
@@ -1100,8 +1426,6 @@ class UpdateListTests(SiteBrowserCase):
         expected["9001"]["MalRating"] = "85%"
         expected["9004"]["MalRating"] = "60%"
         self.assertEqual(self.read_data_file(), self.python_json(expected))
-        # Uložené úpravy v prohlížeči přebíjí soubor, proto se hodnocení uložila i tam.
-        self.assertEqual(self.stored_items(page), expected)
         self.assertTrue(any("MAL rating not updated" in text for kind, text in self.console if kind == "warning"))
 
         # Další aktualizace souhrn smaže.
@@ -1114,7 +1438,7 @@ class UpdateListTests(SiteBrowserCase):
     def test_mal_update_requires_helper_version_3(self):
         # Pomocník verze 2 umí zapsat jen ČSFD hodnocení.
         with mock.patch.object(proxy, "VERSION", 2):
-            page = self.open_page(self.start_helper(), stored=False)
+            page = self.open_page(self.start_helper())
             self.run_mal_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
                 "Pomocný program je zastaralý a tuto aktualizaci neumí provést. "
@@ -1126,7 +1450,7 @@ class UpdateListTests(SiteBrowserCase):
     def test_mal_update_stops_on_blocked_redirect_and_keeps_finished_ratings(self):
         self.serve_mal("9001", "9.0")
         self.web.redirect(MAL_ANIME_PREFIX + "9002", "https://blocked.example/notification")
-        page = self.open_page(self.start_helper(), stored=False)
+        page = self.open_page(self.start_helper())
 
         self.run_mal_update(page)
         error = page.locator("#anime-update-error")
@@ -1181,7 +1505,7 @@ class UpdateListTests(SiteBrowserCase):
             watched_favorite(9004, False),
         )
         self.web.serve(SERIAL_PREFIX + "known-9002", serial_page([("1", "Videné"), ("2", "Označiť")]))
-        page = self.open_page(self.start_helper(), stored=False)
+        page = self.open_page(self.start_helper())
         page.evaluate(INFO_LOG_SCRIPT)
 
         self.run_watched_update(page)
@@ -1206,9 +1530,8 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.state_cells(page), ["DONE", "S02E--", "DROPPED"])
         expect(page.locator("#anime-update-error")).to_be_hidden()
 
-        # Stav zapsal pomocník do souboru ve formátu Python skriptu; prohlížeč si nic neuložil.
+        # Stav zapsal pomocník do souboru ve formátu Python skriptu.
         self.assertEqual(self.read_data_file(), self.python_json(self.with_states({"9001": "DONE", "9002": "S02E--"}, seed)))
-        self.assertFalse(self.has_stored_items(page))
 
         page.reload()
         expect(page.locator("#anime-list .anime-row")).to_have_count(3)
@@ -1224,7 +1547,7 @@ class UpdateListTests(SiteBrowserCase):
         self.web.serve(SERIAL_PREFIX + "known-9002", serial_page([("1", "Videné"), ("2", "Označiť")]))
         self.web.serve(SERIAL_PREFIX + "known-9004", serial_page([("1", "Videné"), ("2", "Označiť")]))
         self.web.hold_prefix = SERIAL_PREFIX + "known-9004"
-        page = self.open_page(self.start_helper(), stored=False)
+        page = self.open_page(self.start_helper())
         expect(page.locator("#anime-list .anime-row")).to_have_count(3)
         page.evaluate("() => document.querySelectorAll('#anime-list .anime-row').forEach(row => { row.__live = true; })")
 
@@ -1264,8 +1587,6 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.state_cells(page), ["DONE", "DONE", "S02E07"])
         expected = self.with_states({"9004": "S02E07"})
         self.assertEqual(self.read_data_file(), self.python_json(expected))
-        # Uložené úpravy v prohlížeči přebíjí soubor, proto se stav uložil i tam.
-        self.assertEqual(self.stored_items(page), expected)
         self.assertTrue(any("Watched episodes not updated" in text for kind, text in self.console if kind == "warning"))
 
     def test_watched_update_stops_on_cloudflare_and_keeps_finished_states(self):
@@ -1274,7 +1595,7 @@ class UpdateListTests(SiteBrowserCase):
         self.serve_favorites(watched_favorite(9001, True), watched_favorite(9002, False), watched_favorite(9004, True))
         self.web.serve(SERIAL_PREFIX + "known-9002", "<title>Just a moment...</title>", status=403,
                        headers={"cf-mitigated": "challenge", "server": "cloudflare"})
-        page = self.open_page(self.start_helper(), stored=False)
+        page = self.open_page(self.start_helper())
 
         self.run_watched_update(page)
         error = page.locator("#anime-update-error")
@@ -1287,24 +1608,25 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.state_cells(page), ["DONE", "DONE", "S01E01"])
         self.assertEqual(self.read_data_file(), self.python_json(self.with_states({"9001": "DONE"}, seed)))
 
-    def test_watched_update_keeps_states_in_browser_when_data_file_cannot_be_written(self):
+    def test_watched_update_reports_states_not_written_to_data_file(self):
         self.serve_favorites(watched_favorite(9001, True), watched_favorite(9002, True), watched_favorite(9004, False, "s03e02"))
         self.web.serve(SERIAL_PREFIX + "known-9004", serial_page([("1", "Videné"), ("2", "Videné"), ("3", "Označiť")]))
-        page = self.open_page(self.start_helper(), stored=False)
+        page = self.open_page(self.start_helper())
         expect(page.locator("#anime-list .anime-row")).to_have_count(3)
         self.write_data_file(b"{")
 
         self.run_watched_update(page)
         expect(page.locator("#anime-update-error")).to_have_text(
             "Výsledek aktualizace se nepodařilo zapsat do data/anime.json. Podrobnosti: data-file-invalid. "
-            "Zjištěné zhlédnuté epizody (3) zůstaly uložené jen v prohlížeči, do souboru je dostanete přes Exportovat data.")
+            "Zjištěné zhlédnuté epizody (3) se nepodařilo zapsat do data/anime.json, po obnovení stránky zmizí. "
+            "Spusťte aktualizaci znovu.")
         self.expect_unlocked(page)
         self.assertEqual(self.read_data_file(), b"{")
         self.assertEqual(self.state_cells(page), ["DONE", "DONE", "S03E02"])
-        self.assertEqual(self.stored_items(page), self.with_states({"9004": "S03E02"}))
+        self.assertIsNone(page.evaluate("() => localStorage.getItem('anime-data-overrides')"))
 
     def test_watched_update_requires_cookie_and_helper_version_4(self):
-        page = self.open_page(self.start_helper(proxy.Config()), stored=False)
+        page = self.open_page(self.start_helper(proxy.Config()))
         self.run_watched_update(page)
         expect(page.locator("#anime-update-error")).to_have_text(
             "Pomocný program nemá nastavenou přihlašovací cookie pro sledujserialy.io (viz README).")
@@ -1312,7 +1634,7 @@ class UpdateListTests(SiteBrowserCase):
 
         # Pomocník verze 3 umí zapsat jen hodnocení.
         with mock.patch.object(proxy, "VERSION", 3):
-            page = self.open_page(self.start_helper(), stored=False)
+            page = self.open_page(self.start_helper())
             self.run_watched_update(page)
             expect(page.locator("#anime-update-error")).to_have_text(
                 "Pomocný program je zastaralý a tuto aktualizaci neumí provést. "
@@ -1368,7 +1690,7 @@ class UpdateListTests(SiteBrowserCase):
     @unittest.skipUnless(GIT_INSTALLED, "git není nainstalovaný")
     def test_push_publishes_list_update(self):
         work = self.make_repo()
-        page = self.open_page(self.start_helper(), stored=False)
+        page = self.open_page(self.start_helper())
         push = page.locator("#anime-push-btn")
         expect(push).to_have_text("Push")
         expect(push).to_have_attribute("title", re.compile("^Commitne data/anime.json"))
@@ -1406,16 +1728,19 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.page_errors, [])
 
     @unittest.skipUnless(GIT_INSTALLED, "git není nainstalovaný")
-    def test_push_warns_about_changes_saved_only_in_browser(self):
+    def test_push_ignores_legacy_browser_overrides(self):
+        # Dřívější verze stránky ukládala úpravy do prohlížeče; stránka je smaže a nepoužije.
         self.make_repo()
-        page = self.open_page(self.start_helper(), lang="en")
-        self.assertTrue(self.has_stored_items(page))
+        legacy = dict(SEED_DATA, **{"9001": dict(SEED_DATA["9001"], MyRating="95%")})
+        page = self.open_page(self.start_helper(), lang="en", init_script=LEGACY_OVERRIDES_SCRIPT % json.dumps(
+            json.dumps(legacy)))
+        expect(page.locator('.anime-row[data-number="9001"] .anime-row__cell--MyRating')).to_have_text("72%")
+        self.assertIsNone(page.evaluate("() => localStorage.getItem('anime-data-overrides')"))
 
         self.run_push(page)
         expect(page.locator("#anime-update-info")).to_have_text(
             "Nothing to publish: neither data/anime.json nor the images have changed and everything is already "
-            "on GitHub. Changes saved only in the browser were not published (use Export data to get them into "
-            "the file).")
+            "on GitHub.")
         self.assertEqual(self.remote_log(), ["init"])
 
     @unittest.skipUnless(GIT_INSTALLED, "git není nainstalovaný")
@@ -1430,7 +1755,7 @@ class UpdateListTests(SiteBrowserCase):
         git(other, "commit", "-q", "-m", "elsewhere")
         git(other, "push", "-q", "origin", "main")
         self.write_data_file(dict(SEED_DATA, **{"9005": seed_item(9005)}))
-        page = self.open_page(self.start_helper(), stored=False)
+        page = self.open_page(self.start_helper())
 
         self.run_push(page)
         expect(page.locator("#anime-update-error")).to_have_text(

@@ -20,7 +20,11 @@ server proto běží na vašem počítači (jen na 127.0.0.1) a umí:
   POST /anime-items     {"items": [{"Number": "319", ...}, ...]}
                         přidá nová anime ze Seznamu do data/anime.json (číslo,
                         které v souboru už je, nikdy nepřepíše)
-  POST /publish         {}  (jen na stisk tlačítka Push na stránce)
+  POST /anime-edits     {"edits": [{"number": "12", "changes": {"MyRating":
+                        {"from": "80%", "to": "85%"}}}, ...]}
+                        zapíše úpravy z edit módu (tlačítko Upravit); zapíše
+                        se vše, nebo nic, když se soubor mezitím změnil
+  POST /publish            {}  (jen na stisk tlačítka Push na stránce)
                         commitne data/anime.json a img/anime/N.jpg se zprávou
                         "feat: anime list update" a pushne větev main na origin
 
@@ -65,9 +69,9 @@ from urllib.parse import parse_qs, quote, unquote, urljoin, urlsplit
 
 # Verze 2 přidala POST /csfd-ratings, verze 3 POST /mal-ratings, verze 4 POST /watched-states,
 # verze 5 POST /anime-items, verze 6 stahuje obrázky ze sledujserialy.io místo serialy.sx,
-# verze 7 vrací uložený obrázek v odpovědi POST /images, verze 8 přidala POST /publish (tlačítko Push);
-# stránka starší pomocník odmítne.
-VERSION = 8
+# verze 7 vrací uložený obrázek v odpovědi POST /images, verze 8 přidala POST /publish (tlačítko Push),
+# verze 9 POST /anime-edits (uložení edit módu); stránka starší pomocník odmítne.
+VERSION = 9
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_IMAGES_DIR = os.path.join(os.path.dirname(HERE), "img", "anime")
 DEFAULT_DATA_FILE = os.path.join(os.path.dirname(HERE), "data", "anime.json")
@@ -111,6 +115,21 @@ DATA_ROUTES = {
 ITEM_KEYS = ("Number", "FavoriteName", "CsfdID", "MalID", "MalName", "Image", "NameEn", "NameJa",
              "Genres", "Description", "Date", "State", "CsfdRating", "MalRating", "MyRating")
 ITEM_NUMBER = re.compile(r"[1-9][0-9]{0,5}")
+# Úpravy z edit módu (POST /anime-edits): editovatelné sloupce (js/anime-columns.js) a povolené hodnoty.
+ANY_TEXT = re.compile(r".*", re.DOTALL)
+EDIT_FIELDS = {
+    "Number": ITEM_NUMBER,
+    "NameEn": ANY_TEXT,
+    "NameJa": ANY_TEXT,
+    "Genres": ANY_TEXT,
+    "Description": ANY_TEXT,
+    "Date": re.compile(r"(?:[0-9]{1,2}\.[0-9]{1,2}\.[0-9]{4})?"),
+    "State": ANY_TEXT,
+    "CsfdRating": RATING,
+    "MalRating": RATING,
+    "MyRating": RATING,
+}
+MAX_EDIT_VALUE = 20000
 REDIRECT_STATUSES = (301, 302, 303, 307, 308)
 EXPOSED_HEADERS = "X-Upstream-Status, X-Final-Url, X-Proxy-Error, X-Proxy-Detail"
 TARGET_SAFE = "/%+:;,@$!*'()~-._"
@@ -503,10 +522,57 @@ def add_items(path, items):
             raise ProxyError("item-exists", 409, " ".join(existing[:10]))
         for item in items:
             data[item["Number"]] = {key: item[key] for key in ITEM_KEYS}
-        if all(re.fullmatch(r"[0-9]+", number) for number in data):
-            data = dict(sorted(data.items(), key=lambda entry: int(entry[0])))
+        data = _sorted_by_number(data)
         _write_data(path, raw, text, data)
         return len(items)
+
+
+def _sorted_by_number(data):
+    if all(re.fullmatch(r"[0-9]+", number) for number in data):
+        return dict(sorted(data.items(), key=lambda entry: int(entry[0])))
+    return data
+
+
+def apply_edits(path, edits):
+    """Zapíše úpravy z edit módu do souboru s daty (Python aSwitchEdit() + WriteDataToTheFile()).
+
+    `edits` jsou ověřené úpravy {"number": klíč anime, "changes": {pole: {"from", "to"}}}.
+    Hodnota "from" musí odpovídat souboru, jinak se soubor mezitím změnil (aktualizace,
+    stránka se starými daty) a celý zápis se odmítne chybou data-conflict; chybějící
+    anime je item-missing. Změna Number anime přečísluje (klíč i pole); číslo, které
+    by mělo jiné anime, je number-exists. Nic se nezapíše, dokud neprojde vše. Vrací
+    počet změněných hodnot.
+    """
+    with _data_lock:
+        raw, text, data = _read_data(path)
+        for edit in edits:
+            item = data.get(edit["number"])
+            if not isinstance(item, dict):
+                raise ProxyError("item-missing", 409, edit["number"])
+            for field, change in edit["changes"].items():
+                # Stránka posílá u chybějícího pole prázdný text.
+                if item.get(field, "") != change["from"]:
+                    raise ProxyError("data-conflict", 409, "%s %s" % (edit["number"], field))
+        renumbered = {edit["number"]: edit["changes"]["Number"]["to"] for edit in edits
+                      if "Number" in edit["changes"] and edit["changes"]["Number"]["to"] != edit["number"]}
+        kept = set(data) - set(renumbered)
+        targets = list(renumbered.values())
+        taken = sorted({number for number in targets if number in kept or targets.count(number) > 1})
+        if taken:
+            raise ProxyError("number-exists", 409, " ".join(taken[:10]))
+
+        changed = 0
+        for edit in edits:
+            item = data[edit["number"]]
+            for field, change in edit["changes"].items():
+                if item.get(field) != change["to"]:
+                    item[field] = change["to"]
+                    changed += 1
+        if renumbered:
+            data = _sorted_by_number({renumbered.get(key, key): item for key, item in data.items()})
+        if changed:
+            _write_data(path, raw, text, data)
+        return changed
 
 
 _publish_lock = threading.Lock()
@@ -939,7 +1005,8 @@ class Handler(BaseHTTPRequestHandler):
             parts = urlsplit(self.path)
             route = routes.get(parts.path)
             if route is None:
-                known = parts.path in ("/health", "/fetch", "/images", "/anime-items", "/publish") or parts.path in DATA_ROUTES
+                known = parts.path in ("/health", "/fetch", "/images", "/anime-items", "/anime-edits",
+                                       "/publish") or parts.path in DATA_ROUTES
                 raise ProxyError("method-not-allowed" if known else "not-found", 405 if known else 404)
             route(parts)
         except ProxyError as error:
@@ -954,7 +1021,8 @@ class Handler(BaseHTTPRequestHandler):
         self._handle({"/health": self._health, "/fetch": self._fetch})
 
     def do_POST(self):
-        routes = {"/images": self._images, "/anime-items": self._anime_items, "/publish": self._publish}
+        routes = {"/images": self._images, "/anime-items": self._anime_items, "/anime-edits": self._anime_edits,
+                  "/publish": self._publish}
         routes.update(dict.fromkeys(DATA_ROUTES, self._data_values))
         self._handle(routes)
 
@@ -1061,6 +1129,34 @@ class Handler(BaseHTTPRequestHandler):
         added = add_items(self.server.data_path, items)
         print("Seznam: zápis do %s (přidáno %d)" % (self.server.data_path, added), file=sys.stderr)
         self._send_json(200, {"ok": True, "added": added})
+
+    def _anime_edits(self, _parts):
+        edits = self._read_json_body(MAX_ITEMS_BODY).get("edits")
+        if not isinstance(edits, list) or not 0 < len(edits) <= MAX_DATA_VALUES:
+            raise ProxyError("bad-request", 400, "edits")
+        numbers = set()
+        for edit in edits:
+            if not isinstance(edit, dict) or set(edit) != {"number", "changes"}:
+                raise ProxyError("bad-request", 400, "edit")
+            number, changes = edit["number"], edit["changes"]
+            if not isinstance(number, str) or not re.fullmatch(r"[0-9]{1,6}", number) or number in numbers:
+                raise ProxyError("bad-request", 400, "number")
+            numbers.add(number)
+            if not isinstance(changes, dict) or not changes:
+                raise ProxyError("bad-request", 400, "changes")
+            for field, change in changes.items():
+                if field not in EDIT_FIELDS:
+                    raise ProxyError("bad-request", 400, "field")
+                if (not isinstance(change, dict) or set(change) != {"from", "to"}
+                        or not all(isinstance(value, str) for value in change.values())):
+                    raise ProxyError("bad-request", 400, "change")
+                if len(change["to"]) > MAX_EDIT_VALUE or not EDIT_FIELDS[field].fullmatch(change["to"]):
+                    raise ProxyError("bad-request", 400, "value")
+        if not self.server.data_path:
+            raise ProxyError("data-file-missing", 500)
+        changed = apply_edits(self.server.data_path, edits)
+        print("Upravit: zápis do %s (změněno %d)" % (self.server.data_path, changed), file=sys.stderr)
+        self._send_json(200, {"ok": True, "changed": changed})
 
     def _publish(self, _parts):
         self._read_json_body(MAX_REQUEST_BODY)

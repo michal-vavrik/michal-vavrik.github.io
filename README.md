@@ -19,13 +19,23 @@ prohlížeče. Hry jsou dostupné v češtině a angličtině.
 
 ## Anime
 
-[Anime](./anime.html) (po přihlášení s plným přístupem) zobrazuje seznam z
-`data/anime.json`. Tlačítko **Aktualizovat** otevře stejné volby jako desktopový
-skript `AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, Seznam
+[Anime](./anime.html) zobrazuje seznam z `data/anime.json`. Stránku otevře
+přihlášení s plným přístupem nebo s přístupem jen ke stránce Anime (role „Přístup
+ke stránce Anime“, ostatní chráněné stránky zůstanou zamčené).
+
+Nahoře je v jednom řádku hledání a vpravo od něj **action-bar** s tlačítky
+Aktualizovat, Push a Upravit. Lišta i hlavička sloupců zůstávají vidět i při
+scrollování; na úzké obrazovce jsou tlačítka pod hledáním. Action-bar vidí jen
+přihlášení s plným přístupem, s přístupem jen ke stránce Anime jde seznam jen
+prohlížet, řadit a hledat v něm (stránka se pak na pomocný program vůbec neobrací).
+
+Tlačítko **Aktualizovat** otevře stejné volby jako desktopový skript
+`AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, Seznam
 a Všechno. Hotové jsou volby **Zhlédnuté epizody**, **ČSFD hodnocení**, **MAL
 hodnocení** a **Seznam**, Všechno je označené „Připravujeme“. Všechny potřebují
 pomocný program (viz níže), který výsledky zapisuje přímo do `data/anime.json`.
 Tlačítko **Push** pak změny na váš pokyn commitne a pushne na GitHub (viz Push).
+Tlačítko **Upravit** zapne edit mód (viz Edit mód).
 
 ### Aktualizovat → Seznam
 
@@ -37,8 +47,9 @@ Průběh a výsledek se ukazují pod tlačítky.
 Nová anime pomocný program na konci najednou zapíše do `data/anime.json` (jako
 `WriteDataToTheFile` ve skriptu: seřazená podle čísla, ve stejném formátu, takže
 `git diff` ukáže jen přidaná anime) a jejich obrázky uloží jako `img/anime/N.jpg`.
-Když běh zastaví chyba, zapíšou se anime přidaná do té doby. Uložené úpravy
-v prohlížeči a chyba zápisu se řeší stejně jako u ČSFD hodnocení (viz níže).
+Když běh zastaví chyba, zapíšou se anime přidaná do té doby. Když se zápis do
+souboru nepovede, stránka to ohlásí a přidaná anime po obnovení stránky zmizí
+(obrázky už uložené v `img/anime` zůstanou), aktualizaci pak spusťte znovu.
 Nová anime i s obrázky se ukazují hned, i když stránku otevíráte z GitHub Pages,
 kde ještě nejsou (viz Uložení a publikace dat).
 Potřebuje pomocný program verze 7; se starší verzí stránka požádá o jeho restart.
@@ -119,10 +130,9 @@ formát souboru zůstane stejný, takže `git diff` ukáže jen změněná hodno
 GitHub Pages se nové hodnoty objeví až po commitu a pushi (tlačítko Push). Pomocný program starší
 než tato změna zápis neumí; stránka pak požádá o jeho restart.
 
-- Pokud má prohlížeč uložené úpravy z localStorage (např. z edit módu, importu nebo
-  ze starší verze Seznamu), stránka čte je místo `data/anime.json`, proto se
-  hodnocení uloží i tam. Anime, která v `data/anime.json` nejsou, se vypíšou pod
-  tlačítky a jejich hodnocení zůstane jen v prohlížeči.
+- Anime, která stránka ukazuje, ale v `data/anime.json` nejsou (např. stránka
+  z GitHub Pages a jiný soubor u pomocného programu), se vypíšou pod tlačítky
+  a jejich hodnocení se nezapíše.
 - Když se hodnocení jednoho anime nepodaří zjistit (např. HTTP 404, změněná
   stránka, vypršený čas, nečekaný tvar hodnocení), anime si nechá původní hodnotu,
   běh pokračuje a na konci se pod tlačítky vypíše, kterých anime se to týkalo.
@@ -130,8 +140,9 @@ než tato změna zápis neumí; stránka pak požádá o jeho restart.
 - Běh zastaví jen chyba, která by se opakovala u všech anime (pomocný program
   neběží, blokované přesměrování). Hodnocení zjištěná do té doby se do souboru
   zapíšou.
-- Když zápis do souboru selže (soubor chybí, je poškozený nebo zamčený), hodnocení
-  zůstanou uložená v prohlížeči a do souboru se dostanou přes Exportovat data.
+- Když zápis do souboru selže (soubor chybí, je poškozený nebo zamčený), stránka
+  to ohlásí; zjištěná hodnocení zůstanou vidět jen do obnovení stránky, aktualizaci
+  pak spusťte znovu.
 
 ### Aktualizovat → MAL hodnocení
 
@@ -167,8 +178,8 @@ funkce `UpdateWatched` ze skriptu. Stejně jako Seznam potřebuje přihlašovac�
   zahájené anime, takže „100.00% Aktualizuji…“ znamená, že se ještě zpracovává
   poslední anime a zapisuje soubor; hotovo je až při „100.00% Hotovo“.
 - Po zpracování všech anime pomocný program zapíše zjištěné stavy najednou do
-  `data/anime.json` (změní jen `State`). Uložené úpravy v prohlížeči, anime mimo
-  soubor a chyba zápisu se řeší stejně jako u ČSFD hodnocení.
+  `data/anime.json` (změní jen `State`). Anime mimo soubor a chyba zápisu se řeší
+  stejně jako u ČSFD hodnocení.
 - Když se stav jednoho anime nepodaří zjistit (např. HTTP 404, vypršený čas, web
   stránku seriálu přesměroval jinam), anime si nechá původní stav, běh pokračuje
   a na konci se vypíše, kterých anime se to týkalo. Běh zastaví chyba, která by se
@@ -187,23 +198,32 @@ Aby nová anime ze Seznamu do té doby nezmizela, drží si je stránka i s obr�
 v prohlížeči (localStorage `anime-pending-additions`) a při načtení je doplní
 k `data/anime.json`. Jakmile načtený `data/anime.json` dané anime obsahuje, z
 prohlížeče se smaže a obrázek se bere z `img/anime`. Platí to jen pro prohlížeč,
-ve kterém aktualizace proběhla; změněná hodnocení a epizody se na GitHub Pages
-ukážou až po pushi.
+ve kterém aktualizace proběhla; změněná hodnocení, epizody a úpravy z edit módu
+se na GitHub Pages ukážou až po pushi.
 
-Úpravy z edit módu a importu a výsledky, které se do souboru zapsat nepodařilo, se
-ukládají do localStorage prohlížeče a mají přednost před `data/anime.json`. Do
-repozitáře se dostanou takto:
+Jiné změny dat stránka v prohlížeči neukládá. Výsledky, které se do souboru
+zapsat nepodařilo, zůstanou vidět jen do obnovení stránky. Úpravy uložené
+v prohlížeči starší verzí stránky (localStorage `anime-data-overrides`, z edit
+módu nebo importu) nová verze při načtení smaže. Během aktualizace jsou zamčené
+Upravit a Push a prohlížeč při zavírání stránky varuje.
 
-1. **Exportovat data** stáhne `AnimeData.json` (stejný tvar jako `data/anime.json`).
-2. Soubor uložte jako `data/anime.json`.
-3. Commitněte ho spolu s novými `img/anime/*.jpg`.
+### Edit mód
 
-**Obnovit původní data** smaže úpravy uložené v prohlížeči a vrátí stránku
-k obsahu `data/anime.json`; co v souboru není, předtím exportujte. Nová anime,
-která pomocný program do souboru zapsal a web je ještě nemá, zůstanou. V soukromém
-režimu prohlížeče se localStorage nemusí zachovat, před zavřením stránky proto
-data exportujte. Během aktualizace jsou zamčené Upravit, Importovat data, Obnovit
-původní data a Push (Exportovat data zůstává) a prohlížeč při zavírání stránky varuje.
+**Upravit** přepne řádky do editace (jako `aSwitchEdit` ve skriptu), tlačítko se
+změní na **Uložit**. Během editace nejde spustit aktualizaci. Uložit:
+
+- Ověří jen změněné hodnoty: `Number` celé kladné číslo (bez úvodních nul a jiné
+  anime ho nesmí mít), hodnocení 0–100 nebo `?` (`%` se doplní jako ve skriptu),
+  datum prázdné nebo `D.M.RRRR`. Neplatná pole se zvýrazní a nic se neuloží.
+- Beze změn jen ukončí editaci.
+- Změny zapíše pomocný program do `data/anime.json` (formát souboru zůstane, změna
+  `Number` anime přečísluje a soubor znovu seřadí). Zapíše se buď vše, nebo nic.
+  Pokud se hodnota v souboru mezitím změnila (např. aktualizací, jiným oknem nebo
+  když je stránka z GitHub Pages starší než soubor), zápis se odmítne; stránku
+  obnovte a úpravy zopakujte.
+- Když zápis selže (pomocný program neběží, je zastaralý, konflikt), editace
+  zůstane i s rozepsanými hodnotami a pod tlačítky se ukáže důvod.
+- Potřebuje pomocný program verze 9; se starší verzí stránka požádá o jeho restart.
 
 ### Push
 
@@ -219,9 +239,7 @@ aktualizací. Nic z toho se neděje automaticky, jen po stisku tlačítka:
 
 Výsledek (zkrácený hash commitu a počet souborů) se ukáže pod tlačítky; GitHub
 Pages web obvykle aktualizuje do několika minut. Když se nic nezměnilo a vše už
-na GitHubu je, stránka napíše „Není co publikovat“. Úpravy uložené jen
-v prohlížeči (edit mód, import, nezapsané výsledky) se nepublikují – stránka na
-ně upozorní; do souboru je dostanete přes Exportovat data.
+na GitHubu je, stránka napíše „Není co publikovat“.
 
 - Repozitář musí být na větvi `main` bez rozpracovaného merge, rebase nebo
   cherry-picku a mít remote `origin`; jinak se nic nestane a stránka řekne proč.
@@ -247,7 +265,7 @@ ně upozorní; do souboru je dostanete přes Exportovat data.
   zobrazí podle obsahu. Pomocný program ho navíc vrátí stránce, aby ho ukázala
   i před nahráním na web.
 - Pomocný program nikdy nepřepíše anime, jehož číslo už v `data/anime.json` je;
-  zápis pak odmítne (`item-exists`) a nová anime zůstanou v prohlížeči.
+  zápis pak odmítne (`item-exists`) a nová anime se nezapíšou.
 - Nová anime přijdou na konec aktuálního pořadí. Číslo je největší dosud použité
   číslo (v datech i v `img/anime`) zvýšené o 1.
 - Odpověď HTTP 400 a vyšší je chyba. Hledání na MyAnimeList bez výsledků (MAL ho
@@ -284,11 +302,15 @@ ně upozorní; do souboru je dostanete přes Exportovat data.
   přesměrování vede.
 - **Anime se na MyAnimeList nepodařilo najít:** MAL nenajde názvy s českou
   diakritikou (např. „Naruto: šippúden“). Protože běh u chyby končí, přidejte takové
-  anime ručně (Exportovat data, doplnit položku v JSONu, Importovat data) a spusťte
-  Seznam znovu.
+  anime ručně (doplňte položku do `data/anime.json` a obrázek do `img/anime`)
+  a spusťte Seznam znovu.
 - **Výsledek se nepodařilo zapsat, podrobnosti `item-exists`:** `data/anime.json`
-  už obsahuje anime se stejným číslem (soubor se změnil mimo stránku). Nová anime
-  zůstala v prohlížeči; data exportujte a se souborem je sloučte ručně.
+  už obsahuje anime se stejným číslem (soubor se změnil mimo stránku). Obnovte
+  stránku a spusťte Seznam znovu. Obrázky uložené při neúspěšném běhu zůstanou
+  v `img/anime` a Push by je zahrnul; nepotřebné před Push smažte.
+- **Úpravy se neuložily, `data/anime.json` se mezitím změnil:** obnovte stránku
+  (načte aktuální soubor) a úpravy zopakujte. U stránky z GitHub Pages se to stane
+  i tehdy, když web ještě nemá poslední Push.
 - **Push: GitHub obsahuje novější změny:** v repozitáři spusťte `git pull --rebase`
   a stiskněte Push znovu (váš commit se přenese na nejnovější stav).
 - **Push: přihlášení ke GitHubu se nezdařilo:** pushněte jednou ručně (`git push`),

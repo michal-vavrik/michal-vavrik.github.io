@@ -275,6 +275,22 @@ window.AnimeProxy = (function () {
 		});
 	}
 
+	/**
+	 * Nechá pomocníka zapsat úpravy z edit módu do data/anime.json (mirror Python
+	 * aSwitchEdit() + WriteDataToTheFile(), pomocník od verze 9). Zapíše se vše,
+	 * nebo nic: když hodnota "from" neodpovídá souboru, skončí chybou
+	 * `data-conflict`, chybějící anime `item-missing`, obsazené číslo `number-exists`.
+	 * @param {Array<{number: string, changes: Object<string, {from: string, to: string}>}>} edits
+	 * @returns {Promise<{changed: number}>}
+	 */
+	function saveAnimeEdits(edits) {
+		return postData('/anime-edits', { edits: edits }, function (payload) {
+			return typeof payload.changed === 'number';
+		}).then(function (payload) {
+			return { changed: payload.changed };
+		});
+	}
+
 	// Commit a push čekají na git, hooky a síť (pomocník je po svém limitu ukončí).
 	var PUBLISH_TIMEOUT_MS = 180000;
 	var COMMIT_HASH = /^[0-9a-f]{4,40}$/;
@@ -311,6 +327,7 @@ window.AnimeProxy = (function () {
 		saveMalRatings: saveMalRatings,
 		saveWatchedStates: saveWatchedStates,
 		saveAnimeItems: saveAnimeItems,
+		saveAnimeEdits: saveAnimeEdits,
 		publish: publish
 	};
 })();
