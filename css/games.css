@@ -1,98 +1,108 @@
 @charset "utf-8";
 
-/* Styly stránky Hry – mřížka dlaždic pro výběr hry. */
+/* Rozcestník her: nadpis s úvodem a mřížka dlaždic s odkazy na jednotlivé hry. */
 
 .games {
-	position: relative;
-	z-index: 1;
-	max-width: 960px;
+	max-width: 68rem;
 	margin: 0 auto;
-	padding: 104px 24px 64px;
-	color: #e8edf5;
-	font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-	line-height: 1.6;
+	padding: var(--page-top) var(--gutter) var(--page-bottom);
 }
 
 .games__title {
-	font-size: clamp(1.8rem, 4vw, 2.5rem);
-	font-weight: 600;
-	letter-spacing: 0.01em;
-	margin-bottom: 10px;
+	font-size: var(--text-3xl);
+	font-weight: 700;
 }
 
 .games__lead {
-	color: #93a3ba;
-	margin-bottom: 32px;
-	font-size: 1.05rem;
+	max-width: 60ch;
+	margin-top: var(--space-3);
+	color: var(--color-text-muted);
+	font-size: var(--text-lg);
 }
 
 .games__grid {
-	list-style: none;
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-	gap: 18px;
-	margin: 0;
-	padding: 0;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 14.5rem), 1fr));
+	gap: var(--space-4);
+	margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
 }
 
 .games__tile {
-	position: relative;
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
-	height: 100%;
-	padding: 22px 20px;
-	border: 1px solid rgba(255, 255, 255, 0.11);
-	border-radius: 16px;
-	background: rgba(9, 13, 24, 0.62);
-	color: inherit;
+	gap: var(--space-2);
+	padding: var(--space-6);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-lg);
+	background: var(--color-surface);
+	color: var(--color-text);
 	text-decoration: none;
-	transition: transform 200ms ease, border-color 200ms ease, background 200ms ease, box-shadow 200ms ease;
+	transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
 
-.games__tile:hover,
-.games__tile:focus-visible {
-	transform: translateY(-4px);
-	border-color: rgba(165, 180, 252, 0.45);
-	background: rgba(15, 21, 38, 0.78);
-	box-shadow: 0 16px 32px rgba(0, 0, 0, 0.35);
-	outline: none;
+.games__tile:hover {
+	border-color: var(--color-accent-border);
+	background: var(--color-surface-2);
+	box-shadow: var(--shadow-md);
+	transform: translateY(-2px);
+}
+
+.games__tile:active {
+	transform: none;
 }
 
 .games__icon {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 52px;
-	height: 52px;
-	border-radius: 14px;
-	background: rgba(99, 102, 241, 0.2);
-	color: #a5b4fc;
-	font-size: 1.5rem;
+	display: grid;
+	place-items: center;
+	width: 2.75rem;
+	height: 2.75rem;
+	margin-bottom: var(--space-3);
+	border: 1px solid var(--color-accent-border);
+	border-radius: var(--radius-md);
+	background: var(--color-accent-soft);
+	color: var(--color-accent-text);
+	font-size: 1.15rem;
 }
 
 .games__name {
-	font-size: 1.25rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	font-size: var(--text-lg);
 	font-weight: 600;
-	color: #e8edf5;
+}
+
+/* Šipka napovídá, že dlaždice je odkaz; při najetí se posune. */
+.games__name::after {
+	content: "\2192";
+	color: var(--color-text-subtle);
+	font-weight: 400;
+	transition: transform var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+.games__tile:hover .games__name::after {
+	color: var(--color-accent-text);
+	transform: translateX(3px);
 }
 
 .games__desc {
-	font-size: 0.95rem;
-	color: #93a3ba;
+	color: var(--color-text-muted);
+	font-size: var(--text-sm);
 }
 
-@media (max-width: 600px) {
-	.games {
-		padding: 92px 18px 48px;
-	}
-
-	.games__grid {
-		grid-template-columns: 1fr;
-		gap: 14px;
-	}
-
+/* Na úzkém displeji je ikona vedle textu, aby dlaždice nebyly zbytečně vysoké. */
+@media (max-width: 30em) {
 	.games__tile {
-		padding: 18px 16px;
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr);
+		column-gap: var(--space-4);
+		row-gap: var(--space-1);
+		padding: var(--space-5);
+	}
+
+	.games__icon {
+		grid-row: span 2;
+		margin-bottom: 0;
 	}
 }

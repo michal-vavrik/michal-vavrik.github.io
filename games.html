@@ -3,46 +3,56 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="theme-color" content="#0b0d12">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
 		<title>Games</title>
-		<link rel="stylesheet" type="text/css" href="css/main.css?v=header-scroll-1">
-		<link rel="stylesheet" type="text/css" href="css/auth.css?v=hide-locked-menu-2">
-		<link rel="stylesheet" type="text/css" href="css/i18n.css">
-		<link rel="stylesheet" type="text/css" href="css/games.css">
+		<link rel="stylesheet" type="text/css" href="css/main.css?v=redesign-1">
+		<link rel="stylesheet" type="text/css" href="css/auth.css?v=redesign-1">
+		<link rel="stylesheet" type="text/css" href="css/i18n.css?v=redesign-1">
+		<link rel="stylesheet" type="text/css" href="css/games.css?v=redesign-1">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
 		<script src="js/auth.js?v=anime-role-1"></script>
 	</head>
 	
 	<body class="subpage">
-				<!-- Menu elements-->
-		<nav class="menu">
-			<a class="menu__link" href="index.html" data-i18n="nav.home">Home</a>
-			<a class="menu__link" href="personal.html" data-i18n="nav.personal">Personal</a>
-			<a class="menu__link" href="cv.html" data-i18n="nav.cv">CV</a>
-			<a class="menu__link active" href="games.html" data-i18n="nav.games">Games</a>
-			<a class="menu__link" href="contact.html" data-i18n="nav.contact">Contact</a>
-			<a class="menu__link" href="anime.html" data-i18n="nav.anime">Anime</a>
-			<a class="menu__link" href="nv194.html">NV 194</a>
-		</nav>
-		<div class="menu__toggler"><span></span></div>
-		
-		<div class="header-controls">
-			<div class="lang-switcher" id="lang-switcher">
-				<button type="button" class="lang-switcher__toggle" id="lang-switcher-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-switcher-menu" data-i18n-aria-label="lang.switcher.label">
-					<span class="lang-switcher__code" id="lang-switcher-code">CS</span>
-					<span class="lang-switcher__caret" aria-hidden="true">▾</span>
-				</button>
-				<div class="lang-switcher__menu" id="lang-switcher-menu" role="menu" hidden>
-					<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="cs" data-i18n="lang.name.cs">Čeština</button>
-					<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="en" data-i18n="lang.name.en">English</button>
+		<header class="site-header">
+			<div class="site-header__inner">
+				<a class="site-header__brand" href="index.html" data-i18n-aria-label="nav.brand">
+					<span class="site-header__logo" aria-hidden="true">MV</span>
+					<span class="site-header__name">Michal Vavrík</span>
+				</a>
+				<button type="button" class="menu__toggler" aria-expanded="false" aria-controls="site-menu" aria-label="Menu" data-i18n-aria-label="nav.toggle"><span></span></button>
+				<nav class="menu" id="site-menu" data-i18n-aria-label="nav.label">
+					<a class="menu__link" href="index.html" data-i18n="nav.home">Home</a>
+					<a class="menu__link" href="personal.html" data-i18n="nav.personal">Personal</a>
+					<a class="menu__link" href="cv.html" data-i18n="nav.cv">CV</a>
+					<a class="menu__link active" aria-current="page" href="games.html" data-i18n="nav.games">Games</a>
+					<a class="menu__link" href="contact.html" data-i18n="nav.contact">Contact</a>
+					<a class="menu__link" href="anime.html" data-i18n="nav.anime">Anime</a>
+					<a class="menu__link" href="nv194.html">NV 194</a>
+				</nav>
+				<div class="header-controls">
+					<div class="lang-switcher" id="lang-switcher">
+						<button type="button" class="lang-switcher__toggle" id="lang-switcher-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-switcher-menu" data-i18n-aria-label="lang.switcher.label">
+							<span class="lang-switcher__code" id="lang-switcher-code">CS</span>
+							<span class="lang-switcher__caret" aria-hidden="true">▾</span>
+						</button>
+						<div class="lang-switcher__menu" id="lang-switcher-menu" role="menu" hidden>
+							<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="cs" data-i18n="lang.name.cs">Čeština</button>
+							<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="en" data-i18n="lang.name.en">English</button>
+						</div>
+					</div>
+
+					<button type="button" class="auth-btn" id="auth-btn" aria-haspopup="dialog" aria-controls="auth-modal">
+						<i class="fa fa-user auth-btn__icon" aria-hidden="true"></i>
+						<span class="auth-btn__label">Přihlásit</span>
+					</button>
 				</div>
 			</div>
-
-			<button type="button" class="auth-btn" id="auth-btn" aria-haspopup="dialog" aria-controls="auth-modal">
-				<i class="fa fa-user auth-btn__icon" aria-hidden="true"></i>
-				<span class="auth-btn__label">Přihlásit</span>
-			</button>
-		</div>
+		</header>
 
 		<div class="auth-modal" id="auth-modal" hidden>
 			<div class="auth-modal__backdrop" data-auth-close></div>
@@ -113,10 +123,10 @@
 			</div>
 		</main>
 
-		<script src="js/i18n.js?v=anime-role-1"></script>
+		<script src="js/i18n.js?v=redesign-1"></script>
 		<script src="js/lang-switcher.js"></script>
 		<script src="js/auth-ui.js?v=anime-role-1"></script>
-		<script src="js/menu.js"></script>
+		<script src="js/menu.js?v=redesign-1"></script>
 
 	</body>
 </html>

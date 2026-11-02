@@ -5,7 +5,10 @@
  *
  * Pole:
  *   key       - shodný s klíčem v datech (např. "Number", "NameEn").
- *   width     - pevná šířka sloupce v pixelech (PROPERTY["Width"]).
+ *   width     - šířka sloupce v pixelech (PROPERTY["Width"]); u sloupce
+ *               s grow: true jen minimální šířka.
+ *   grow      - sloupec se roztáhne do volného místa (širší okna tak ukážou
+ *               celý seznam bez vodorovného scrollu).
  *   labelKey  - i18n klíč zobrazovaného textu hlavičky (PROPERTY["DisplayName"]).
  *   sortable  - zda se dá podle sloupce řadit (PROPERTY["Sortable"]).
  *   sortType  - "int" | "str" | "date" (PROPERTY["SortingType"]).
@@ -26,7 +29,7 @@ window.AnimeColumns = (function () {
 		{ key: 'NameEn',      width: 200, labelKey: 'anime.header.nameEn',      sortable: true,  sortType: 'str',  editable: true,  isRating: false },
 		{ key: 'NameJa',      width: 200, labelKey: 'anime.header.nameJa',      sortable: true,  sortType: 'str',  editable: true,  isRating: false },
 		{ key: 'Genres',      width: 90,  labelKey: 'anime.header.genres',      sortable: false, sortType: null,   editable: true,  isRating: false },
-		{ key: 'Description', width: 760, labelKey: 'anime.header.description', sortable: false, sortType: null,   editable: true,  isRating: false },
+		{ key: 'Description', width: 480, labelKey: 'anime.header.description', sortable: false, sortType: null,   editable: true,  isRating: false, grow: true },
 		{ key: 'Date',        width: 90,  labelKey: 'anime.header.date',        sortable: true,  sortType: 'date', editable: true,  isRating: false },
 		{ key: 'State',       width: 70,  labelKey: 'anime.header.state',       sortable: true,  sortType: 'str',  editable: true,  isRating: false },
 		{ key: 'CsfdRating',  width: 90,  labelKey: 'anime.header.csfdRating',  sortable: true,  sortType: 'int',  editable: true,  isRating: true,  iconFile: 'CsfdRating.png' },
@@ -35,7 +38,9 @@ window.AnimeColumns = (function () {
 	];
 
 	function gridTemplate() {
-		return COLUMNS.map(function (c) { return c.width + 'px'; }).join(' ');
+		return COLUMNS.map(function (c) {
+			return c.grow ? 'minmax(' + c.width + 'px, 1fr)' : c.width + 'px';
+		}).join(' ');
 	}
 
 	return {

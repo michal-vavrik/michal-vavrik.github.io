@@ -11,13 +11,6 @@ window.AnimeView = (function () {
 
 	var ICON_BASE = 'img/anime/icons/';
 
-	function sortIconFile(state, columnKey) {
-		if (!state || state.column !== columnKey) {
-			return 'Sort.png';
-		}
-		return state.ascending ? 'SortAsc.png' : 'SortDesc.png';
-	}
-
 	function buildHeaderCell(column, sortState) {
 		var cell = document.createElement('div');
 		cell.className = 'anime__header-cell';
@@ -25,16 +18,15 @@ window.AnimeView = (function () {
 		cell.setAttribute('data-column', column.key);
 		if (column.sortable) {
 			cell.classList.add('anime__header-cell--sortable');
-			var iconFile = sortIconFile(sortState, column.key);
 			var isActiveSort = sortState && sortState.column === column.key;
 			cell.setAttribute('data-sort', isActiveSort ? (sortState.ascending ? 'asc' : 'desc') : 'none');
 			// aria-sort - standardní ARIA atribut pro řaditelné sloupce (bez
 			// existujícího vzoru jinde na webu, Python aplikace ani jiná stránka
 			// řaditelnou tabulku nemá).
 			cell.setAttribute('aria-sort', isActiveSort ? (sortState.ascending ? 'ascending' : 'descending') : 'none');
+			// Tvar ikony (Sort/SortAsc/SortDesc.png) volí css/anime.css podle data-sort.
 			var sortIcon = document.createElement('span');
 			sortIcon.className = 'anime__header-sort';
-			sortIcon.style.backgroundImage = 'url("' + ICON_BASE + iconFile + '")';
 			cell.appendChild(sortIcon);
 		}
 		if (column.isRating) {

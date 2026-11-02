@@ -33,6 +33,9 @@ window.I18n = (function () {
 			'nav.games': 'Hry',
 			'nav.contact': 'Kontakt',
 			'nav.anime': 'Anime',
+			'nav.label': 'Hlavní navigace',
+			'nav.toggle': 'Menu',
+			'nav.brand': 'Michal Vavrík – úvodní stránka',
 
 			'anime.title': 'Anime list',
 			'anime.loadError': 'Nepodařilo se načíst anime data. Zkuste stránku obnovit.',
@@ -439,6 +442,9 @@ window.I18n = (function () {
 			'nav.games': 'Games',
 			'nav.contact': 'Contact',
 			'nav.anime': 'Anime',
+			'nav.label': 'Main navigation',
+			'nav.toggle': 'Menu',
+			'nav.brand': 'Michal Vavrík – home page',
 
 			'anime.title': 'Anime list',
 			'anime.loadError': 'Failed to load anime data. Try reloading the page.',

@@ -1,308 +1,435 @@
-body {
-	width: 100%;
-	min-height: 100vh;
-	margin: 0;
-	padding: 0;
+@charset "utf-8";
+
+/*
+ * Sdílený základ všech stránek webu.
+ *
+ * 1. Design tokeny – jediný zdroj barev, typografie, rozestupů, zaoblení,
+ *    stínů a animací. Stránkové styly (css/*.css) staví jen na nich, díky
+ *    čemuž všechny stránky tvoří jeden konzistentní celek.
+ * 2. Reset a základní typografie.
+ * 3. Pozadí úvodní stránky (hvězdné nebe) a podstránek.
+ * 4. Horní lišta – značka, navigace (.menu) a ovládací prvky vpravo.
+ */
+
+/* --- 1. Design tokeny --- */
+
+:root {
+	color-scheme: dark;
+
+	/* Barvy – plochy jsou seřazené od nejtmavší po nejsvětlejší. */
+	--color-bg: #0b0d12;
+	--color-surface: #12151c;
+	--color-surface-2: #181b24;
+	--color-surface-3: #20242f;
+	--color-overlay: rgba(5, 6, 10, 0.72);
+	--color-border: rgba(255, 255, 255, 0.07);
+	--color-border-strong: rgba(255, 255, 255, 0.13);
+	--color-text: #eceef3;
+	--color-text-muted: #9ba1b0;
+	--color-text-subtle: #6c7283;
+	--color-accent: #7479f5;
+	--color-accent-text: #a9adfb;
+	--color-accent-bg: #5b5fe8;
+	--color-accent-bg-hover: #6a6ef0;
+	--color-accent-soft: rgba(116, 121, 245, 0.14);
+	--color-accent-border: rgba(116, 121, 245, 0.45);
+	--color-on-accent: #fff;
+	--color-success: #3ecf8e;
+	--color-success-soft: rgba(62, 207, 142, 0.13);
+	--color-success-border: rgba(62, 207, 142, 0.4);
+	--color-danger: #f47878;
+	--color-danger-soft: rgba(244, 120, 120, 0.13);
+	--color-danger-border: rgba(244, 120, 120, 0.45);
+	--color-warning: #f2b84b;
+	--color-warning-soft: rgba(242, 184, 75, 0.14);
+
+	/* Typografie – nadpisy se plynule přizpůsobují šířce okna. */
+	--font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	--text-xs: 0.75rem;
+	--text-sm: 0.875rem;
+	--text-base: 1rem;
+	--text-lg: 1.0625rem;
+	--text-xl: clamp(1.125rem, 1.05rem + 0.3vw, 1.25rem);
+	--text-2xl: clamp(1.3rem, 1.15rem + 0.6vw, 1.6rem);
+	--text-3xl: clamp(1.75rem, 1.35rem + 1.6vw, 2.5rem);
+	--leading-tight: 1.2;
+	--leading: 1.6;
+	--tracking-tight: -0.022em;
+	--tracking-caps: 0.06em;
+
+	/* Rozestupy (násobky 4 px) a rozměry stránky. */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.25rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+	--space-10: 2.5rem;
+	--space-12: 3rem;
+	--space-16: 4rem;
+	--gutter: clamp(1rem, 0.55rem + 2.2vw, 2.5rem);
+	--page-top: clamp(1.75rem, 1rem + 3vw, 3.5rem);
+	--page-bottom: clamp(3rem, 2rem + 4vw, 5rem);
+	--header-height: 4rem;
+	--control-height: 2.75rem;
+
+	/* Tvary */
+	--radius-xs: 6px;
+	--radius-sm: 8px;
+	--radius-md: 12px;
+	--radius-lg: 16px;
+	--radius-xl: 22px;
+	--radius-full: 999px;
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+	--shadow-md: 0 12px 32px -14px rgba(0, 0, 0, 0.7);
+	--shadow-lg: 0 32px 72px -24px rgba(0, 0, 0, 0.85);
+	--ring: 0 0 0 3px rgba(116, 121, 245, 0.45);
+
+	/* Pohyb */
+	--dur-fast: 120ms;
+	--dur: 200ms;
+	--dur-slow: 350ms;
+	--ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
-body.home {
-	background-color: #000;
-	background-image: radial-gradient(circle at top right, rgba(121, 68, 154, 0.13), transparent), radial-gradient(circle at 20% 80%, rgba(0, 70, 90, 0.13), transparent);
-	overflow: hidden;
-}
-
-body.subpage {
-	background: linear-gradient(135deg, #0a0d18 0%, #111827 25%, #181433 50%, #0f1c2e 75%, #080c16 100%);
-	background-size: 300% 300%;
-	animation: subpageGradient 18s ease infinite;
-	position: relative;
-	overflow-x: hidden;
-}
-
-body.subpage::before {
-	content: "";
-	position: fixed;
-	top: -50%;
-	left: -50%;
-	width: 200%;
-	height: 200%;
-	background-image:
-		radial-gradient(circle at 30% 30%, rgba(99, 102, 241, 0.18) 0%, transparent 35%),
-		radial-gradient(circle at 75% 25%, rgba(168, 85, 247, 0.15) 0%, transparent 35%),
-		radial-gradient(circle at 65% 75%, rgba(14, 165, 233, 0.15) 0%, transparent 40%),
-		radial-gradient(circle at 25% 80%, rgba(16, 185, 129, 0.12) 0%, transparent 35%);
-	pointer-events: none;
-	z-index: 0;
-	animation: pulseGlow 12s ease-in-out infinite alternate;
-}
-
-@keyframes subpageGradient {
-	0% { background-position: 0% 50%; }
-	50% { background-position: 100% 50%; }
-	100% { background-position: 0% 50%; }
-}
-
-@keyframes pulseGlow {
-	0% { transform: scale(1) rotate(0deg); opacity: 0.8; }
-	100% { transform: scale(1.1) rotate(5deg); opacity: 1; }
-}
-
-.content {
-	margin: 0px;
-	position: relative;
-	left: 70px;
-	top: 400px;
-	background: rgba(0, 0, 0, 0.5);
-	color: #fff;
-	width: 30%;
-	padding: 20px;
-	padding-bottom: 60px;
-}
-
-#myBtn {
-	position: absolute;
-	top: 85px;
-	font-size: 18px;
-	padding-top: 10px;
-	padding-bottom: 10px;
-	padding-left: 50px;
-	padding-right: 50px;
-	border: none;
-	background: #000;
-	color: #fff;
-	cursor: pointer;
-	text-decoration: none;
-}
-
-#myBtn:hover {
-	background: #ddd;
-	color: black;
-}
-
-canvas {
-	position: fixed;
-	width: 100%;
-	height: 100%;
-}
-
-/* MENU BUTTON */
-.menu__toggler {
-  position: absolute;
-  top: 24px;
-  left: 24px;
-  z-index: 999;
-  height: 40px;
-  width: 40px;
-  outline: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-.menu__toggler span,
-.menu__toggler span::before,
-.menu__toggler span::after {
-  position: absolute;
-  content: "";
-  width: 36px;
-  height: 3px;
-  background: #fff;
-  border-radius: 30px;
-  transition: 400ms cubic-bezier(0.77, 0, 0.175, 1);
-}
-.menu__toggler span::before {
-  top: -10px;
-}
-.menu__toggler span::after {
-  top: 10px;
-}
-.menu__toggler.active > span {
-  background: transparent;
-}
-.menu__toggler.active > span::before, .menu__toggler.active > span::after {
-  background: #fff;
-  top: 0px;
-}
-.menu__toggler.active > span::before {
-  transform: rotate(-225deg);
-}
-.menu__toggler.active > span::after {
-  transform: rotate(225deg);
-}
-
-/* SLIDING MENU PANEL */
-.menu {
-  position: absolute;
-  top: 0;
-  left: -280px;
-  z-index: 998;
-  color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: rgba(10, 14, 26, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.5);
-  width: 250px;
-  height: 100%;
-  padding: 100px 32px 40px 32px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  transition: 350ms left cubic-bezier(0.77, 0, 0.175, 1);
-}
-
-.menu.active {
-  left: 0;
-}
-.menu__link {
-  display: block;
-  font-size: 1.25rem;
-  font-weight: 500;
-  margin-bottom: 1.2rem;
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  letter-spacing: 0.5px;
-  transition: color 200ms ease, transform 200ms ease;
-}
-
-.menu__link:hover {
-  color: #fff;
-  transform: translateX(4px);
-}
-
-.menu__link.active {
-  color: #04AA6D;
-  font-weight: 600;
-  transform: translateX(4px);
-}
+/* --- 2. Reset a základní typografie --- */
 
 *,
 *::before,
 *::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-/* Full-width input fields */
-input[type=text], input[type=password] {
-  width: 100%;
-  padding: 12px 20px;
-  margin: 8px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  box-sizing: border-box;
-}
-
-/* Set a style for all buttons */
-button {
-	
-	background-color: #04AA6D;
-	color: white;
-	padding: 14px 20px;
-	margin: 8px 0;
-	border: none;
-	cursor: pointer;
-	width: 100%;
-}
-
-.LoginBtn {
-	background-color: transparent;
-	padding: 0;
 	margin: 0;
-	font-size: 32px;
-	position: fixed;
-	right: 24px;
-	top: 24px;
-	width: auto;
-	color: #fff;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+	scrollbar-color: var(--color-surface-3) transparent;
+}
+
+body {
+	min-height: 100vh;
+	min-height: 100dvh;
+	background-color: var(--color-bg);
+	color: var(--color-text);
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
+	line-height: var(--leading);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	line-height: var(--leading-tight);
+	letter-spacing: var(--tracking-tight);
+	text-wrap: balance;
+}
+
+p {
+	text-wrap: pretty;
+}
+
+a {
+	color: var(--color-accent-text);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 0.2em;
+}
+
+button,
+input,
+select,
+textarea {
+	font: inherit;
+	color: inherit;
+}
+
+button {
 	cursor: pointer;
-	z-index: 999;
 }
 
-button:hover {
-  opacity: 0.8;
+button:disabled {
+	cursor: not-allowed;
 }
 
-/* Center the image and position the close button */
-.imgcontainer {
-  text-align: center;
-  margin: 24px 0 12px 0;
-  position: relative;
+:focus-visible {
+	outline: 2px solid var(--color-accent);
+	outline-offset: 2px;
 }
 
-img.avatar {
-  width: 40%;
-  border-radius: 50%;
+::selection {
+	background: rgba(116, 121, 245, 0.38);
+	color: #fff;
 }
 
-.container {
-  padding: 16px;
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
 }
 
-span.psw {
-  float: right;
-  padding-top: 16px;
+/* --- 3. Pozadí stránek --- */
+
+/* Úvodní stránka: celé okno vyplňuje hvězdné nebe (js/starfield.js). */
+body.home {
+	background-color: #000;
+	overflow: hidden;
 }
 
-/* The Modal (background) */
-.modal {
-  display: none; /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+body.home > canvas {
+	position: fixed;
+	inset: 0;
+	display: block;
+	width: 100%;
+	height: 100%;
 }
 
-/* Modal Content/Box */
-.modal-content {
-  background-color: #fefefe;
-  margin: 5% auto 15% auto; /* 5% from the top, 15% from the bottom and centered */
-  border: 1px solid #888;
-  width: 25%; /* Could be more or less, depending on screen size */
+/*
+ * Podstránky: klidné tmavé pozadí s jedinou jemnou září u horního okraje.
+ * Vrstva je pevná, takže se na dlouhých stránkách neopakuje ani nepřerušuje.
+ * Leží v z-index -1, tedy pod veškerým obsahem stránky.
+ */
+body.subpage::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	background:
+		radial-gradient(64rem 28rem at 50% -12rem, rgba(116, 121, 245, 0.13), transparent 70%),
+		radial-gradient(40rem 22rem at 100% -6rem, rgba(56, 189, 248, 0.05), transparent 70%);
+	pointer-events: none;
 }
 
-/* The Close Button (x) */
-.close {
-  position: absolute;
-  right: 25px;
-  top: -10px;
-  color: #000;
-  font-size: 35px;
-  font-weight: bold;
+/* --- 4. Horní lišta --- */
+
+.site-header {
+	position: relative;
+	z-index: 100;
+	border-bottom: 1px solid var(--color-border);
+	background: rgba(11, 13, 18, 0.72);
+	-webkit-backdrop-filter: blur(14px);
+	backdrop-filter: blur(14px);
 }
 
-.close:hover,
-.close:focus {
-  color: red;
-  cursor: pointer;
+body.home .site-header {
+	border-bottom-color: transparent;
+	background: transparent;
+	-webkit-backdrop-filter: none;
+	backdrop-filter: none;
 }
 
-/* Add Zoom Animation */
-.animate {
-  -webkit-animation: animatezoom 0.6s;
-  animation: animatezoom 0.6s
+/*
+ * Pořadí v HTML: značka, tlačítko menu, navigace, ovládání vpravo. Na široké
+ * obrazovce je tlačítko skryté a navigace leží v řádku; na úzké se navigace
+ * změní na rozbalovací panel a tlačítko se přesune až za ovládání vpravo.
+ * Pořadí pro klávesnici tak vždy vede z tlačítka rovnou do otevřeného menu.
+ */
+.site-header__inner {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3) var(--space-6);
+	min-height: var(--header-height);
+	padding: var(--space-3) var(--gutter);
 }
 
-@-webkit-keyframes animatezoom {
-  from {-webkit-transform: scale(0)} 
-  to {-webkit-transform: scale(1)}
-}
-  
-@keyframes animatezoom {
-  from {transform: scale(0)} 
-  to {transform: scale(1)}
+.site-header__brand {
+	display: inline-flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: var(--space-3);
+	border-radius: var(--radius-sm);
+	color: var(--color-text);
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	text-decoration: none;
+	white-space: nowrap;
 }
 
-/* Change styles for span and cancel button on extra small screens */
-@media screen and (max-width: 300px) {
-  span.psw {
-     display: block;
-     float: none;
-  }
+.site-header__logo {
+	display: grid;
+	place-items: center;
+	width: 2rem;
+	height: 2rem;
+	border-radius: var(--radius-sm);
+	background: linear-gradient(135deg, #7c80f7, #5458e2);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), var(--shadow-sm);
+	color: #fff;
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+}
+
+.menu {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	gap: var(--space-1);
+	min-width: 0;
+}
+
+.menu__link {
+	display: inline-flex;
+	align-items: center;
+	min-height: 2.25rem;
+	padding: 0 var(--space-3);
+	border-radius: var(--radius-sm);
+	color: var(--color-text-muted);
+	font-size: var(--text-sm);
+	font-weight: 500;
+	text-decoration: none;
+	white-space: nowrap;
+	transition: color var(--dur-fast) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+
+/*
+ * Odkazy na nedostupné stránky skrývá js/auth-ui.js atributem hidden.
+ * Vlastní "display" by jinak přebilo výchozí pravidlo prohlížeče.
+ */
+.menu__link[hidden] {
+	display: none;
+}
+
+.menu__link:hover {
+	background: rgba(255, 255, 255, 0.05);
+	color: var(--color-text);
+}
+
+.menu__link.active {
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--color-text);
+}
+
+.header-controls {
+	display: flex;
+	flex: 0 0 auto;
+	align-items: center;
+	gap: var(--space-2);
+	margin-left: auto;
+}
+
+/* Tlačítko menu (hamburger), viditelné jen na úzkých obrazovkách. */
+.menu__toggler {
+	position: relative;
+	display: none;
+	flex: 0 0 auto;
+	width: 2.5rem;
+	height: 2.5rem;
+	border: 1px solid var(--color-border-strong);
+	border-radius: var(--radius-full);
+	background: var(--color-surface);
+	color: var(--color-text);
+	transition: background-color var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
+}
+
+.menu__toggler:hover {
+	border-color: rgba(255, 255, 255, 0.22);
+	background: var(--color-surface-3);
+}
+
+.menu__toggler span,
+.menu__toggler span::before,
+.menu__toggler span::after {
+	position: absolute;
+	width: 1.125rem;
+	height: 2px;
+	border-radius: 2px;
+	background: currentColor;
+	transition: transform var(--dur) var(--ease), background-color var(--dur-fast) var(--ease);
+}
+
+.menu__toggler span {
+	top: calc(50% - 1px);
+	left: calc(50% - 0.5625rem);
+}
+
+.menu__toggler span::before,
+.menu__toggler span::after {
+	content: "";
+	left: 0;
+}
+
+.menu__toggler span::before {
+	transform: translateY(-6px);
+}
+
+.menu__toggler span::after {
+	transform: translateY(6px);
+}
+
+.menu__toggler.active span {
+	background: transparent;
+}
+
+.menu__toggler.active span::before {
+	transform: rotate(45deg);
+}
+
+.menu__toggler.active span::after {
+	transform: rotate(-45deg);
+}
+
+/*
+ * Sedm odkazů se vedle značky a ovládání vejde od šířky 64em. Pod ní se
+ * navigace změní na panel, který se rozbalí pod lištou (js/menu.js).
+ */
+@media (max-width: 63.99em) {
+	.site-header__inner {
+		column-gap: var(--space-2);
+	}
+
+	.menu__toggler {
+		display: inline-flex;
+		order: 3;
+	}
+
+	.header-controls {
+		order: 2;
+	}
+
+	.menu {
+		position: absolute;
+		top: 100%;
+		left: 0;
+		right: 0;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 2px;
+		padding: var(--space-3) var(--gutter) var(--space-5);
+		border-bottom: 1px solid var(--color-border-strong);
+		background: rgb(14, 16, 22);
+		box-shadow: var(--shadow-lg);
+		visibility: hidden;
+		opacity: 0;
+		transform: translateY(-6px);
+		transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease), visibility 0s linear var(--dur);
+	}
+
+	.menu.active {
+		visibility: visible;
+		opacity: 1;
+		transform: none;
+		transition-delay: 0s;
+	}
+
+	.menu__link {
+		min-height: 2.75rem;
+		padding: 0 var(--space-4);
+		font-size: var(--text-base);
+	}
+}
+
+/* Na nejužších displejích zůstane ze značky jen logo. */
+@media (max-width: 22.5em) {
+	.site-header__name {
+		display: none;
+	}
 }

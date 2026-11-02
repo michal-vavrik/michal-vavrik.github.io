@@ -1,7 +1,6 @@
 /**
  * Doplňkové efekty stránky CV: dopočítání délky praxe, animované statistiky,
- * postupné zobrazování obsahu při scrollování, interaktivní náklon fotky,
- * ukazatel postupu čtení a tisk.
+ * postupné zobrazování obsahu při scrollování, ukazatel postupu čtení a tisk.
  *
  * Všechny animace respektují nastavení `prefers-reduced-motion`.
  */
@@ -167,36 +166,6 @@
 		});
 	}
 
-	/* --- Interaktivní náklon fotky a zář sledující kurzor --- */
-
-	function initHeroInteraction() {
-		var hero = document.querySelector('.cv-hero');
-		var photo = document.querySelector('.cv-hero__photo-img');
-		if (!hero || !photo || prefersReducedMotion) {
-			return;
-		}
-		if (!window.matchMedia('(pointer: fine)').matches) {
-			return;
-		}
-
-		hero.addEventListener('mousemove', function (event) {
-			var rect = hero.getBoundingClientRect();
-			var x = (event.clientX - rect.left) / rect.width;
-			var y = (event.clientY - rect.top) / rect.height;
-
-			hero.style.setProperty('--spot-x', (x * 100) + '%');
-			hero.style.setProperty('--spot-y', (y * 100) + '%');
-
-			var rotateY = (x - 0.5) * 10;
-			var rotateX = (0.5 - y) * 10;
-			photo.style.transform = 'perspective(600px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg)';
-		});
-
-		hero.addEventListener('mouseleave', function () {
-			photo.style.transform = '';
-		});
-	}
-
 	/* --- Ukazatel postupu čtení stránky --- */
 
 	function initScrollProgress() {
@@ -231,7 +200,6 @@
 	renderDuration();
 	setupStats();
 	initReveal();
-	initHeroInteraction();
 	initScrollProgress();
 	initPrintButton();
 
