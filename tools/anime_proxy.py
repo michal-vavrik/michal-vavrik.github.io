@@ -1285,8 +1285,6 @@ def run_check(config, transport=http_get_once, out=print):
 # --diag: podrobný výpis pro hledání potíží (přesměrování, Cloudflare, obrázky).
 DIAG_MAX_FAVORITES = 3
 DIAG_MAX_NAMED = 5
-# Python EXCEPTION_ANIME (AnimeList.pyw ř. 63), stejně jako v js/anime-sync.js.
-DIAG_EXCEPTION_ANIME = ("Owari no Seraph: Nagoja kessen hen",)
 # Python GetFavorites() (AnimeList.pyw ř. 1299-1303) ve tvaru parseFavorites() z js/anime-sync.js.
 _DIAG_FAVORITES_SECTIONS = (
     re.compile(r'<div id="favorites"[\s\S]*?<div id="planned"'),
@@ -1483,7 +1481,7 @@ def run_diag(config, names=(), data_path=DEFAULT_DATA_FILE, transport=http_get_o
         out("Konec diagnostiky.")
         return
     variant, rows = favorites
-    new = [row for row in rows if row[0] not in known and row[0] not in DIAG_EXCEPTION_ANIME]
+    new = [row for row in rows if row[0] not in known]
     out("  Oblíbených: %d (varianta: %s), z toho nových (nejsou v datovém souboru): %d" % (len(rows), variant, len(new)))
     for name in [row[0] for row in new[:20]]:
         out("    nové: %s" % _diag_text(name, 120))

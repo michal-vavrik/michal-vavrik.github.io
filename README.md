@@ -36,8 +36,9 @@ nejde (např. „Mashle“ má adresu `mashle-2023`). Adresy současných anime 
 již doplněné z veřejného katalogu sledujserialy.io: odkazy fungují hned
 po načtení stránky, bez pomocného programu nebo spuštění aktualizace.
 Anime s chybějící či neplatnou adresou má obrázek bez odkazu; adresa se nehádá.
-To se aktuálně týká „Harem Camp!“ a „Futoku no Guild“, které se nepodařilo
-dohledat ve veřejném katalogu ani vyhledávání cílového webu.
+To se aktuálně týká „Owari no Seraph: Nagoja kessen hen“, „Harem Camp!“ a
+„Futoku no Guild“, které se nepodařilo dohledat ve veřejném katalogu ani
+vyhledávání cílového webu.
 
 Tlačítko **Aktualizovat** otevře stejné volby jako desktopový skript
 `AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, Seznam

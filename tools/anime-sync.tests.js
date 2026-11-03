@@ -162,7 +162,6 @@ window.AnimeSyncTests = (function () {
 		runner.equal('nextNumber: obrázky na disku mají přednost', Sync.nextNumber([{ Number: '3', Image: '3' }], 30), 31);
 		runner.equal('nextNumber: neplatná čísla se přeskočí', Sync.nextNumber([{ Number: 'x', Image: '' }], 7), 8);
 
-		runner.equal('výjimka Owari no Seraph je v seznamu', Sync.EXCEPTION_ANIME.indexOf('Owari no Seraph: Nagoja kessen hen') !== -1, true);
 		runner.equal('adresa oblíbených', Sync.FAVORITES_URL, 'https://sledujserialy.io/ucet/');
 	}
 
@@ -194,7 +193,8 @@ window.AnimeSyncTests = (function () {
 
 		var fresh = Sync.getNewFavorites([{ Name: 'A' }, { Name: 'B' }, { Name: 'Owari no Seraph: Nagoja kessen hen' }, { Name: 'C' }],
 			[{ FavoriteName: 'A' }, { FavoriteName: 'C' }]);
-		runner.equal('getNewFavorites: vynechá známá anime a výjimky', fresh.map(function (item) { return item.Name; }), ['B']);
+		runner.equal('getNewFavorites: vynechá pouze známá anime', fresh.map(function (item) { return item.Name; }),
+			['B', 'Owari no Seraph: Nagoja kessen hen']);
 
 		var urlNames = Sync.getFavoriteUrlNames([
 			{ Name: 'A', AnimeUrlName: 'a-serial' },
@@ -801,10 +801,6 @@ window.AnimeSyncTests = (function () {
 		malId: '444', malSlug: 'New_B', malScore: '7.5'
 	};
 	var KNOWN_FAVORITE = { name: 'Known', slug: 'known', season: '01', episode: '12', image: '/u/known.jpg', finished: true };
-	var EXCEPTION_FAVORITE = {
-		name: 'Owari no Seraph: Nagoja kessen hen', slug: 'owari', season: '01', episode: '01', image: '/u/o.jpg', finished: false
-	};
-
 	function knownItems() {
 		// "Known" už FavoriteUrlName má (Seznam ji nemění); vlastní testy doplňování jsou níže.
 		return [
@@ -948,7 +944,7 @@ window.AnimeSyncTests = (function () {
 
 	function twoNewFavorites() {
 		var routes = {};
-		routes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE, SHOW_A, EXCEPTION_FAVORITE, SHOW_B]);
+		routes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE, SHOW_A, SHOW_B]);
 		addShowRoutes(routes, SHOW_A);
 		addShowRoutes(routes, SHOW_B);
 		return routes;
@@ -1005,7 +1001,7 @@ window.AnimeSyncTests = (function () {
 			},
 			function () {
 				var routes = {};
-				routes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE, EXCEPTION_FAVORITE]);
+				routes[Sync.FAVORITES_URL] = favoritesPage([KNOWN_FAVORITE]);
 				return runUpdate({ routes: routes }).then(function (run) {
 					runner.equal('bez nových anime: výsledek', run.result, { total: 0, added: [], linked: 0, savedTo: null });
 					runner.equal('bez nových anime: jen seznam oblíbených, žádný průběh ani zápis', [run.calls, run.events, run.kept, run.links],

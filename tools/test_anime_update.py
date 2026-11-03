@@ -188,9 +188,6 @@ def seed_item(number):
 
 SEED_DATA = {str(number): seed_item(number) for number in SEED_NUMBERS}
 KNOWN_FAVORITE = ("Known 9001", "known-9001", "/upload/serial/known.jpg", True)
-EXCEPTION_FAVORITE = ("Owari no Seraph: Nagoja kessen hen", "owari", "/upload/serial/owari.jpg", False)
-
-
 def expected_item(show, number, today):
     return {
         "Number": str(number), "FavoriteName": show["name"], "FavoriteUrlName": show["slug"], "CsfdID": show["csfd_id"],
@@ -338,7 +335,6 @@ class UpdateListTests(SiteBrowserCase):
         self.web.serve(FAVORITES_URL, favorites_page([
             KNOWN_FAVORITE,
             (SHOW_A["name"], SHOW_A["slug"], SHOW_A["image"], False),
-            EXCEPTION_FAVORITE,
             (SHOW_B["name"], SHOW_B["slug"], SHOW_B["image"], True),
         ]))
         self.web.serve_show(SHOW_A)
@@ -668,7 +664,7 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.read_data_file(), self.python_json(SEED_DATA))
 
     def test_list_update_without_new_favorites(self):
-        self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE, EXCEPTION_FAVORITE]))
+        self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE]))
         page = self.open_page(self.start_helper())
         page.evaluate(INFO_LOG_SCRIPT)
         self.expect_no_serial_link(page, "9001")
@@ -1782,7 +1778,7 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.remote_log(), [proxy.PUBLISH_MESSAGE, "init"])
 
         # Další aktualizace zprávu o publikování smaže.
-        self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE, EXCEPTION_FAVORITE]))
+        self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE]))
         self.run_list_update(page)
         expect(info).to_have_text("100.00% Žádné nové anime.")
         self.expect_unlocked(page)
@@ -1829,7 +1825,7 @@ class UpdateListTests(SiteBrowserCase):
         self.assertEqual(self.remote_log(), ["elsewhere", "init"])
 
         # Úspěšná aktualizace chybu Push smaže.
-        self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE, EXCEPTION_FAVORITE]))
+        self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE]))
         self.run_list_update(page)
         expect(page.locator("#anime-update-error")).to_be_hidden()
 
@@ -1872,6 +1868,23 @@ class UpdateListTests(SiteBrowserCase):
 class RepositoryImageLinkTests(SiteBrowserCase):
     """Odkazy musí fungovat i se skutečným anime.json, bez pomocníka a aktualizace."""
 
+    def test_owari_nagoya_is_inserted_and_image_names_match_numbers(self):
+        with open(os.path.join(ROOT, "data", "anime.json"), encoding="utf-8") as handle:
+            data = json.load(handle)
+        item = data["118"]
+        self.assertEqual(item["FavoriteName"], "Owari no Seraph: Nagoja kessen hen")
+        self.assertEqual(item["Image"], "118")
+        self.assertEqual(item["Date"], data["117"]["Date"])
+        self.assertEqual(item["State"], data["117"]["State"])
+        self.assertEqual((data["119"]["FavoriteName"], data["119"]["Image"]),
+                         ("Welcome to Demon School, Iruma-kun", "119"))
+        self.assertEqual((data["190"]["FavoriteName"], data["190"]["Image"]), ("Blood Lad", "190"))
+        self.assertEqual(data["191"]["FavoriteName"], "Zero no cukaima")
+        self.assertEqual(list(data), [str(number) for number in range(1, 324)])
+        self.assertTrue(all(item["Image"] == item["Number"] for item in data.values()))
+        self.assertTrue(all(os.path.isfile(os.path.join(ROOT, "img", "anime", item["Image"] + ".jpg"))
+                            for item in data.values()))
+
     def open_page(self, role="anime", width=1440):
         context = self.browser.new_context(viewport={"width": width, "height": 900},
                                            is_mobile=width < 500, has_touch=width < 500)
@@ -1889,7 +1902,7 @@ class RepositoryImageLinkTests(SiteBrowserCase):
     def test_repository_anime_have_links_without_update(self):
         with open(os.path.join(ROOT, "data", "anime.json"), encoding="utf-8") as handle:
             data = json.load(handle)
-        unavailable = {"181": "Harem Camp!", "185": "Futoku no Guild"}
+        unavailable = {"182": "Harem Camp!", "186": "Futoku no Guild"}
         missing = {number: item["FavoriteName"] for number, item in data.items() if not item.get("FavoriteUrlName")}
         self.assertEqual(missing, unavailable, "Dostupná anime musí mít odkazy už při prvním načtení.")
         expected = {}

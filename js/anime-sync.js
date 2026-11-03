@@ -23,9 +23,8 @@
  *    repozitáře. Pomocník proto vrátí i uložený obrázek a stránka si přidaná
  *    anime zapsaná do souboru i s obrázky drží v prohlížeči
  *    (js/anime-data.js keepAdded()), dokud je web nemá.
- *  - Číslo nové položky je nejvyšší dosavadní Number/Image + 1 (Python
- *    počítá `len(AnimeData) + 1 + len(EXCEPTION_ANIME)`, což u dat bez děr
- *    vyjde stejně) a bere v úvahu i obrázky, které už na disku jsou.
+ *  - Číslo nové položky je nejvyšší dosavadní Number/Image + 1 a bere v úvahu
+ *    i obrázky, které už na disku jsou.
  *  - Jakákoli chyba běh zastaví a zobrazí se; Python ji v pozadí spolkne.
  *  - Chybějící sekce oblíbených je chyba (Python by spadl na IndexError).
  *  - Když MyAnimeList při jednoznačném názvu rovnou přesměruje na stránku
@@ -81,9 +80,6 @@ window.AnimeSync = (function () {
 	var CSFD_FILM_URL = 'https://www.csfd.cz/film/';
 	var MAL_SEARCH_URL = 'https://myanimelist.net/anime.php?cat=anime&q=';
 	var MAL_ANIME_URL = 'https://myanimelist.net/anime/';
-
-	// Python EXCEPTION_ANIME (ř. 63) - seriály, které se nikdy nepřidávají.
-	var EXCEPTION_ANIME = ['Owari no Seraph: Nagoja kessen hen'];
 
 	// Python GetCsfdSerialID() (ř. 1398, 1407) - jediný ručně zadaný seriál.
 	var CSFD_ID_EXCEPTION_NAME = 'Ikenaikyo';
@@ -247,7 +243,7 @@ window.AnimeSync = (function () {
 			known.add(item.FavoriteName);
 		});
 		return favorites.filter(function (favorite) {
-			return !known.has(favorite.Name) && EXCEPTION_ANIME.indexOf(favorite.Name) === -1;
+			return !known.has(favorite.Name);
 		});
 	}
 
@@ -1148,7 +1144,6 @@ window.AnimeSync = (function () {
 
 	return {
 		FAVORITES_URL: FAVORITES_URL,
-		EXCEPTION_ANIME: EXCEPTION_ANIME,
 		pythonQuote: pythonQuote,
 		roundHalfEven: roundHalfEven,
 		formatDate: formatDate,
