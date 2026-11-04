@@ -119,19 +119,18 @@
 						<div class="tools__fields">
 							<div>
 								<label class="tools__label" for="collection-value-length" data-i18n="tools.collection.valueLength">Maximální délka hodnoty (value)</label>
-								<input class="tools__number" id="collection-value-length" type="number" min="0" max="1000000" step="1" required>
+								<input class="tools__number" id="collection-value-length" type="number" min="0" max="10000000" step="1" required>
 							</div>
 							<div>
 								<label class="tools__label" for="collection-text-length" data-i18n="tools.collection.textLength">Maximální délka textu</label>
-								<input class="tools__number" id="collection-text-length" type="number" min="0" max="1000000" step="1" required>
+								<input class="tools__number" id="collection-text-length" type="number" min="0" max="10000000" step="1" required>
 							</div>
 							<div>
 								<label class="tools__label" for="collection-count" data-i18n="tools.generator.count">Max počet prvků</label>
-								<input class="tools__number" id="collection-count" type="number" min="0" max="1000000" step="1" required>
+								<input class="tools__number" id="collection-count" type="number" min="0" max="10000000" step="1" required>
 							</div>
 						</div>
-						<p class="tools__hint" data-i18n="tools.generator.limit">Výstup bez bílých znaků, maximálně 1 000 000 znaků.</p>
-						<p class="tools__error" id="collection-error" role="alert" data-i18n="tools.generator.tooLarge" hidden>Výsledek překračuje limit 1 000 000 znaků. Snižte délky nebo počet prvků.</p>
+						<p class="tools__error" id="collection-error" role="alert" data-i18n="tools.generator.tooLarge" hidden>Výsledek překračuje limit 10 000 000 znaků. Snižte délky nebo počet prvků.</p>
 						<button class="tools__clear" type="submit" data-i18n="tools.generator.generate">Generovat</button>
 					</form>
 				</section>
@@ -149,20 +148,18 @@
 						<div class="tools__fields">
 							<div>
 								<label class="tools__label" for="table-index-length" data-i18n="tools.table.indexLength">Max délka indexu</label>
-								<input class="tools__number" id="table-index-length" type="number" min="1" max="1000000" step="1" required>
+								<input class="tools__number" id="table-index-length" type="number" min="1" max="10000000" step="1" required>
 							</div>
 							<div>
 								<label class="tools__label" for="table-count" data-i18n="tools.generator.count">Max počet prvků</label>
-								<input class="tools__number" id="table-count" type="number" min="0" max="1000000" step="1" required>
+								<input class="tools__number" id="table-count" type="number" min="0" max="10000000" step="1" required>
 							</div>
 						</div>
 						<div class="tools__checkboxes">
 							<label><input id="table-visible" type="checkbox"> Visible</label>
 							<label><input id="table-disable" type="checkbox"> Disable</label>
 						</div>
-						<p class="tools__hint" data-i18n="tools.table.help">Generuje vybraný typ konfigurace se zadaným počtem prvků. Index opakuje číslice 0123456789; vybrané příznaky mají hodnotu false. Jde o vzorek pro výpočet délky, nikoli platný JSON s číselným indexem.</p>
-						<p class="tools__hint" data-i18n="tools.generator.limit">Výstup bez bílých znaků, maximálně 1 000 000 znaků.</p>
-						<p class="tools__error" id="table-error" role="alert" data-i18n="tools.generator.tooLarge" hidden>Výsledek překračuje limit 1 000 000 znaků. Snižte délky nebo počet prvků.</p>
+						<p class="tools__error" id="table-error" role="alert" data-i18n="tools.generator.tooLarge" hidden>Výsledek překračuje limit 10 000 000 znaků. Snižte délky nebo počet prvků.</p>
 						<button class="tools__clear" type="submit" data-i18n="tools.generator.generate">Generovat</button>
 					</form>
 				</section>
@@ -173,6 +170,6 @@
 		<script src="js/lang-switcher.js"></script>
 		<script src="js/auth-ui.js?v=anime-role-1"></script>
 		<script src="js/menu.js?v=redesign-1"></script>
-		<script src="js/character-counter.js?v=5"></script>
+		<script src="js/character-counter.js?v=6"></script>
 	</body>
 </html>

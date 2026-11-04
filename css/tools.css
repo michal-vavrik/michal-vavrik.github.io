@@ -169,7 +169,6 @@
 	accent-color: var(--color-accent);
 }
 
-.tools__hint,
 .tools__error {
 	margin: var(--space-3) 0;
 	font-size: var(--text-sm);

@@ -40,7 +40,7 @@
 		textInput.focus();
 	});
 
-	var maxOutputLength = 1000000;
+	var maxOutputLength = 10000000;
 	var collectionForm = document.getElementById('item-collection-form');
 	var tableForm = document.getElementById('table-configuration-form');
 	var tabs = Array.from(document.querySelectorAll('.tools__tab'));
