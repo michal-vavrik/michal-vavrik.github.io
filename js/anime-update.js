@@ -8,11 +8,10 @@
  * ukazuje průběh a řazení hlavičky je zamčené. Po dokončení zůstane výsledek
  * 2 s vidět (Python Timer(2, ...), ř. 567) a teprve potom se vše odemkne.
  *
- * Zapojené jsou "Zhlédnuté epizody" (Python UpdateWatched), "ČSFD
- * hodnocení" (Python UpdateCSFD), "MAL hodnocení" (Python UpdateMAL) a
- * "Seznam" (js/anime-sync.js, Python UpdateAnimeList); "Všechno" je vidět,
- * ale neaktivní. Nové anime (Seznam) i nová hodnocení a zhlédnuté epizody se
- * na stránce ukážou hned u každého anime, ne až po skončení celé aktualizace
+ * "Všechno" spouští postupně Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení
+ * a Seznam, stejně jako Python aUpdateAllPBClicked(). Nové anime (Seznam) i
+ * nová hodnocení a zhlédnuté epizody se na stránce ukážou hned u každého anime,
+ * ne až po skončení celé aktualizace
  * (Python překreslí řádky až v Update*Done()); po dokončení se seznam ještě
  * jednou celý překreslí. Seznam navíc hned po načtení oblíbených udělá
  * z obrázků anime v oblíbených odkazy na sledujserialy.io (FavoriteUrlName,
@@ -53,6 +52,7 @@ window.AnimeUpdate = (function () {
 	var actionButtons = [];
 	var actions = {};
 	var doneDelayMs = DEFAULT_DONE_DELAY_MS;
+	var phaseDelayMs = 1000;
 
 	var ready = false;
 	var editMode = false;
@@ -74,6 +74,7 @@ window.AnimeUpdate = (function () {
 	// {action, skipped, notInFile} po jinak dokončené aktualizaci hodnocení nebo
 	// zhlédnutých epizod; souhrn zůstane vidět do další aktualizace.
 	var skippedNotice = null;
+	var allSkippedNotices = [];
 
 	function byId(id) {
 		return document.getElementById(id);
@@ -178,8 +179,15 @@ window.AnimeUpdate = (function () {
 		var text = '';
 		if (failure) {
 			text = errorMessage(failure);
-		} else if (skippedNotice) {
-			text = skippedMessage(skippedNotice);
+			if (allSkippedNotices.length > 0) {
+				text += ' ' + allSkippedNotices.map(skippedMessage).join(' ');
+			}
+		} else {
+			var notices = allSkippedNotices.slice();
+			if (skippedNotice) {
+				notices.push(skippedNotice);
+			}
+			text = notices.map(skippedMessage).join(' ');
 		}
 		els.error.textContent = text;
 		els.error.hidden = text === '';
@@ -237,6 +245,7 @@ window.AnimeUpdate = (function () {
 		currentAction = action;
 		failure = null;
 		skippedNotice = null;
+		allSkippedNotices = [];
 		pushResult = null;
 		progress = { action: action, kind: 'start', percent: 0, count: 0 };
 		renderError();
@@ -271,6 +280,18 @@ window.AnimeUpdate = (function () {
 		busy = false;
 		refreshControls();
 		restoreFocus();
+	}
+
+	function rememberSkipped(action, result) {
+		if (result.failures.length > 0 || result.notInFile.length > 0) {
+			allSkippedNotices.push({
+				action: action, skipped: result.failures, notInFile: result.notInFile
+			});
+			if (window.console && typeof window.console.warn === 'function') {
+				window.console.warn(action + ' not updated for:', result.failures, 'not in data file:', result.notInFile);
+			}
+			renderError();
+		}
 	}
 
 	/** Aktualizovat -> Seznam (Python aUpdateListPBClicked(), ř. 512-517). */
@@ -309,6 +330,132 @@ window.AnimeUpdate = (function () {
 		}, function (error) {
 			var keptKey = 'anime.update.list.kept' + (error && error.savedTo === 'file' ? 'File' : 'Unsaved');
 			fail(error, added, keptKey);
+		});
+	}
+
+	/**
+	 * Aktualizovat -> Všechno (Python UpdateAll): zhlédnuté epizody, ČSFD,
+	 * MAL a nakonec Seznam. Každý krok provede a uloží samostatně jako
+	 * odpovídající jednotlivá tlačítka.
+	 */
+	function runAll() {
+		if (busy || !ready || editMode) {
+			return;
+		}
+		begin('watched');
+		var phases = [
+			{ action: 'watched', update: window.AnimeSync.updateWatched },
+			{ action: 'csfd', update: window.AnimeSync.updateCsfd },
+			{ action: 'mal', update: window.AnimeSync.updateMal }
+		];
+
+		function setPhase(action) {
+			currentAction = action;
+			progress = { action: action, kind: 'start', percent: 0, count: 0 };
+			renderInfo();
+		}
+
+		function waitBetweenPhases() {
+			return new Promise(function (resolve) {
+				window.setTimeout(resolve, phaseDelayMs);
+			});
+		}
+
+		function updateItems(phase) {
+			return Promise.resolve().then(function () {
+				return phase.update({
+					proxy: window.AnimeProxy,
+					data: options.data,
+					onProgress: function (percent) {
+						progress = { action: phase.action, kind: 'progress', percent: percent, count: 0 };
+						renderInfo();
+					},
+					onItemUpdated: function (item, field) {
+						if (typeof options.onItemUpdated === 'function') {
+							options.onItemUpdated(item, field);
+						}
+					}
+				});
+			}).then(function (result) {
+				renderAllItems();
+				rememberSkipped(phase.action, result);
+				progress = { action: phase.action, kind: 'done', percent: 100, count: result.total };
+				renderInfo();
+				return result;
+			});
+		}
+
+		function updateList() {
+			var added = 0;
+			return Promise.resolve().then(function () {
+				return window.AnimeSync.updateList({
+					proxy: window.AnimeProxy,
+					data: options.data,
+					onTotal: function (total) {
+						if (total > 0) {
+							progress = { action: 'list', kind: 'progress', percent: 0, count: total };
+							renderInfo();
+						}
+					},
+					onProgress: function (percent) {
+						if (progress && progress.kind === 'progress') {
+							progress.percent = percent;
+							renderInfo();
+						}
+					},
+					onItemsLinked: function (items) {
+						options.onItemsChanged(items);
+					},
+					onItemAdded: function (item, items) {
+						added += 1;
+						options.onItemsChanged(items);
+					}
+				});
+			}).then(function (result) {
+				return { result: result, added: added };
+			}, function (error) {
+				error.added = added;
+				throw error;
+			});
+		}
+
+		function runPhase(index) {
+			if (index === phases.length) {
+				setPhase('list');
+				return updateList().then(function (outcome) {
+					progress = { action: 'list', kind: 'done', percent: 100, count: outcome.result.total };
+					renderInfo();
+					finish(outcome.result.total);
+				});
+			}
+			var phase = phases[index];
+			if (index > 0) {
+				setPhase(phase.action);
+			}
+			return updateItems(phase).then(function () {
+				return waitBetweenPhases();
+			}).then(function () {
+				return runPhase(index + 1);
+			});
+		}
+
+		runPhase(0).catch(function (error) {
+			var kept;
+			var keptKey;
+			if (currentAction === 'list') {
+				kept = error && error.added || 0;
+				keptKey = 'anime.update.list.kept' + (error && error.savedTo === 'file' ? 'File' : 'Unsaved');
+			} else {
+				kept = error && error.updated || 0;
+				var keptBase = currentAction === 'watched'
+					? 'anime.update.watched.kept'
+					: 'anime.update.error.keptRatings';
+				keptKey = keptBase + (error && error.savedTo === 'file' ? 'File' : 'Unsaved');
+			}
+			if (kept > 0) {
+				renderAllItems();
+			}
+			fail(error, kept, keptKey);
 		});
 	}
 
@@ -417,11 +564,13 @@ window.AnimeUpdate = (function () {
 	 * @param {function(Object, string)} [opts.onItemUpdated] - překreslí jednu
 	 *     hodnotu (položka, název pole) hned po jejím zjištění (hodnocení, zhlédnuté epizody)
 	 * @param {number} [opts.doneDelayMs] - jak dlouho zůstane vidět výsledek (výchozí 2000)
+	 * @param {number} [opts.phaseDelayMs] - prodleva mezi kroky Všechno (výchozí 1000)
 	 * @returns {boolean} false, pokud stránka nemá potřebné prvky
 	 */
 	function init(opts) {
 		options = opts;
 		doneDelayMs = typeof opts.doneDelayMs === 'number' ? opts.doneDelayMs : DEFAULT_DONE_DELAY_MS;
+		phaseDelayMs = typeof opts.phaseDelayMs === 'number' ? opts.phaseDelayMs : 1000;
 		els = {
 			toggle: byId('anime-update-toggle'),
 			menu: byId('anime-update-menu'),
@@ -438,8 +587,7 @@ window.AnimeUpdate = (function () {
 			els.push.addEventListener('click', runPush);
 		}
 
-		// "Všechno" zatím zapojené není; jeho tlačítko je neaktivní.
-		actions = { watched: runWatched, csfd: runCsfd, mal: runMal, list: runList };
+		actions = { watched: runWatched, csfd: runCsfd, mal: runMal, list: runList, all: runAll };
 		actionButtons = Array.prototype.slice.call(els.menu.querySelectorAll('[data-update-action]'));
 		actionButtons.forEach(function (button) {
 			var name = button.getAttribute('data-update-action');

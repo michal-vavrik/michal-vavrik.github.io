@@ -43,8 +43,9 @@ vyhledávání cílového webu.
 Tlačítko **Aktualizovat** otevře stejné volby jako desktopový skript
 `AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, Seznam
 a Všechno. Hotové jsou volby **Zhlédnuté epizody**, **ČSFD hodnocení**, **MAL
-hodnocení** a **Seznam**, Všechno je označené „Připravujeme“. Všechny potřebují
-pomocný program (viz níže), který výsledky zapisuje přímo do `data/anime.json`.
+hodnocení**, **Seznam** a **Všechno**. Všechno provede aktualizace postupně
+v pořadí Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení a Seznam. Všechny
+potřebují pomocný program (viz níže), který výsledky zapisuje přímo do `data/anime.json`.
 Tlačítko **Push** pak změny na váš pokyn commitne a pushne na GitHub (viz Push).
 Tlačítko **Upravit** zapne edit mód (viz Edit mód).
 
