@@ -64,6 +64,8 @@ window.SiteAuth = (function () {
 		'personal.html': [ROLES.FULL],
 		'cv.html': [ROLES.CV, ROLES.FULL],
 		'games.html': [ROLES.FULL],
+		'tools.html': [],
+		'character-counter.html': [],
 		'contact.html': [ROLES.FULL],
 		'anime.html': [ROLES.ANIME, ROLES.FULL]
 	};

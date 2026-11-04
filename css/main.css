@@ -432,6 +432,7 @@ body.home .site-header {
 	.games__title,
 	.contact__title,
 	.anime__title,
+	.tools__title,
 	.quiz__title {
 		display: none;
 	}

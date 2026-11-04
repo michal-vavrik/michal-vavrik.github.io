@@ -27,6 +27,8 @@
 		'personal.html': 'nav.personal',
 		'cv.html': 'nav.cv',
 		'games.html': 'nav.games',
+		'tools.html': 'nav.tools',
+		'character-counter.html': 'tools.counter.title',
 		'snake.html': 'snake.title',
 		'tetris.html': 'games.tetris.name',
 		'memory.html': 'games.memory.name',
