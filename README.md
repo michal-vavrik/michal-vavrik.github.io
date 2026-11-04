@@ -1,5 +1,14 @@
 # michal-vavrik.github.io
 
+## Přihlášení
+
+Volba **Trvale přihlásit** uloží roli do `localStorage`, takže přihlášení zůstane
+zachované i po zavření záložky nebo prohlížeče. Bez této volby se role ukládá jen
+do `sessionStorage` dané záložky. Heslo se do úložiště neukládá. Odhlášení vymaže
+oba typy přihlášení; vymazání dat webu v prohlížeči odstraní i trvalé přihlášení.
+V anonymním režimu platí omezení ukládání dat prohlížeče. Jde pouze o klientskou
+ochranu statického webu, nikoli serverové zabezpečení.
+
 ## Hry
 
 Po přihlášení s plným přístupem otevřete [Hry](./games.html). Všechny hry běží přímo

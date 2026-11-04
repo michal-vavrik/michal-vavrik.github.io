@@ -247,6 +247,22 @@ body.auth-modal-open {
 	display: none;
 }
 
+.auth-form__remember {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	min-height: var(--control-height);
+	margin-top: var(--space-3);
+	font-size: var(--text-sm);
+	cursor: pointer;
+}
+
+.auth-form__remember input {
+	width: 1.25rem;
+	height: 1.25rem;
+	accent-color: var(--color-accent);
+}
+
 .auth-modal__submit,
 .auth-modal__logout {
 	width: 100%;

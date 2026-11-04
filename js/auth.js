@@ -195,32 +195,49 @@ window.SiteAuth = (function () {
 
 	/* --- Stav přihlášení --- */
 
-	function storage() {
+	function storage(persistent) {
 		try {
-			return window.sessionStorage;
+			return persistent ? window.localStorage : window.sessionStorage;
 		} catch (error) {
-			// Přístup k úložišti může být zakázán nastavením prohlížeče.
+			console.warn('Login storage is unavailable.', error);
 			return null;
 		}
 	}
 
-	function role() {
-		var store = storage();
+	function storedRole(persistent) {
+		var store = storage(persistent);
 		if (!store) {
 			return null;
 		}
-		var value = store.getItem(STORAGE_KEY);
+		var value;
+		try {
+			value = store.getItem(STORAGE_KEY);
+		} catch (error) {
+			console.warn('Unable to read login storage.', error);
+			return null;
+		}
 		return (value === ROLES.NV194 || value === ROLES.CV || value === ROLES.ANIME || value === ROLES.TOOLS || value === ROLES.FULL) ? value : null;
 	}
 
-	function setRole(value) {
-		var store = storage();
+	function role() {
+		return storedRole(true) || storedRole(false);
+	}
+
+	function setRole(value, persistent) {
+		var store = storage(persistent);
 		if (!store) {
-			return;
+			throw new Error('Login storage is unavailable.');
 		}
+		var otherStore = storage(!persistent);
 		if (value === null) {
 			store.removeItem(STORAGE_KEY);
+			if (otherStore) {
+				otherStore.removeItem(STORAGE_KEY);
+			}
 		} else {
+			if (otherStore) {
+				otherStore.removeItem(STORAGE_KEY);
+			}
 			store.setItem(STORAGE_KEY, value);
 		}
 	}
@@ -271,11 +288,11 @@ window.SiteAuth = (function () {
 	 * Ověří heslo a při shodě přihlásí.
 	 * @returns {string|null} přidělená role, nebo null při neplatném heslu
 	 */
-	function login(password) {
+	function login(password, persistent) {
 		var hash = sha256(String(password === undefined || password === null ? '' : password));
 		var granted = PASSWORD_HASHES[hash] || null;
 		if (granted !== null) {
-			setRole(granted);
+			setRole(granted, persistent === true);
 		}
 		return granted;
 	}
