@@ -178,14 +178,12 @@ window.I18n = (function () {
 			'auth.notice.pageRequiresLoginDirect': 'Stránka {page} vyžaduje přihlášení.',
 
 			'contact.title': 'Kontakt',
-			'contact.lead': 'Máte dotaz, nápad na spolupráci nebo jen chcete pozdravit? Neváhejte se ozvat – rád odpovím.',
 			'contact.email.label': 'E-mail',
 			'contact.location.label': 'Lokalita',
 			'contact.availability.label': 'Dostupnost',
 			'contact.availability.value': 'Po–Ne 0:00–23:59',
 
 			'games.title': 'Hry',
-			'games.lead': 'Malé hříčky naprogramované přímo pro tenhle web. Vyberte si dlaždici a pusťte se do hraní rovnou v prohlížeči.',
 			'games.badge.soon': 'Připravujeme',
 			'games.snake.name': 'Snake',
 			'games.snake.desc': 'Klasický had – sbírejte jídlo, rosťte a nenarazte do sebe ani do stěny.',
@@ -345,7 +343,6 @@ window.I18n = (function () {
 			'cv.language.en.level': 'Středně pokročilá (B1)',
 
 			'nv194.title': 'NV 194/2022 – Testové otázky',
-			'nv194.subtitle': 'Procvičování otázek k odborné způsobilosti v elektrotechnice.',
 			'nv194.status.loading': 'Načítám otázky…',
 			'nv194.nav.toggle': 'Přehled otázek',
 			'nv194.nav.expandAll': 'Rozbalit vše',
@@ -587,14 +584,12 @@ window.I18n = (function () {
 			'auth.notice.pageRequiresLoginDirect': 'The {page} page requires logging in.',
 
 			'contact.title': 'Contact',
-			'contact.lead': 'Have a question, a collaboration idea, or just want to say hi? Feel free to reach out – I\u2019d be happy to reply.',
 			'contact.email.label': 'E-mail',
 			'contact.location.label': 'Location',
 			'contact.availability.label': 'Availability',
 			'contact.availability.value': 'Mon–Sun 0:00–23:59',
 
 			'games.title': 'Games',
-			'games.lead': 'Small games coded right here for this site. Pick a tile and start playing straight in your browser.',
 			'games.badge.soon': 'Coming soon',
 			'games.snake.name': 'Snake',
 			'games.snake.desc': 'The classic snake – eat the food, grow longer and avoid the walls and your own tail.',
@@ -754,7 +749,6 @@ window.I18n = (function () {
 			'cv.language.en.level': 'Intermediate (B1)',
 
 			'nv194.title': 'NV 194/2022 – Test Questions',
-			'nv194.subtitle': 'Practice questions for professional competence in electrical engineering.',
 			'nv194.status.loading': 'Loading questions…',
 			'nv194.nav.toggle': 'Question overview',
 			'nv194.nav.expandAll': 'Expand all',

@@ -309,8 +309,9 @@ window.AnimeData = (function () {
 	 * @param {string} column - klíč sloupce (AnimeColumns.COLUMNS[].key)
 	 * @param {string} sortType - "int" | "str" | "date"
 	 * @param {boolean} ascending
+	 * @param {boolean} isRating - ratingové sloupce řadí neznámé hodnoty při vzestupném řazení na konec
 	 */
-	function sortItems(column, sortType, ascending) {
+	function sortItems(column, sortType, ascending, isRating) {
 		if (!state.items) {
 			return state.items;
 		}
@@ -318,6 +319,13 @@ window.AnimeData = (function () {
 		state.items.sort(function (a, b) {
 			var av, bv;
 			if (sortType === 'int') {
+				if (isRating && ascending) {
+					var aUnknown = String(a[column] || '').indexOf('?') !== -1;
+					var bUnknown = String(b[column] || '').indexOf('?') !== -1;
+					if (aUnknown !== bUnknown) {
+						return aUnknown ? 1 : -1;
+					}
+				}
 				av = parseIntValue(a[column]);
 				bv = parseIntValue(b[column]);
 			} else if (sortType === 'date') {

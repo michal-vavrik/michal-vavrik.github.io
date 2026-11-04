@@ -1,6 +1,6 @@
 @charset "utf-8";
 
-/* Rozcestník her: nadpis s úvodem a mřížka dlaždic s odkazy na jednotlivé hry. */
+/* Rozcestník her: mřížka dlaždic s odkazy na jednotlivé hry. */
 
 .games {
 	max-width: 68rem;
@@ -13,18 +13,11 @@
 	font-weight: 700;
 }
 
-.games__lead {
-	max-width: 60ch;
-	margin-top: var(--space-3);
-	color: var(--color-text-muted);
-	font-size: var(--text-lg);
-}
-
 .games__grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(min(100%, 14.5rem), 1fr));
 	gap: var(--space-4);
-	margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+	margin-top: var(--space-6);
 }
 
 .games__tile {

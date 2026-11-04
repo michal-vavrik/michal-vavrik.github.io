@@ -1928,6 +1928,30 @@ class RepositoryImageLinkTests(SiteBrowserCase):
                 self.assertEqual(errors, [])
                 self.assertFalse(any(":8787/" in url for url in requests), requests)
 
+    def test_ascending_rating_sorts_unknown_values_last(self):
+        with open(os.path.join(ROOT, "data", "anime.json"), encoding="utf-8") as handle:
+            data = json.load(handle)
+        page, errors, _requests = self.open_page()
+        for column in ("CsfdRating", "MalRating", "MyRating"):
+            with self.subTest(column=column):
+                header = page.locator('.anime__header-cell[data-column="%s"]' % column)
+                header.click()
+                header.click()
+                expect(header).to_have_attribute("data-sort", "asc")
+                actual = page.locator("#anime-list .anime-row").evaluate_all(
+                    "(rows, column) => rows.map(row => ({number: row.dataset.number, "
+                    "value: row.querySelector('.anime-row__cell--' + column).textContent.trim()}))",
+                    column,
+                )
+                values = [entry["value"] for entry in actual]
+                known = [int(value.replace("%", "")) for value in values if value != "?%"]
+                self.assertEqual(known, sorted(known))
+                first_unknown = next((index for index, value in enumerate(values) if value == "?%"),
+                                     len(values))
+                self.assertTrue(all(value == "?%" for value in values[first_unknown:]))
+                self.assertEqual(values.count("?%"), sum(item[column] == "?%" for item in data.values()))
+        self.assertEqual(errors, [])
+
     def test_existing_image_opens_serial_by_mouse_keyboard_and_touch(self):
         for width, action in ((1440, "click"), (1440, "keyboard"), (390, "tap")):
             with self.subTest(width=width, action=action):
@@ -1958,6 +1982,27 @@ class RepositoryImageLinkTests(SiteBrowserCase):
 
 class BrowserUnitTests(SiteBrowserCase):
     """Spustí tools/anime-sync-tests.html - testy js/anime-sync.js a js/anime-proxy.js bez sítě."""
+
+    def test_page_titles_only_show_when_navigation_collapses(self):
+        context = self.browser.new_context(viewport={"width": 1440, "height": 900})
+        self.addCleanup(context.close)
+        context.add_init_script("sessionStorage.setItem('site-auth-role', 'full');")
+        page = context.new_page()
+        pages = (
+            ("games.html", ".games__title"),
+            ("contact.html", ".contact__title"),
+            ("anime.html", ".anime__title"),
+            ("nv194.html", ".quiz__title"),
+        )
+        for path, title_selector in pages:
+            for width in (1440, 1024, 1023, 390):
+                with self.subTest(path=path, width=width):
+                    page.set_viewport_size({"width": width, "height": 900})
+                    page.goto(self.origin + "/" + path)
+                    title = page.locator(title_selector)
+                    self.assertEqual(title.is_visible(), width <= 1023)
+                    self.assertEqual(page.locator(".menu__toggler").is_visible(), width <= 1023)
+                    self.assertEqual(page.locator(".games__lead, .contact__lead, .quiz__subtitle").count(), 0)
 
     def test_unit_test_page_passes(self):
         context = self.browser.new_context()

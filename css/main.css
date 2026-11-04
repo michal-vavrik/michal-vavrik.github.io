@@ -427,6 +427,16 @@ body.home .site-header {
 	}
 }
 
+/* Na širokých obrazovkách roli hlavního nadpisu přebírá trvale viditelná navigace. */
+@media (min-width: 64em) {
+	.games__title,
+	.contact__title,
+	.anime__title,
+	.quiz__title {
+		display: none;
+	}
+}
+
 /* Na nejužších displejích zůstane ze značky jen logo. */
 @media (max-width: 22.5em) {
 	.site-header__name {
