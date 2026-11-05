@@ -457,7 +457,7 @@
 					sortState.ascending = !colDef.isRating;
 					sortState.column = column;
 				}
-				data.sortItems(column, colDef.sortType, sortState.ascending);
+				data.sortItems(column, colDef.sortType, sortState.ascending, colDef.isRating);
 				view.renderHeader(sortState);
 				// Po přeřazení znovu skryjeme neodpovídající řádky (Python Sort(), ř. 372-373).
 				renderItems();

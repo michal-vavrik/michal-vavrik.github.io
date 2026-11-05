@@ -8,7 +8,7 @@
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
 		<title>Tetris</title>
-		<link rel="stylesheet" type="text/css" href="css/main.css?v=redesign-1">
+		<link rel="stylesheet" type="text/css" href="css/main.css?v=redesign-2">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=redesign-1">
 		<link rel="stylesheet" type="text/css" href="css/i18n.css?v=redesign-1">
 		<link rel="stylesheet" type="text/css" href="css/game.css?v=redesign-1">
@@ -29,6 +29,7 @@
 					<a class="menu__link" href="personal.html" data-i18n="nav.personal">Personal</a>
 					<a class="menu__link" href="cv.html" data-i18n="nav.cv">CV</a>
 					<a class="menu__link active" aria-current="page" href="games.html" data-i18n="nav.games">Games</a>
+					<a class="menu__link" href="tools.html" data-i18n="nav.tools">Tools</a>
 					<a class="menu__link" href="contact.html" data-i18n="nav.contact">Contact</a>
 					<a class="menu__link" href="anime.html" data-i18n="nav.anime">Anime</a>
 					<a class="menu__link" href="nv194.html">NV 194</a>
@@ -67,6 +68,7 @@
 							<input type="password" id="auth-password" name="password" placeholder="Zadejte heslo" data-i18n-placeholder="auth.form.placeholder" autocomplete="current-password">
 							<button type="button" class="auth-form__reveal" id="auth-reveal" aria-pressed="false">Zobrazit</button>
 						</div>
+						<label class="auth-form__remember"><input type="checkbox" id="auth-remember"><span data-i18n="auth.form.remember">Trvale přihlásit</span></label>
 						<p class="auth-form__error" id="auth-error" role="alert" hidden></p>
 						<button type="submit" class="auth-modal__submit" data-i18n="auth.form.submit">Přihlásit se</button>
 					</form>
@@ -139,7 +141,7 @@
 			<p class="game__hint" data-i18n="tetris.hint">← → Move · ↑ Rotate · ↓ Soft drop · Space Hard drop · P Pause</p>
 		</main>
 
-		<script src="js/i18n.js?v=redesign-1"></script>
+		<script src="js/i18n.js?v=redesign-2"></script>
 		<script src="js/lang-switcher.js"></script>
 		<script src="js/auth-ui.js?v=anime-role-1"></script>
 		<script src="js/menu.js?v=redesign-1"></script>

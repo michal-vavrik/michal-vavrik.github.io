@@ -42,6 +42,8 @@ window.SiteAuth = (function () {
 		CV: 'cv',
 		/** Přístup pouze ke stránce Anime (bez akcí s anime listem). */
 		ANIME: 'anime',
+		/** Přístup pouze k nástrojům. */
+		TOOLS: 'tools',
 		/** Přístup ke všem stránkám webu. */
 		FULL: 'full'
 	};
@@ -51,6 +53,7 @@ window.SiteAuth = (function () {
 		'2b8e3bafa8a7584d01461cd401925f854c570d2a671be1489fc906c90de3f369': ROLES.NV194,
 		'0f5fed1791e0ff940512ad291bde94d79f4c52cf05a4f3e705588f3207373731': ROLES.CV,
 		'3683f802c2cef7bd5eff93d83b6319181faa8240e969a820ea3692e8beeb7ce3': ROLES.ANIME,
+		'f9d35d43770d39092a663e665e82ae1d84a9e0da3d0d10c407acada6a40cd281': ROLES.TOOLS,
 		'311ae06d6f82988a5bc4a38d0d922e95bb67479429ebd2b5e51ab4a56857d8b3': ROLES.FULL
 	};
 
@@ -64,6 +67,8 @@ window.SiteAuth = (function () {
 		'personal.html': [ROLES.FULL],
 		'cv.html': [ROLES.CV, ROLES.FULL],
 		'games.html': [ROLES.FULL],
+		'tools.html': [ROLES.TOOLS, ROLES.FULL],
+		'character-counter.html': [ROLES.TOOLS, ROLES.FULL],
 		'contact.html': [ROLES.FULL],
 		'anime.html': [ROLES.ANIME, ROLES.FULL]
 	};
@@ -190,32 +195,49 @@ window.SiteAuth = (function () {
 
 	/* --- Stav přihlášení --- */
 
-	function storage() {
+	function storage(persistent) {
 		try {
-			return window.sessionStorage;
+			return persistent ? window.localStorage : window.sessionStorage;
 		} catch (error) {
-			// Přístup k úložišti může být zakázán nastavením prohlížeče.
+			console.warn('Login storage is unavailable.', error);
 			return null;
 		}
+	}
+
+	function storedRole(persistent) {
+		var store = storage(persistent);
+		if (!store) {
+			return null;
+		}
+		var value;
+		try {
+			value = store.getItem(STORAGE_KEY);
+		} catch (error) {
+			console.warn('Unable to read login storage.', error);
+			return null;
+		}
+		return (value === ROLES.NV194 || value === ROLES.CV || value === ROLES.ANIME || value === ROLES.TOOLS || value === ROLES.FULL) ? value : null;
 	}
 
 	function role() {
-		var store = storage();
-		if (!store) {
-			return null;
-		}
-		var value = store.getItem(STORAGE_KEY);
-		return (value === ROLES.NV194 || value === ROLES.CV || value === ROLES.ANIME || value === ROLES.FULL) ? value : null;
+		return storedRole(true) || storedRole(false);
 	}
 
-	function setRole(value) {
-		var store = storage();
+	function setRole(value, persistent) {
+		var store = storage(persistent);
 		if (!store) {
-			return;
+			throw new Error('Login storage is unavailable.');
 		}
+		var otherStore = storage(!persistent);
 		if (value === null) {
 			store.removeItem(STORAGE_KEY);
+			if (otherStore) {
+				otherStore.removeItem(STORAGE_KEY);
+			}
 		} else {
+			if (otherStore) {
+				otherStore.removeItem(STORAGE_KEY);
+			}
 			store.setItem(STORAGE_KEY, value);
 		}
 	}
@@ -266,11 +288,11 @@ window.SiteAuth = (function () {
 	 * Ověří heslo a při shodě přihlásí.
 	 * @returns {string|null} přidělená role, nebo null při neplatném heslu
 	 */
-	function login(password) {
+	function login(password, persistent) {
 		var hash = sha256(String(password === undefined || password === null ? '' : password));
 		var granted = PASSWORD_HASHES[hash] || null;
 		if (granted !== null) {
-			setRole(granted);
+			setRole(granted, persistent === true);
 		}
 		return granted;
 	}

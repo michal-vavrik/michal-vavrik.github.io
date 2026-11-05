@@ -1,4 +1,4 @@
-"""Prohlížečové testy Aktualizovat -> Seznam, ČSFD hodnocení, MAL hodnocení a Zhlédnuté epizody
+"""Prohlížečové testy Aktualizovat -> Seznam, Všechno, ČSFD hodnocení, MAL hodnocení a Zhlédnuté epizody
 (anime.html, js/anime-*.js a tools/anime_proxy.py).
 
 Stránku řídí Playwright, pomocník běží ve stejném procesu a weby, ze kterých
@@ -451,10 +451,10 @@ class UpdateListTests(SiteBrowserCase):
         expect(toggle).to_have_attribute("aria-expanded", "true")
         expect(menu.locator("button")).to_have_text(
             ["Zhlédnuté epizody", "ČSFD hodnocení", "MAL hodnocení", "Seznam", "Všechno"])
-        # Zapojené jsou všechny volby kromě Všechno.
+        # Všechny aktualizace jsou zapojené.
         button = page.locator("#anime-update-all-btn")
-        expect(button).to_be_disabled()
-        expect(button).to_have_attribute("title", "Připravujeme")
+        expect(button).to_be_enabled()
+        expect(button).not_to_have_attribute("title", "Připravujeme")
         for name in ("watched", "csfd", "mal", "list"):
             button = page.locator("#anime-update-%s-btn" % name)
             expect(button).to_be_enabled()
@@ -468,6 +468,65 @@ class UpdateListTests(SiteBrowserCase):
         toggle.click()
         toggle.click()
         expect(menu).to_be_hidden()
+
+    def test_all_runs_updates_in_python_order_and_persists_each_result(self):
+        data = json.loads(json.dumps(SEED_DATA))
+        data["9001"].update(State="S01E01", CsfdRating="10%", MalRating="20%")
+        data["9002"].update(CsfdRating="30%", MalRating="40%")
+        data["9004"].update(CsfdRating="50%", MalRating="60%")
+        self.write_data_file(data)
+        self.web.serve(FAVORITES_URL, favorites_page([KNOWN_FAVORITE]))
+        for number, csfd_rating, mal_score in (
+                ("9001", "75%", "8.1"), ("9002", "76%", "8.2"), ("9004", "77%", "8.3")):
+            self.web.serve(CSFD_FILM_PREFIX + number,
+                           csfd_film_page("Known %s EN" % number, "Known %s JA" % number,
+                                          csfd_rating, "Popis"))
+            self.web.serve(MAL_ANIME_PREFIX + number, mal_anime_page(mal_score))
+
+        page = self.open_page(self.start_helper())
+        page.evaluate(INFO_LOG_SCRIPT)
+        page.locator("#anime-update-toggle").click()
+        page.locator("#anime-update-all-btn").click()
+        info = page.locator("#anime-update-info")
+        expect(info).to_have_text("100.00% Žádné nové anime.")
+        self.expect_unlocked(page)
+
+        self.assertEqual(self.web.urls, [
+            FAVORITES_URL,
+            *(CSFD_FILM_PREFIX + number for number in ("9001", "9002", "9004")),
+            *(MAL_ANIME_PREFIX + number for number in ("9001", "9002", "9004")),
+            FAVORITES_URL,
+        ])
+        log = page.evaluate("() => window.__infoLog")
+        phases = [
+            "Aktualizuji zhlédnuté epizody",
+            "Aktualizuji ČSFD hodnocení",
+            "Aktualizuji MAL hodnocení",
+            "Aktualizuji anime list",
+        ]
+        phase_indexes = [next(index for index, value in enumerate(log) if phase in value) for phase in phases]
+        self.assertEqual(phase_indexes, sorted(phase_indexes))
+
+        expected = json.loads(json.dumps(data))
+        expected["9001"].update(
+            State="DONE", FavoriteUrlName="known-9001",
+            CsfdRating="75%", MalRating="81%")
+        expected["9002"].update(CsfdRating="76%", MalRating="82%")
+        expected["9004"].update(CsfdRating="77%", MalRating="83%")
+        self.assertEqual(json.loads(self.read_data_file()), expected)
+        self.assertEqual(self.page_errors, [])
+        self.assertEqual(self.unexpected_console_errors(), [])
+
+    def test_all_stops_when_a_phase_fails(self):
+        with mock.patch.object(proxy, "VERSION", 0):
+            page = self.open_page(self.start_helper())
+            page.locator("#anime-update-toggle").click()
+            page.locator("#anime-update-all-btn").click()
+            expect(page.locator("#anime-update-error")).to_contain_text("zastaralý")
+            expect(page.locator("#anime-update-toggle")).to_be_enabled()
+
+        self.assertEqual(self.web.urls, [])
+        self.assertEqual(self.read_data_file(), self.python_json(SEED_DATA))
 
     def test_keyboard_opens_menu_and_focuses_first_available_button(self):
         page = self.open_page(self.start_helper())
@@ -838,7 +897,8 @@ class UpdateListTests(SiteBrowserCase):
         toggle.click()
         expect(page.locator("#anime-update-menu button")).to_have_text(
             ["Watched episodes", "CSFD rating", "MAL rating", "List", "All"])
-        expect(page.locator("#anime-update-all-btn")).to_have_attribute("title", "Coming soon")
+        expect(page.locator("#anime-update-all-btn")).to_be_enabled()
+        expect(page.locator("#anime-update-all-btn")).not_to_have_attribute("title", "Coming soon")
         expect(page.locator("#anime-update-menu")).to_have_attribute("aria-label", "Update options")
         expect(page.locator("#anime-push-btn")).to_have_text("Push")
         expect(page.locator("#anime-push-btn")).to_have_attribute("title", PUSH_TITLE_EN)
@@ -1928,6 +1988,30 @@ class RepositoryImageLinkTests(SiteBrowserCase):
                 self.assertEqual(errors, [])
                 self.assertFalse(any(":8787/" in url for url in requests), requests)
 
+    def test_ascending_rating_sorts_unknown_values_last(self):
+        with open(os.path.join(ROOT, "data", "anime.json"), encoding="utf-8") as handle:
+            data = json.load(handle)
+        page, errors, _requests = self.open_page()
+        for column in ("CsfdRating", "MalRating", "MyRating"):
+            with self.subTest(column=column):
+                header = page.locator('.anime__header-cell[data-column="%s"]' % column)
+                header.click()
+                header.click()
+                expect(header).to_have_attribute("data-sort", "asc")
+                actual = page.locator("#anime-list .anime-row").evaluate_all(
+                    "(rows, column) => rows.map(row => ({number: row.dataset.number, "
+                    "value: row.querySelector('.anime-row__cell--' + column).textContent.trim()}))",
+                    column,
+                )
+                values = [entry["value"] for entry in actual]
+                known = [int(value.replace("%", "")) for value in values if value != "?%"]
+                self.assertEqual(known, sorted(known))
+                first_unknown = next((index for index, value in enumerate(values) if value == "?%"),
+                                     len(values))
+                self.assertTrue(all(value == "?%" for value in values[first_unknown:]))
+                self.assertEqual(values.count("?%"), sum(item[column] == "?%" for item in data.values()))
+        self.assertEqual(errors, [])
+
     def test_existing_image_opens_serial_by_mouse_keyboard_and_touch(self):
         for width, action in ((1440, "click"), (1440, "keyboard"), (390, "tap")):
             with self.subTest(width=width, action=action):
@@ -1958,6 +2042,27 @@ class RepositoryImageLinkTests(SiteBrowserCase):
 
 class BrowserUnitTests(SiteBrowserCase):
     """Spustí tools/anime-sync-tests.html - testy js/anime-sync.js a js/anime-proxy.js bez sítě."""
+
+    def test_page_titles_only_show_when_navigation_collapses(self):
+        context = self.browser.new_context(viewport={"width": 1440, "height": 900})
+        self.addCleanup(context.close)
+        context.add_init_script("sessionStorage.setItem('site-auth-role', 'full');")
+        page = context.new_page()
+        pages = (
+            ("games.html", ".games__title"),
+            ("contact.html", ".contact__title"),
+            ("anime.html", ".anime__title"),
+            ("nv194.html", ".quiz__title"),
+        )
+        for path, title_selector in pages:
+            for width in (1440, 1024, 1023, 390):
+                with self.subTest(path=path, width=width):
+                    page.set_viewport_size({"width": width, "height": 900})
+                    page.goto(self.origin + "/" + path)
+                    title = page.locator(title_selector)
+                    self.assertEqual(title.is_visible(), width <= 1023)
+                    self.assertEqual(page.locator(".menu__toggler").is_visible(), width <= 1023)
+                    self.assertEqual(page.locator(".games__lead, .contact__lead, .quiz__subtitle").count(), 0)
 
     def test_unit_test_page_passes(self):
         context = self.browser.new_context()

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="theme-color" content="#0b0d12">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
+		<title>Character counter</title>
+		<link rel="stylesheet" type="text/css" href="css/main.css?v=redesign-2">
+		<link rel="stylesheet" type="text/css" href="css/auth.css?v=redesign-1">
+		<link rel="stylesheet" type="text/css" href="css/i18n.css?v=redesign-1">
+		<link rel="stylesheet" type="text/css" href="css/tools.css?v=8">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
+		<script src="js/auth.js?v=anime-role-1"></script>
+	</head>
+
+	<body class="subpage">
+		<header class="site-header">
+			<div class="site-header__inner">
+				<a class="site-header__brand" href="index.html" data-i18n-aria-label="nav.brand">
+					<span class="site-header__logo" aria-hidden="true">MV</span>
+					<span class="site-header__name">Michal Vavrík</span>
+				</a>
+				<button type="button" class="menu__toggler" aria-expanded="false" aria-controls="site-menu" aria-label="Menu" data-i18n-aria-label="nav.toggle"><span></span></button>
+				<nav class="menu" id="site-menu" data-i18n-aria-label="nav.label">
+					<a class="menu__link" href="index.html" data-i18n="nav.home">Home</a>
+					<a class="menu__link" href="personal.html" data-i18n="nav.personal">Personal</a>
+					<a class="menu__link" href="cv.html" data-i18n="nav.cv">CV</a>
+					<a class="menu__link" href="games.html" data-i18n="nav.games">Games</a>
+					<a class="menu__link active" aria-current="page" href="tools.html" data-i18n="nav.tools">Tools</a>
+					<a class="menu__link" href="contact.html" data-i18n="nav.contact">Contact</a>
+					<a class="menu__link" href="anime.html" data-i18n="nav.anime">Anime</a>
+					<a class="menu__link" href="nv194.html">NV 194</a>
+				</nav>
+				<div class="header-controls">
+					<div class="lang-switcher" id="lang-switcher">
+						<button type="button" class="lang-switcher__toggle" id="lang-switcher-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="lang-switcher-menu" data-i18n-aria-label="lang.switcher.label">
+							<span class="lang-switcher__code" id="lang-switcher-code">CS</span>
+							<span class="lang-switcher__caret" aria-hidden="true">▾</span>
+						</button>
+						<div class="lang-switcher__menu" id="lang-switcher-menu" role="menu" hidden>
+							<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="cs" data-i18n="lang.name.cs">Čeština</button>
+							<button type="button" class="lang-switcher__option" role="menuitemradio" data-lang="en" data-i18n="lang.name.en">English</button>
+						</div>
+					</div>
+
+					<button type="button" class="auth-btn" id="auth-btn" aria-haspopup="dialog" aria-controls="auth-modal">
+						<i class="fa fa-user auth-btn__icon" aria-hidden="true"></i>
+						<span class="auth-btn__label">Přihlásit</span>
+					</button>
+				</div>
+			</div>
+		</header>
+
+		<div class="auth-modal" id="auth-modal" hidden>
+			<div class="auth-modal__backdrop" data-auth-close></div>
+
+			<div class="auth-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title">
+				<button type="button" class="auth-modal__close" data-auth-close data-i18n-aria-label="auth.close">&times;</button>
+
+				<div class="auth-modal__icon" aria-hidden="true"><i class="fa fa-lock"></i></div>
+				<h2 class="auth-modal__title" id="auth-title" data-i18n="auth.title.login">Přihlášení</h2>
+				<p class="auth-modal__lead" data-i18n="auth.lead.login">Chráněné stránky jsou dostupné po zadání hesla.</p>
+
+				<p class="auth-modal__notice" id="auth-notice" hidden></p>
+
+				<div class="auth-panel" id="auth-login-panel">
+					<form id="auth-form" novalidate>
+						<label class="auth-form__label" for="auth-password" data-i18n="auth.form.label">Heslo</label>
+						<div class="auth-form__field">
+							<input type="password" id="auth-password" name="password" placeholder="Zadejte heslo" data-i18n-placeholder="auth.form.placeholder" autocomplete="current-password">
+							<button type="button" class="auth-form__reveal" id="auth-reveal" aria-pressed="false">Zobrazit</button>
+						</div>
+						<label class="auth-form__remember"><input type="checkbox" id="auth-remember"><span data-i18n="auth.form.remember">Trvale přihlásit</span></label>
+						<p class="auth-form__error" id="auth-error" role="alert" hidden></p>
+						<button type="submit" class="auth-modal__submit" data-i18n="auth.form.submit">Přihlásit se</button>
+					</form>
+				</div>
+
+				<div class="auth-panel" id="auth-status-panel" hidden>
+					<div class="auth-status__row">
+						<span class="auth-status__label" data-i18n="auth.status.role">Oprávnění:</span>
+						<span class="auth-status__value is-role" id="auth-status-role"></span>
+					</div>
+					<div class="auth-status__row">
+						<span class="auth-status__label" data-i18n="auth.status.pages">Dostupné stránky:</span>
+						<span class="auth-status__value" id="auth-status-pages"></span>
+					</div>
+					<button type="button" class="auth-modal__logout" id="auth-logout" data-i18n="auth.status.logout">Odhlásit se</button>
+				</div>
+			</div>
+		</div>
+
+		<main class="tools">
+			<h1 class="tools__page-title" data-i18n="tools.counter.title">Počítadlo znaků</h1>
+
+			<section class="tools__counter">
+				<label class="tools__label" for="character-counter-text" data-i18n="tools.counter.textLabel">Text</label>
+				<textarea class="tools__textarea" id="character-counter-text" data-i18n-placeholder="tools.counter.placeholder" placeholder="Vložte nebo napište text..."></textarea>
+				<div class="tools__footer">
+					<button type="button" class="tools__clear" id="character-counter-clear" data-i18n="tools.counter.clear">Smazat text</button>
+					<p class="tools__count">
+						<span data-i18n="tools.counter.countLabel">Počet znaků:</span>
+						<output id="character-counter-count" for="character-counter-text" aria-live="polite">0</output>
+					</p>
+				</div>
+			</section>
+
+			<div class="tools__generators">
+				<div class="tools__tabs" role="tablist" aria-label="Generátory" data-i18n-aria-label="tools.generator.tabs">
+					<button class="tools__tab" type="button" role="tab" id="collection-tab" aria-controls="collection-panel" aria-selected="true">Item collection</button>
+					<button class="tools__tab" type="button" role="tab" id="table-tab" aria-controls="table-panel" aria-selected="false" tabindex="-1">Table configuration</button>
+				</div>
+				<section class="tools__counter" id="collection-panel" role="tabpanel" aria-labelledby="collection-tab">
+					<h2 class="tools__counter-title" id="item-collection-title" data-i18n="tools.collection.title">Spočítat velikost item collection (data provider)</h2>
+					<form id="item-collection-form">
+						<div class="tools__fields">
+							<div>
+								<label class="tools__label" for="collection-value-length" data-i18n="tools.collection.valueLength">Maximální délka hodnoty (value)</label>
+								<input class="tools__number" id="collection-value-length" type="number" min="0" max="10000000" step="1" required>
+							</div>
+							<div>
+								<label class="tools__label" for="collection-text-length" data-i18n="tools.collection.textLength">Maximální délka textu</label>
+								<input class="tools__number" id="collection-text-length" type="number" min="0" max="10000000" step="1" required>
+							</div>
+							<div>
+								<label class="tools__label" for="collection-count" data-i18n="tools.generator.count">Max počet prvků</label>
+								<input class="tools__number" id="collection-count" type="number" min="0" max="10000000" step="1" required>
+							</div>
+						</div>
+						<p class="tools__error" id="collection-error" role="alert" data-i18n="tools.generator.tooLarge" hidden>Výsledek překračuje limit 10 000 000 znaků. Snižte délky nebo počet prvků.</p>
+						<button class="tools__clear" type="submit" data-i18n="tools.generator.generate">Generovat</button>
+					</form>
+					<section class="tools__declarations" id="collection-declarations" aria-labelledby="collection-declarations-title" hidden>
+						<div class="tools__declarations-header">
+							<h3 class="tools__declarations-title" id="collection-declarations-title" data-i18n="tools.collection.declarations">Deklarace konstant</h3>
+							<button class="tools__clear" type="button" id="collection-copy" data-i18n="tools.generator.copy">Kopírovat</button>
+						</div>
+						<pre class="tools__code"><code id="collection-declarations-code"></code></pre>
+						<p class="tools__data-size" aria-live="polite">
+							<span data-i18n="tools.collection.dataSize">Velikost SIZE_DATA_PROVIDER:</span>
+							<output id="collection-data-size"></output>
+						</p>
+						<p class="tools__copy-status" id="collection-copy-status" role="status" aria-live="polite" hidden></p>
+					</section>
+				</section>
+
+				<section class="tools__counter" id="table-panel" role="tabpanel" aria-labelledby="table-tab" hidden>
+					<h2 class="tools__counter-title" id="table-configuration-title" data-i18n="tools.table.title">Spočítat velikost table configuration</h2>
+					<form id="table-configuration-form">
+						<fieldset class="tools__configuration-type">
+							<legend class="tools__label" data-i18n="tools.table.type">Typ konfigurace</legend>
+							<div class="tools__checkboxes">
+								<label><input type="radio" name="table-type" value="specRows" checked required> specRows</label>
+								<label><input type="radio" name="table-type" value="specColumns"> specColumns</label>
+							</div>
+						</fieldset>
+						<div class="tools__fields">
+							<div>
+								<label class="tools__label" for="table-index-length" data-i18n="tools.table.indexLength">Max délka indexu</label>
+								<input class="tools__number" id="table-index-length" type="number" min="1" max="10000000" step="1" required>
+							</div>
+							<div>
+								<label class="tools__label" for="table-count" data-i18n="tools.generator.count">Max počet prvků</label>
+								<input class="tools__number" id="table-count" type="number" min="0" max="10000000" step="1" required>
+							</div>
+						</div>
+						<div class="tools__checkboxes">
+							<label><input id="table-visible" type="checkbox"> Visible</label>
+							<label><input id="table-disable" type="checkbox"> Disable</label>
+						</div>
+						<p class="tools__error" id="table-error" role="alert" data-i18n="tools.generator.tooLarge" hidden>Výsledek překračuje limit 10 000 000 znaků. Snižte délky nebo počet prvků.</p>
+						<button class="tools__clear" type="submit" data-i18n="tools.generator.generate">Generovat</button>
+					</form>
+					<section class="tools__declarations" id="table-declarations" aria-labelledby="table-declarations-title" hidden>
+						<div class="tools__declarations-header">
+							<h3 class="tools__declarations-title" id="table-declarations-title" data-i18n="tools.table.declarations">Deklarace konstant</h3>
+							<button class="tools__clear" type="button" id="table-copy" data-i18n="tools.generator.copy">Kopírovat</button>
+						</div>
+						<pre class="tools__code"><code id="table-declarations-code"></code></pre>
+						<p class="tools__data-size" aria-live="polite">
+							<span data-i18n="tools.table.dataSize">Velikost table configuration:</span>
+							<output id="table-data-size"></output>
+						</p>
+						<p class="tools__copy-status" id="table-copy-status" role="status" aria-live="polite" hidden></p>
+					</section>
+				</section>
+			</div>
+		</main>
+
+		<script src="js/i18n.js?v=redesign-2"></script>
+		<script src="js/lang-switcher.js"></script>
+		<script src="js/auth-ui.js?v=anime-role-1"></script>
+		<script src="js/menu.js?v=redesign-1"></script>
+		<script src="js/character-counter.js?v=8"></script>
+	</body>
+</html>

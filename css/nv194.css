@@ -41,15 +41,9 @@
 }
 
 .quiz__title {
+	margin-bottom: var(--space-6);
 	font-size: var(--text-3xl);
 	font-weight: 700;
-}
-
-.quiz__subtitle {
-	max-width: 60ch;
-	margin: var(--space-3) 0 var(--space-8);
-	color: var(--quiz-muted);
-	font-size: var(--text-lg);
 }
 
 .quiz__status {

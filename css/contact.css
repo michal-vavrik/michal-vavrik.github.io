@@ -1,6 +1,6 @@
 @charset "utf-8";
 
-/* Stránka Kontakt: nadpis s úvodem a karty s kontaktními údaji. */
+/* Stránka Kontakt: karty s kontaktními údaji. */
 
 .contact {
 	max-width: 68rem;
@@ -13,18 +13,11 @@
 	font-weight: 700;
 }
 
-.contact__lead {
-	max-width: 60ch;
-	margin-top: var(--space-3);
-	color: var(--color-text-muted);
-	font-size: var(--text-lg);
-}
-
 .contact__list {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
 	gap: var(--space-4);
-	margin-top: clamp(2rem, 1.5rem + 2vw, 3rem);
+	margin-top: var(--space-6);
 	list-style: none;
 }
 

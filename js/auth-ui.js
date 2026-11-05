@@ -19,6 +19,7 @@
 	ROLE_LABEL_KEYS[auth.ROLES.NV194] = 'auth.role.nv194';
 	ROLE_LABEL_KEYS[auth.ROLES.CV] = 'auth.role.cv';
 	ROLE_LABEL_KEYS[auth.ROLES.ANIME] = 'auth.role.anime';
+	ROLE_LABEL_KEYS[auth.ROLES.TOOLS] = 'auth.role.tools';
 	ROLE_LABEL_KEYS[auth.ROLES.FULL] = 'auth.role.full';
 
 	/* Jméno stránky NV 194 je jednotné v obou jazycích, ostatní se překládají stejně jako v nabídce. */
@@ -27,6 +28,8 @@
 		'personal.html': 'nav.personal',
 		'cv.html': 'nav.cv',
 		'games.html': 'nav.games',
+		'tools.html': 'nav.tools',
+		'character-counter.html': 'tools.counter.title',
 		'snake.html': 'snake.title',
 		'tetris.html': 'games.tetris.name',
 		'memory.html': 'games.memory.name',
@@ -43,6 +46,7 @@
 	var modal = document.getElementById('auth-modal');
 	var form = document.getElementById('auth-form');
 	var input = document.getElementById('auth-password');
+	var rememberInput = document.getElementById('auth-remember');
 	var errorEl = document.getElementById('auth-error');
 	var noticeEl = document.getElementById('auth-notice');
 	var loginPanel = document.getElementById('auth-login-panel');
@@ -105,11 +109,14 @@
 		}
 	}
 
-	function showError(message) {
+	var errorKey = 'auth.form.error';
+
+	function showError(message, key) {
 		if (!errorEl) {
 			return;
 		}
 		errorEl.textContent = message;
+		errorKey = key || 'auth.form.error';
 		errorEl.hidden = false;
 		input.setAttribute('aria-invalid', 'true');
 	}
@@ -213,7 +220,7 @@
 	/** Znovu přeloží texty, které jsou zobrazené v danou chvíli (chyba/hláška), pokud jsou vidět. */
 	function refreshTransientTexts() {
 		if (errorEl && !errorEl.hidden) {
-			errorEl.textContent = t('auth.form.error');
+			errorEl.textContent = t(errorKey);
 		}
 		if (noticeEl && !noticeEl.hidden && deniedNoticePage) {
 			noticeEl.textContent = t('auth.notice.pageRequiresLoginDirect', { page: pageLabel(deniedNoticePage) });
@@ -263,7 +270,14 @@
 	form.addEventListener('submit', function (event) {
 		event.preventDefault();
 
-		var granted = auth.login(input.value);
+		var granted;
+		try {
+			granted = auth.login(input.value, rememberInput && rememberInput.checked);
+		} catch (error) {
+			console.error('Unable to save login.', error);
+			showError(t('auth.form.storageError'), 'auth.form.storageError');
+			return;
+		}
 
 		if (granted === null) {
 			showError(t('auth.form.error'));
@@ -286,7 +300,13 @@
 
 	if (logoutBtn) {
 		logoutBtn.addEventListener('click', function () {
-			auth.logout();
+			try {
+				auth.logout();
+			} catch (error) {
+				console.error('Unable to clear login.', error);
+				setNotice(t('auth.form.storageError'));
+				return;
+			}
 			closeModal();
 
 			// Z chráněné stránky je nutné odejít, jinak by zůstala zobrazená.

@@ -1,5 +1,14 @@
 # michal-vavrik.github.io
 
+## Přihlášení
+
+Volba **Trvale přihlásit** uloží roli do `localStorage`, takže přihlášení zůstane
+zachované i po zavření záložky nebo prohlížeče. Bez této volby se role ukládá jen
+do `sessionStorage` dané záložky. Heslo se do úložiště neukládá. Odhlášení vymaže
+oba typy přihlášení; vymazání dat webu v prohlížeči odstraní i trvalé přihlášení.
+V anonymním režimu platí omezení ukládání dat prohlížeče. Jde pouze o klientskou
+ochranu statického webu, nikoli serverové zabezpečení.
+
 ## Hry
 
 Po přihlášení s plným přístupem otevřete [Hry](./games.html). Všechny hry běží přímo
@@ -43,8 +52,9 @@ vyhledávání cílového webu.
 Tlačítko **Aktualizovat** otevře stejné volby jako desktopový skript
 `AnimeList.pyw`: Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení, Seznam
 a Všechno. Hotové jsou volby **Zhlédnuté epizody**, **ČSFD hodnocení**, **MAL
-hodnocení** a **Seznam**, Všechno je označené „Připravujeme“. Všechny potřebují
-pomocný program (viz níže), který výsledky zapisuje přímo do `data/anime.json`.
+hodnocení**, **Seznam** a **Všechno**. Všechno provede aktualizace postupně
+v pořadí Zhlédnuté epizody, ČSFD hodnocení, MAL hodnocení a Seznam. Všechny
+potřebují pomocný program (viz níže), který výsledky zapisuje přímo do `data/anime.json`.
 Tlačítko **Push** pak změny na váš pokyn commitne a pushne na GitHub (viz Push).
 Tlačítko **Upravit** zapne edit mód (viz Edit mód).
 
