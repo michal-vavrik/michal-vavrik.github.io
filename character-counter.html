@@ -11,7 +11,7 @@
 		<link rel="stylesheet" type="text/css" href="css/main.css?v=redesign-2">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=redesign-1">
 		<link rel="stylesheet" type="text/css" href="css/i18n.css?v=redesign-1">
-		<link rel="stylesheet" type="text/css" href="css/tools.css?v=6">
+		<link rel="stylesheet" type="text/css" href="css/tools.css?v=8">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
 		<script src="js/auth.js?v=anime-role-1"></script>
@@ -134,6 +134,18 @@
 						<p class="tools__error" id="collection-error" role="alert" data-i18n="tools.generator.tooLarge" hidden>Výsledek překračuje limit 10 000 000 znaků. Snižte délky nebo počet prvků.</p>
 						<button class="tools__clear" type="submit" data-i18n="tools.generator.generate">Generovat</button>
 					</form>
+					<section class="tools__declarations" id="collection-declarations" aria-labelledby="collection-declarations-title" hidden>
+						<div class="tools__declarations-header">
+							<h3 class="tools__declarations-title" id="collection-declarations-title" data-i18n="tools.collection.declarations">Deklarace konstant</h3>
+							<button class="tools__clear" type="button" id="collection-copy" data-i18n="tools.generator.copy">Kopírovat</button>
+						</div>
+						<pre class="tools__code"><code id="collection-declarations-code"></code></pre>
+						<p class="tools__data-size" aria-live="polite">
+							<span data-i18n="tools.collection.dataSize">Velikost SIZE_DATA_PROVIDER:</span>
+							<output id="collection-data-size"></output>
+						</p>
+						<p class="tools__copy-status" id="collection-copy-status" role="status" aria-live="polite" hidden></p>
+					</section>
 				</section>
 
 				<section class="tools__counter" id="table-panel" role="tabpanel" aria-labelledby="table-tab" hidden>
@@ -163,6 +175,18 @@
 						<p class="tools__error" id="table-error" role="alert" data-i18n="tools.generator.tooLarge" hidden>Výsledek překračuje limit 10 000 000 znaků. Snižte délky nebo počet prvků.</p>
 						<button class="tools__clear" type="submit" data-i18n="tools.generator.generate">Generovat</button>
 					</form>
+					<section class="tools__declarations" id="table-declarations" aria-labelledby="table-declarations-title" hidden>
+						<div class="tools__declarations-header">
+							<h3 class="tools__declarations-title" id="table-declarations-title" data-i18n="tools.table.declarations">Deklarace konstant</h3>
+							<button class="tools__clear" type="button" id="table-copy" data-i18n="tools.generator.copy">Kopírovat</button>
+						</div>
+						<pre class="tools__code"><code id="table-declarations-code"></code></pre>
+						<p class="tools__data-size" aria-live="polite">
+							<span data-i18n="tools.table.dataSize">Velikost table configuration:</span>
+							<output id="table-data-size"></output>
+						</p>
+						<p class="tools__copy-status" id="table-copy-status" role="status" aria-live="polite" hidden></p>
+					</section>
 				</section>
 			</div>
 		</main>
@@ -171,6 +195,6 @@
 		<script src="js/lang-switcher.js"></script>
 		<script src="js/auth-ui.js?v=anime-role-1"></script>
 		<script src="js/menu.js?v=redesign-1"></script>
-		<script src="js/character-counter.js?v=6"></script>
+		<script src="js/character-counter.js?v=8"></script>
 	</body>
 </html>
