@@ -5812,5 +5812,41 @@
         "CsfdRating": "?%",
         "MalRating": "66%",
         "MyRating": "?%"
+    },
+    "324": {
+        "Number": "324",
+        "FavoriteName": "Lv999 no Murabito",
+        "FavoriteUrlName": "lv999-no-murabito-2026",
+        "CsfdID": "1859321",
+        "MalID": "62322",
+        "MalName": "Lv999 no Murabito",
+        "Image": "324",
+        "NameEn": "The Villager of Level 999",
+        "NameJa": "LV999の村人",
+        "Genres": "Animovaný\nFantasy\nDobrodružný\nKomedie\nAkční",
+        "Description": "Earthqualia je svět, kde se každý rodí s předurčenou třídou či rolí a kde dostáváte zkušenosti z boje, které vám zvyšují váš level. Je tedy už od narození jasné, kdo bude válečník, mág, hrdina a kdo má tu smůlu, že bude třeba obyčejný vesničan. Kódži Kagami se právě jako vesničan narodil a moc dobře ví, že jde o nejnuznější roli, jakou můžete ve společnosti mít a že jen málokdo se dostane dál než na pátý level. Po tragických událostech, díky kterým přišel o rodiče, se však Kódži rozhodl osudu vzepřít a začal s tréninkem a po letech potají dosáhl až na level 999. Jednoho dne se Kódži potkává s Alicí, dcerou krále démonů, která se snaží zachránit svého otce, který se z nenadání začal chovat velmi divně. Kódži se rozhodne dívce pomoct, a tak se vydávají na společnou výpravu, během které budou bourat zaběhnutá pravidla zdejšího světa a usilovat o mír a klidné soužití mezi lidmi a démony…",
+        "Date": "05.11.2026",
+        "State": "S01E08",
+        "CsfdRating": "57%",
+        "MalRating": "61%",
+        "MyRating": "?%"
+    },
+    "325": {
+        "Number": "325",
+        "FavoriteName": "Sekai Saikyou no Kouei",
+        "FavoriteUrlName": "sekai-saikyou-no-kouei-2026",
+        "CsfdID": "1897008",
+        "MalID": "62435",
+        "MalName": "Sekai Saikyou no Kouei  Meikyuukoku no Shinjin Tansakusha",
+        "Image": "325",
+        "NameEn": "The World's Strongest Witch",
+        "NameJa": "Sekai Saikyō no Majo, Hajimemashita",
+        "Genres": "Animovaný\nFantasy\nDobrodružný\nKomedie",
+        "Description": "Poté, co se u Lorny projeví naprosto zbytečná dovednost, je svojí aristokratickou rodinou zavržena a vyhnána do lesa bez jídla i peněz. Pak ale přijde na to, jak svůj údajně bezcenný skill „internet“ využít. Tato téměř podvodná schopnost jí najednou poskytuje přístup ke všem znalostem světa a umožní jí snadno sbírat vzácné předměty a překonávat nástrahy. Ačkoliv to jediné, po čem Lorna touží, je klidný život, jak se stává stále silnější, potkává ji jedno nečekané dobrodružství za druhým.",
+        "Date": "05.11.2026",
+        "State": "S01E07",
+        "CsfdRating": "?%",
+        "MalRating": "58%",
+        "MyRating": "?%"
     }
 }
