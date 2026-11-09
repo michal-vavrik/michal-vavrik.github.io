@@ -11,7 +11,9 @@ ochranu statického webu, nikoli serverové zabezpečení.
 
 ## Hry
 
-Po přihlášení s plným přístupem otevřete [Hry](./games.html). Všechny hry běží přímo
+Po přihlášení s plným přístupem nebo rolí s přístupem pouze ke hrám otevřete
+[Hry](./games.html). Herní role zpřístupňuje rozcestník a všechny čtyři hry,
+nikoli ostatní chráněné stránky. Všechny hry běží přímo
 v prohlížeči a nevyžadují další instalaci:
 
 - [Snake](./snake.html): šipky nebo WASD pro směr, mezerník pro pauzu;

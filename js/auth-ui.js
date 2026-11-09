@@ -20,6 +20,7 @@
 	ROLE_LABEL_KEYS[auth.ROLES.CV] = 'auth.role.cv';
 	ROLE_LABEL_KEYS[auth.ROLES.ANIME] = 'auth.role.anime';
 	ROLE_LABEL_KEYS[auth.ROLES.TOOLS] = 'auth.role.tools';
+	ROLE_LABEL_KEYS[auth.ROLES.GAMES] = 'auth.role.games';
 	ROLE_LABEL_KEYS[auth.ROLES.FULL] = 'auth.role.full';
 
 	/* Jméno stránky NV 194 je jednotné v obou jazycích, ostatní se překládají stejně jako v nabídce. */

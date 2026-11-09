@@ -44,6 +44,7 @@ window.SiteAuth = (function () {
 		ANIME: 'anime',
 		/** Přístup pouze k nástrojům. */
 		TOOLS: 'tools',
+		GAMES: 'games',
 		/** Přístup ke všem stránkám webu. */
 		FULL: 'full'
 	};
@@ -54,6 +55,7 @@ window.SiteAuth = (function () {
 		'0f5fed1791e0ff940512ad291bde94d79f4c52cf05a4f3e705588f3207373731': ROLES.CV,
 		'3683f802c2cef7bd5eff93d83b6319181faa8240e969a820ea3692e8beeb7ce3': ROLES.ANIME,
 		'f9d35d43770d39092a663e665e82ae1d84a9e0da3d0d10c407acada6a40cd281': ROLES.TOOLS,
+		'0da5ce33f379ca351bd8441d651c266c059ac2d40ed16f0af2fe5b3f7002431b': ROLES.GAMES,
 		'311ae06d6f82988a5bc4a38d0d922e95bb67479429ebd2b5e51ab4a56857d8b3': ROLES.FULL
 	};
 
@@ -66,7 +68,11 @@ window.SiteAuth = (function () {
 		'nv194.html': [ROLES.NV194, ROLES.FULL],
 		'personal.html': [ROLES.FULL],
 		'cv.html': [ROLES.CV, ROLES.FULL],
-		'games.html': [ROLES.FULL],
+		'games.html': [ROLES.GAMES, ROLES.FULL],
+		'snake.html': [ROLES.GAMES, ROLES.FULL],
+		'tetris.html': [ROLES.GAMES, ROLES.FULL],
+		'memory.html': [ROLES.GAMES, ROLES.FULL],
+		'2048.html': [ROLES.GAMES, ROLES.FULL],
 		'tools.html': [ROLES.TOOLS, ROLES.FULL],
 		'character-counter.html': [ROLES.TOOLS, ROLES.FULL],
 		'contact.html': [ROLES.FULL],
@@ -216,7 +222,7 @@ window.SiteAuth = (function () {
 			console.warn('Unable to read login storage.', error);
 			return null;
 		}
-		return (value === ROLES.NV194 || value === ROLES.CV || value === ROLES.ANIME || value === ROLES.TOOLS || value === ROLES.FULL) ? value : null;
+		return (value === ROLES.NV194 || value === ROLES.CV || value === ROLES.ANIME || value === ROLES.TOOLS || value === ROLES.GAMES || value === ROLES.FULL) ? value : null;
 	}
 
 	function role() {
