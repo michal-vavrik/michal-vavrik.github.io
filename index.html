@@ -4,20 +4,22 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="theme-color" content="#0b0d12">
+		<title>Michal Vavrík</title>
 		<link rel="icon" type="image/svg+xml" href="favicon.svg?v=11">
 		<link rel="preconnect" href="https://fonts.googleapis.com">
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap">
-		<link rel="stylesheet" type="text/css" href="css/main.css?v=redesign-2">
+		<link rel="stylesheet" type="text/css" href="css/main.css?v=home-1">
 		<link rel="stylesheet" type="text/css" href="css/auth.css?v=redesign-1">
 		<link rel="stylesheet" type="text/css" href="css/i18n.css?v=redesign-1">
+		<link rel="stylesheet" type="text/css" href="css/home.css?v=all-constellations-1">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 		<!-- Ochrana stránky musí proběhnout ještě před vykreslením obsahu. -->
 		<script src="js/auth.js?v=anime-role-1"></script>
 	</head>
 	
 	<body class="home">
-		<canvas></canvas>
+		<canvas aria-hidden="true"></canvas>
 		<header class="site-header">
 			<div class="site-header__inner">
 				<a class="site-header__brand" href="index.html" data-i18n-aria-label="nav.brand">
@@ -94,11 +96,49 @@
 			</div>
 		</div>
 
-		<script src="js/i18n.js?v=redesign-2"></script>
+		<main class="universe">
+			<div class="universe__empty" id="universe-empty" hidden>
+				<p id="universe-empty-role" data-i18n="home.noDestinations" hidden>Prozkoumej dostupné stránky pomocí nabídky nahoře.</p>
+			</div>
+
+			<div class="universe__grid" id="universe-grid" aria-label="Souhvězdí" data-i18n-aria-label="home.constellations">
+				<a class="constellation" href="personal.html" data-page="personal.html" data-constellation="personal" hidden>
+					<span class="constellation__sky" aria-hidden="true"></span>
+					<span class="constellation__name" data-i18n="nav.personal">Osobní</span>
+				</a>
+				<a class="constellation" href="cv.html" data-page="cv.html" data-constellation="cv" hidden>
+					<span class="constellation__sky" aria-hidden="true"></span>
+					<span class="constellation__name" data-i18n="nav.cv">CV</span>
+				</a>
+				<a class="constellation" href="games.html" data-page="games.html" data-constellation="games" hidden>
+					<span class="constellation__sky" aria-hidden="true"></span>
+					<span class="constellation__name" data-i18n="nav.games">Hry</span>
+				</a>
+				<a class="constellation" href="tools.html" data-page="tools.html" data-constellation="tools" hidden>
+					<span class="constellation__sky" aria-hidden="true"></span>
+					<span class="constellation__name" data-i18n="nav.tools">Nástroje</span>
+				</a>
+				<a class="constellation" href="contact.html" data-page="contact.html" data-constellation="contact" hidden>
+					<span class="constellation__sky" aria-hidden="true"></span>
+					<span class="constellation__name" data-i18n="nav.contact">Kontakt</span>
+				</a>
+				<a class="constellation" href="anime.html" data-page="anime.html" data-constellation="anime" hidden>
+					<span class="constellation__sky" aria-hidden="true"></span>
+					<span class="constellation__name" data-i18n="nav.anime">Anime</span>
+				</a>
+				<a class="constellation" href="nv194.html" data-page="nv194.html" data-constellation="nv194" hidden>
+					<span class="constellation__sky" aria-hidden="true"></span>
+					<span class="constellation__name">NV 194</span>
+				</a>
+			</div>
+		</main>
+
+		<script src="js/i18n.js?v=direct-links-1"></script>
 		<script src="js/lang-switcher.js"></script>
-		<script src="js/auth-ui.js?v=anime-role-1"></script>
+		<script src="js/auth-ui.js?v=home-1"></script>
 		<script src="js/menu.js?v=redesign-1"></script>
-		<script src="js/starfield.js"></script>
+		<script src="js/home.js?v=guest-empty-1"></script>
+		<script src="js/starfield.js?v=all-constellations-2"></script>
 
 	</body>
 </html>

@@ -38,6 +38,9 @@ window.I18n = (function () {
 			'nav.toggle': 'Menu',
 			'nav.brand': 'Michal Vavrík – úvodní stránka',
 
+			'home.constellations': 'Souhvězdí',
+			'home.noDestinations': 'Prozkoumej dostupné stránky pomocí nabídky nahoře.',
+
 			'anime.title': 'Anime list',
 			'anime.loadError': 'Nepodařilo se načíst anime data. Zkuste stránku obnovit.',
 
@@ -475,6 +478,9 @@ window.I18n = (function () {
 			'nav.label': 'Main navigation',
 			'nav.toggle': 'Menu',
 			'nav.brand': 'Michal Vavrík – home page',
+
+			'home.constellations': 'Constellations',
+			'home.noDestinations': 'Explore the pages available to you using the menu above.',
 
 			'anime.title': 'Anime list',
 			'anime.loadError': 'Failed to load anime data. Try reloading the page.',

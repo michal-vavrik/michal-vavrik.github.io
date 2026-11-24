@@ -1,0 +1,107 @@
+@charset "utf-8";
+
+.universe {
+	position: relative;
+	width: min(100% - 2 * var(--gutter), 76rem);
+	min-height: calc(100dvh - var(--header-height));
+	margin: 0 auto;
+	padding: clamp(2rem, 5vh, 4rem) 0 2rem;
+}
+
+.universe__grid {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: flex-start;
+	gap: var(--space-4);
+	margin-top: clamp(1.5rem, 5vh, 3rem);
+}
+
+.universe__grid[hidden],
+.constellation[hidden],
+.universe__empty[hidden],
+.universe__login[hidden] {
+	display: none;
+}
+
+.constellation {
+	display: flex;
+	flex: 0 1 calc(25% - var(--space-3));
+	flex-direction: column;
+	align-items: center;
+	min-width: 0;
+	border-radius: var(--radius-md);
+	text-align: center;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.constellation__sky {
+	display: block;
+	width: min(100%, 16rem);
+	height: clamp(7rem, 13vw, 11rem);
+	margin: 0 auto;
+}
+
+.constellation[data-constellation="tools"] .constellation__sky {
+	width: min(100%, clamp(7rem, 13vw, 11rem));
+}
+
+.constellation__name {
+	display: inline-block;
+	padding: var(--space-2) var(--space-3);
+	color: #edf0ff;
+	font-size: var(--text-xl);
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	opacity: 0;
+	transform: translateY(0.5rem);
+	text-shadow: 0 0 16px rgba(145, 169, 255, 0.75), 0 2px 8px #000;
+	transition: none;
+}
+
+.constellation.is-ready .constellation__name {
+	opacity: 1;
+	transform: none;
+	transition: opacity 600ms var(--ease), transform 600ms var(--ease), color var(--dur) var(--ease);
+}
+
+.home--static .constellation .constellation__name {
+	transition: none;
+}
+
+.constellation:hover .constellation__name {
+	color: #b7c8ff;
+}
+
+.universe__empty {
+	display: grid;
+	justify-items: center;
+	gap: var(--space-4);
+	margin: clamp(1rem, 4vh, 2.5rem) auto 0;
+	color: #c1c6dd;
+	text-align: center;
+	text-shadow: 0 2px 12px #000;
+}
+
+@media (min-width: 50.01em) {
+	.constellation:nth-child(even) {
+		margin-top: 2rem;
+	}
+}
+
+@media (max-width: 50em) {
+	.universe__grid {
+		row-gap: var(--space-6);
+	}
+
+	.constellation {
+		flex-basis: calc(50% - var(--space-2));
+	}
+}
+
+@media (max-width: 17.5em) {
+	.constellation {
+		flex-basis: 100%;
+	}
+}

@@ -234,6 +234,7 @@
 		refreshMenu();
 		refreshPanels();
 		refreshTransientTexts();
+		document.dispatchEvent(new CustomEvent('site:authchange'));
 	}
 
 	/* --- Události --- */

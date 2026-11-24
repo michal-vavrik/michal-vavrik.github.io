@@ -1,5 +1,16 @@
 # michal-vavrik.github.io
 
+## Úvodní stránka
+
+Souhvězdí osobní stránky, CV, her, nástrojů, kontaktu, anime a NV 194 jsou
+zpočátku skrytá a odpovídají oprávnění přihlášené role. Po najetí myší do oblasti
+souhvězdí se během jedné sekundy poskládají nejbližší dostupné hvězdy z pozadí
+a objeví se název stránky. Po odjetí se hvězdy opět rozletí.
+Kliknutí přejde přímo na stránku. Klávesnicí se souhvězdí odhalí při zaměření
+a otevře klávesou Enter. Na telefonu první klepnutí souhvězdí odhalí a druhé
+otevře stránku; klepnutí mimo oblast je opět skryje. Při omezení pohybu v systému
+se souhvězdí odhalují a skrývají bez animace.
+
 ## Přihlášení
 
 Volba **Trvale přihlásit** uloží roli do `localStorage`, takže přihlášení zůstane

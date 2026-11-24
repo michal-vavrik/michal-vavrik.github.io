@@ -182,7 +182,6 @@ button:disabled {
 /* Úvodní stránka: celé okno vyplňuje hvězdné nebe (js/starfield.js). */
 body.home {
 	background-color: #000;
-	overflow: hidden;
 }
 
 body.home > canvas {
