@@ -6,6 +6,9 @@ Souhvězdí osobní stránky, CV, her, nástrojů, kontaktu, anime a NV 194 jsou
 zpočátku skrytá a odpovídají oprávnění přihlášené role. Po najetí myší do oblasti
 souhvězdí se během jedné sekundy poskládají nejbližší dostupné hvězdy z pozadí
 a objeví se název stránky. Po odjetí se hvězdy opět rozletí.
+CV má podobu listu A4 s přehnutým rohem a NV 194 otevřené knihy s prohnutými
+stránkami. Anime znázorňuje manga oko se světlou zorničkou a třemi červenými
+hvězdami na červené kružnici. Jedna je přesně nahoře, další dvě po 120°.
 Kliknutí přejde přímo na stránku. Klávesnicí se souhvězdí odhalí při zaměření
 a otevře klávesou Enter. Na telefonu první klepnutí souhvězdí odhalí a druhé
 otevře stránku; klepnutí mimo oblast je opět skryje. Při omezení pohybu v systému

@@ -2,12 +2,13 @@
 (function () {
 	'use strict';
 
-	const STAR_COUNT = Math.max(100, Math.ceil((window.innerWidth + window.innerHeight) / 8));
 	const STAR_MIN_SCALE = 1.5;
 	const OVERFLOW_THRESHOLD = 1;
 	const FORMATION_DURATION = 1000;
 	const FLIGHT_DURATION = 800;
 	const DEPARTURE_DURATION = 900;
+	const IRIS_CENTER = [0.49, 0.48];
+	const IRIS_RING_RADIUS = 0.13;
 
 	const shapes = {
 		personal: {
@@ -26,13 +27,15 @@
 		},
 		cv: {
 			points: [
-				[0.44, 0.18], [0.32, 0.12], [0.20, 0.15], [0.12, 0.25], [0.09, 0.50],
-				[0.12, 0.75], [0.20, 0.85], [0.32, 0.88], [0.44, 0.82],
-				[0.54, 0.13], [0.63, 0.50], [0.72, 0.88], [0.81, 0.50], [0.90, 0.13]
+				[0.05, 0.05], [0.69, 0.05], [0.95, 0.24], [0.95, 0.95], [0.05, 0.95],
+				[0.69, 0.24],
+				[0.44, 0.46], [0.34, 0.42], [0.24, 0.47], [0.19, 0.59],
+				[0.24, 0.71], [0.34, 0.76], [0.44, 0.72],
+				[0.53, 0.42], [0.68, 0.76], [0.83, 0.42]
 			],
 			edges: [
-				[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8],
-				[9, 10], [10, 11], [11, 12], [12, 13]
+				[0, 1], [1, 2], [2, 3], [3, 4], [4, 0], [1, 5], [5, 2],
+				[6, 7], [7, 8], [8, 9], [9, 10], [10, 11], [11, 12], [13, 14], [14, 15]
 			]
 		},
 		games: {
@@ -69,34 +72,54 @@
 		},
 		anime: {
 			points: [
-				[0.28, 0.58], [0.24, 0.43], [0.24, 0.28], [0.30, 0.16], [0.41, 0.10],
-				[0.55, 0.11], [0.66, 0.17], [0.73, 0.29], [0.74, 0.45], [0.70, 0.60],
-				[0.61, 0.57], [0.50, 0.67], [0.39, 0.57],
-				[0.26, 0.31], [0.37, 0.28], [0.46, 0.19], [0.43, 0.33], [0.57, 0.23], [0.72, 0.34],
-				[0.36, 0.62], [0.23, 0.68], [0.17, 0.86], [0.83, 0.86], [0.77, 0.68], [0.64, 0.62],
-				[0.35, 0.43], [0.43, 0.40], [0.57, 0.40], [0.65, 0.43]
-			],
-			edges: [
-				[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9],
-				[9, 10], [10, 11], [11, 12], [12, 0],
-				[13, 14], [14, 15], [15, 16], [16, 17], [17, 18],
-				[12, 19], [19, 20], [20, 21], [21, 22], [22, 23], [23, 24], [24, 10],
-				[25, 26], [27, 28]
-			]
-		},
-		nv194: {
-			points: [
-				[0.08, 0.17], [0.27, 0.18], [0.50, 0.28], [0.73, 0.18], [0.92, 0.17],
-				[0.92, 0.77], [0.73, 0.75], [0.50, 0.86], [0.27, 0.75], [0.08, 0.77],
-				[0.17, 0.34], [0.38, 0.39], [0.17, 0.47], [0.38, 0.52],
-				[0.62, 0.39], [0.83, 0.34], [0.62, 0.52], [0.83, 0.47]
+				[0.12, 0.54], [0.25, 0.38], [0.40, 0.29], [0.59, 0.28], [0.73, 0.34],
+				[0.86, 0.46], [0.72, 0.65], [0.54, 0.79], [0.35, 0.76], [0.22, 0.67],
+				[0.78, 0.20], [0.93, 0.30],
+				[0.24, 0.22], [0.39, 0.12], [0.57, 0.11], [0.70, 0.16],
+				[0.34, 0.46], [0.38, 0.61], [0.48, 0.69], [0.58, 0.65], [0.64, 0.53], [0.64, 0.38],
+				IRIS_CENTER,
+				...[-90, 30, 150].map(function (degrees) {
+					const angle = degrees * Math.PI / 180;
+					return [
+						IRIS_CENTER[0] + IRIS_RING_RADIUS * Math.cos(angle),
+						IRIS_CENTER[1] + IRIS_RING_RADIUS * Math.sin(angle)
+					];
+				})
 			],
 			edges: [
 				[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [9, 0],
-				[2, 7], [10, 11], [12, 13], [14, 15], [16, 17]
+				[4, 10], [5, 11], [12, 13], [13, 14], [14, 15],
+				[2, 16], [16, 17], [17, 18], [18, 19], [19, 20], [20, 21], [21, 3]
+			],
+			irisCenterIndex: 22
+		},
+		nv194: {
+			points: [
+				[0.15, 0.20], [0.30, 0.13], [0.42, 0.17], [0.50, 0.27],
+				[0.58, 0.17], [0.70, 0.13], [0.85, 0.20],
+				[0.85, 0.71], [0.70, 0.65], [0.58, 0.70], [0.50, 0.79],
+				[0.42, 0.70], [0.30, 0.65], [0.15, 0.71],
+				[0.07, 0.30], [0.07, 0.82], [0.30, 0.77], [0.50, 0.90],
+				[0.70, 0.77], [0.93, 0.82], [0.93, 0.30],
+				[0.23, 0.36], [0.31, 0.32], [0.42, 0.38],
+				[0.58, 0.38], [0.69, 0.32], [0.77, 0.36],
+				[0.23, 0.51], [0.31, 0.47], [0.42, 0.53],
+				[0.58, 0.53], [0.69, 0.47], [0.77, 0.51]
+			],
+			edges: [
+				[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7],
+				[7, 8], [8, 9], [9, 10], [10, 11], [11, 12], [12, 13], [13, 0], [3, 10],
+				[0, 14], [14, 15], [15, 16], [16, 17], [17, 18], [18, 19], [19, 20], [20, 6],
+				[21, 22], [22, 23], [24, 25], [25, 26], [27, 28], [28, 29], [30, 31], [31, 32]
 			]
 		}
 	};
+
+	const constellationStarCount = Object.values(shapes).reduce(function (count, shape) {
+		return count + shape.points.length;
+	}, 0);
+	// Departing constellations still hold stars when another starts forming.
+	const STAR_COUNT = Math.max(constellationStarCount + 20, Math.ceil((window.innerWidth + window.innerHeight) / 8));
 
 	const canvas = document.querySelector('body.home > canvas');
 	const context = canvas.getContext('2d');
@@ -162,10 +185,22 @@
 		}
 	}
 
-	function targetPosition(formation, point) {
+	function targetPosition(formation, index) {
+		const rect = formation.rect;
+		const point = formation.shape.points[index];
+		const irisCenterIndex = formation.shape.irisCenterIndex;
+		if (irisCenterIndex !== undefined && index > irisCenterIndex) {
+			// Scale offsets equally on both axes to keep the ring circular.
+			const center = formation.shape.points[irisCenterIndex];
+			const size = Math.min(rect.width, rect.height);
+			return {
+				x: (rect.left + rect.width * center[0] + size * (point[0] - center[0])) * scale,
+				y: (rect.top + rect.height * center[1] + size * (point[1] - center[1])) * scale
+			};
+		}
 		return {
-			x: (formation.rect.left + formation.rect.width * point[0]) * scale,
-			y: (formation.rect.top + formation.rect.height * point[1]) * scale
+			x: (rect.left + rect.width * point[0]) * scale,
+			y: (rect.top + rect.height * point[1]) * scale
 		};
 	}
 
@@ -257,7 +292,7 @@
 			formation.members = formation.shape.points.map(function (point, index) {
 				let member = previous[index];
 				if (!member || member.star.member !== member) {
-					const star = pickStar(available, targetPosition(formation, point));
+					const star = pickStar(available, targetPosition(formation, index));
 					member = { star: star, formation: formation, point: point, index: index, progress: 0 };
 					star.member = member;
 				}
@@ -301,7 +336,7 @@
 			}
 			formation.rect = formation.area.getBoundingClientRect();
 			formation.members.forEach(function (member) {
-				const target = targetPosition(formation, member.point);
+				const target = targetPosition(formation, member.index);
 				member.star.x = target.x;
 				member.star.y = target.y;
 				member.star.tailX = 0;
@@ -379,7 +414,7 @@
 						// Waiting stars keep moving, so choose again when their flight starts.
 						member.star.member = null;
 						member.star = pickStar(stars.filter(function (star) { return !star.member; }),
-							targetPosition(formation, member.point));
+							targetPosition(formation, member.index));
 						member.star.member = member;
 					}
 				});
@@ -409,7 +444,7 @@
 				return;
 			}
 
-			const target = targetPosition(formation, member.point);
+			const target = targetPosition(formation, member.index);
 			if (formation.state === 'formed') {
 				star.x = target.x;
 				star.y = target.y;
@@ -452,6 +487,27 @@
 		});
 	}
 
+	function renderIrisRing(formation, centerIndex) {
+		const pupil = formation.members[centerIndex];
+		let progress = pupil.progress;
+		for (let index = centerIndex + 1; index < formation.members.length; index++) {
+			progress = Math.min(progress, formation.members[index].progress);
+		}
+		const opacity = Math.max(0, (progress - 0.9) / 0.1) * 0.55;
+		if (opacity === 0) {
+			return;
+		}
+
+		const radius = IRIS_RING_RADIUS * Math.min(formation.rect.width, formation.rect.height) * scale;
+		context.beginPath();
+		context.ellipse(pupil.star.x, pupil.star.y, radius, radius, 0, 0, Math.PI * 2);
+		context.lineWidth = scale;
+		context.strokeStyle = 'rgba(255, 109, 136, ' + opacity + ')';
+		context.shadowColor = '#ff435e';
+		context.shadowBlur = 3 * scale;
+		context.stroke();
+	}
+
 	function render() {
 		context.clearRect(0, 0, width, height);
 		context.lineCap = 'round';
@@ -477,12 +533,21 @@
 				context.shadowBlur = 4 * scale;
 				context.stroke();
 			});
+			if (formation.shape.irisCenterIndex !== undefined) {
+				renderIrisRing(formation, formation.shape.irisCenterIndex);
+			}
 		});
 
 		stars.forEach(function (star) {
-			const progress = star.member ? star.member.progress : 0;
-			const emphasis = star.member && star.member.index % 3 === 0 ? 0.7 : 0;
-			const radius = (0.65 + star.z * 0.4 + progress * (1.55 + emphasis)) * scale;
+			const member = star.member;
+			const progress = member ? member.progress : 0;
+			const emphasis = member && member.index % 3 === 0 ? 0.7 : 0;
+			const irisCenterIndex = member ? member.formation.shape.irisCenterIndex : undefined;
+			const irisMark = irisCenterIndex !== undefined && member.index >= irisCenterIndex;
+			const ringStar = irisMark && member.index > irisCenterIndex;
+			const idleRadius = 0.65 + star.z * 0.4;
+			const formedRadius = irisMark ? 4.2 : idleRadius + 1.55 + emphasis;
+			const radius = (idleRadius + progress * (formedRadius - idleRadius)) * scale;
 			context.shadowBlur = 0;
 			context.beginPath();
 			context.moveTo(star.x, star.y);
@@ -492,9 +557,10 @@
 			context.stroke();
 			context.beginPath();
 			context.arc(star.x, star.y, radius, 0, Math.PI * 2);
-			context.fillStyle = progress > 0 ? '#eaf0ff' : 'rgba(255, 255, 255, ' + star.opacity + ')';
-			context.shadowColor = '#a5baff';
-			context.shadowBlur = progress * 12 * scale;
+			const color = ringStar ? '#ff8095' : '#eaf0ff';
+			context.fillStyle = progress > 0 ? color : 'rgba(255, 255, 255, ' + star.opacity + ')';
+			context.shadowColor = ringStar ? '#ff435e' : '#a5baff';
+			context.shadowBlur = progress * (ringStar ? 3 : 12) * scale;
 			context.fill();
 		});
 		context.shadowBlur = 0;

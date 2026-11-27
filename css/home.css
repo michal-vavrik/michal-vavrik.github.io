@@ -37,14 +37,21 @@
 }
 
 .constellation__sky {
+	--sky-height: clamp(7rem, 13vw, 11rem);
 	display: block;
 	width: min(100%, 16rem);
-	height: clamp(7rem, 13vw, 11rem);
+	height: var(--sky-height);
 	margin: 0 auto;
 }
 
+.constellation[data-constellation="cv"] .constellation__sky {
+	width: min(100%, calc(var(--sky-height) * 210 / 297));
+	height: auto;
+	aspect-ratio: 210 / 297;
+}
+
 .constellation[data-constellation="tools"] .constellation__sky {
-	width: min(100%, clamp(7rem, 13vw, 11rem));
+	width: min(100%, var(--sky-height));
 }
 
 .constellation__name {

@@ -69,10 +69,11 @@ class HomeTests(unittest.TestCase):
             const move = prototype.moveTo;
             const line = prototype.lineTo;
             const arc = prototype.arc;
+            const ellipse = prototype.ellipse;
             const stroke = prototype.stroke;
             const isSky = context => context.canvas.matches('body.home > canvas');
             prototype.clearRect = function (...args) {
-                if (isSky(this)) window.__skyFrame = { stars: [], segments: [] };
+                if (isSky(this)) window.__skyFrame = { stars: [], segments: [], rings: [] };
                 return clear.apply(this, args);
             };
             prototype.beginPath = function (...args) {
@@ -90,6 +91,10 @@ class HomeTests(unittest.TestCase):
             prototype.arc = function (x, y, radius, ...args) {
                 if (isSky(this)) window.__skyFrame.stars.push({ x, y, radius });
                 return arc.call(this, x, y, radius, ...args);
+            };
+            prototype.ellipse = function (x, y, radiusX, radiusY, ...args) {
+                if (isSky(this)) window.__skyFrame.rings.push({ x, y, radiusX, radiusY });
+                return ellipse.call(this, x, y, radiusX, radiusY, ...args);
             };
             prototype.stroke = function (...args) {
                 if (isSky(this) && this.__skyPath.length === 2) {
@@ -294,6 +299,70 @@ class HomeTests(unittest.TestCase):
                     ).length;
                 }""", name)
                 self.assertGreaterEqual(connections, 5)
+
+    def test_cv_constellation_has_a4_proportions_on_desktop_and_mobile(self):
+        self.page.emulate_media(reduced_motion="reduce")
+        self.trace_starfield()
+        self.open_as("full")
+        cv = self.page.locator('[data-constellation="cv"]')
+        cv.hover()
+        expect(cv).to_have_class("constellation is-ready")
+        for width in (1280, 320):
+            with self.subTest(width=width):
+                self.page.set_viewport_size({"width": width, "height": 720})
+                cv.hover()
+                ratio = self.page.evaluate("""() => {
+                    const stars = window.__skyFrame.stars.filter(star => star.radius / devicePixelRatio > 2.2);
+                    const xs = stars.map(star => star.x);
+                    const ys = stars.map(star => star.y);
+                    return (Math.max(...xs) - Math.min(...xs)) / (Math.max(...ys) - Math.min(...ys));
+                }""")
+                self.assertAlmostEqual(ratio, 210 / 297, delta=0.005)
+
+    def test_anime_iris_has_a_red_ring_and_three_evenly_spaced_red_stars(self):
+        self.page.emulate_media(reduced_motion="reduce")
+        self.trace_starfield()
+        self.open_as("full")
+        anime = self.page.locator('[data-constellation="anime"]')
+        for width in (1280, 320):
+            with self.subTest(width=width):
+                self.page.set_viewport_size({"width": width, "height": 720})
+                anime.locator(".constellation__sky").hover()
+                expect(anime).to_have_class("constellation is-ready")
+                rings = self.page.evaluate("() => window.__skyFrame.rings")
+                self.assertEqual(len(rings), 1)
+                ring = rings[0]
+                self.assertAlmostEqual(ring["radiusX"], ring["radiusY"], delta=0.1)
+                stars = self.page.evaluate("""() => {
+                    const context = document.querySelector('body.home > canvas').getContext('2d');
+                    return window.__skyFrame.stars.filter(star => star.radius / devicePixelRatio > 2.2)
+                        .map(star => {
+                            const [red, , blue] = context.getImageData(star.x, star.y, 1, 1).data;
+                            return { ...star, redAccent: red - blue };
+                        });
+                }""")
+                red_stars = [star for star in stars if star["redAccent"] > 40]
+                self.assertEqual(len(red_stars), 3)
+                self.assertTrue(all(star["redAccent"] < 0 for star in stars if star not in red_stars))
+                pupil = min(stars, key=lambda star: math.hypot(star["x"] - ring["x"], star["y"] - ring["y"]))
+                self.assertAlmostEqual(math.hypot(pupil["x"] - ring["x"], pupil["y"] - ring["y"]), 0, delta=0.1)
+                angles = []
+                for star in red_stars:
+                    dx, dy = star["x"] - ring["x"], star["y"] - ring["y"]
+                    self.assertAlmostEqual(math.hypot(dx, dy), ring["radiusX"], delta=0.1)
+                    self.assertAlmostEqual(star["radius"], pupil["radius"], delta=0.1)
+                    angles.append(math.degrees(math.atan2(dy, dx)))
+                for angle, expected in zip(sorted(angles), (-90, 30, 150)):
+                    self.assertAlmostEqual(angle, expected, delta=0.1)
+                ring_accent = self.page.evaluate("""ring => {
+                    const context = document.querySelector('body.home > canvas').getContext('2d');
+                    const bottom = Math.floor(ring.y + ring.radiusY);
+                    const { data } = context.getImageData(ring.x, bottom - 1, 1, 3);
+                    return Math.max(data[0] - data[2], data[4] - data[6], data[8] - data[10]);
+                }""", ring)
+                self.assertGreater(ring_accent, 40)
+                self.page.mouse.move(2, 2)
+                self.assertEqual(self.page.evaluate("() => window.__skyFrame.rings.length"), 0)
 
     def test_static_constellations_follow_scroll_and_resize(self):
         self.page.emulate_media(reduced_motion="reduce")
